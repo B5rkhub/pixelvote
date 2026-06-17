@@ -895,7 +895,44 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
 // ── SUPABASE ENTEGRASYONU ──
 const SUPABASE_URL = 'https://pwpnjjfeojebqzhduqsc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3cG5qamZlb2plYnF6aGR1cXNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDY3OTAsImV4cCI6MjA5NzI4Mjc5MH0.KIeYbr1XsZyYcp4KHwpwLNH1mXalGJrfSqdCJDUH-lk';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ÖNEMLİ: <script src="...supabase-js@2"> zaten global bir "supabase" değişkeni
+// oluşturuyor (window.supabase = { createClient, ... }). Burada "let/const supabase"
+// ile YENİDEN tanımlamak "Identifier 'supabase' has already been declared" SyntaxError'ı
+// fırlatır ve bu YÜZÜNDEN TÜM <script> bloğu (startGame dahil) hiç çalışmaz.
+// Bu yüzden var olan global'i declare etmiyoruz, sadece üzerine yazıyoruz.
+const _pvSupabaseLib = window.supabase; // kütüphane referansını saklayalım
+let _pvOfflineMode = false;
+try{
+  if(!_pvSupabaseLib || typeof _pvSupabaseLib.createClient !== 'function'){
+    throw new Error('Supabase kütüphanesi (cdn.jsdelivr.net) yüklenemedi.');
+  }
+  supabase = _pvSupabaseLib.createClient(SUPABASE_URL, SUPABASE_KEY);
+}catch(e){
+  // CDN engellenmiş/yavaş olsa bile aşağıdaki tüm const/let tanımları (username dahil)
+  // çalışsın diye burada asla throw etmiyoruz — bunun yerine sahte (no-op) bir
+  // supabase istemcisi kullanıyoruz, oyun çevrimdışı/yerel modda çalışmaya devam eder.
+  console.error('[PixelVote] Supabase başlatılamadı, çevrimdışı moda geçiliyor:', e);
+  _pvOfflineMode = true;
+  const _pvStubBuilder = (()=>{
+    const b = {};
+    ['select','eq','order','limit','insert','upsert'].forEach(m=>{ b[m] = ()=> b; });
+    b.then = (resolve)=> resolve({data:null, error:{message:'offline'}});
+    b.catch = ()=> b;
+    return b;
+  });
+  const _pvStubChannel = (()=>{
+    const c = {};
+    c.on = ()=> c;
+    c.subscribe = ()=> c;
+    return c;
+  });
+  supabase = {
+    rpc: async ()=> ({data:null, error:{message:'offline'}}),
+    from: ()=> _pvStubBuilder(),
+    channel: ()=> _pvStubChannel()
+  };
+  setTimeout(()=>{ try{ showPopup('⚠ Sunucuya bağlanılamadı — çevrimdışı modda devam ediliyor.'); }catch(e2){} }, 800);
+}
 
 const IMG_W=4208, IMG_H=2300;
 const PROV_IDS_LIST  = ["adana","adiyaman","afyonkarahisar","agri","aksaray","amasya","ankara","antalya","ardahan","artvin","aydin","balikesir","bartin","batman","bayburt","bilecik","bingol","bitlis","bolu","burdur","bursa","canakkale","cankiri","corum","denizli","diyarbakir","duzce","edirne","elazig","erzincan","erzurum","eskisehir","gaziantep","giresun","gumushane","hakkari","hatay","igdir","isparta","istanbul","izmir","kahramanmaras","karabuk","karaman","kars","kastamonu","kayseri","kilis","kirikkale","kirklareli","kirsehir","kocaeli","konya","kutahya","malatya","manisa","mardin","mersin","mugla","mus","nevsehir","nigde","ordu","osmaniye","rize","sakarya","samsun","sanliurfa","siirt","sinop","sirnak","sivas","tekirdag","tokat","trabzon","tunceli","usak","van","yalova","yozgat","zonguldak"];
