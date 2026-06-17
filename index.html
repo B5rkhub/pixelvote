@@ -600,9 +600,114 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
   display:none;position:absolute;top:-4px;right:-4px;
   background:#f59e0b;border-radius:50%;width:8px;height:8px;
 }
+
+/* ── XP / LEVEL SİSTEMİ ── */
+/* Level-up notification */
+@keyframes levelup-slide{
+  0%{opacity:0;transform:translateX(-50%) translateY(-40px) scale(.85);}
+  12%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.06);}
+  18%{transform:translateX(-50%) translateY(0) scale(1);}
+  75%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}
+  100%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.9);}
+}
+#levelup-notif{
+  position:fixed;top:72px;left:50%;transform:translateX(-50%);
+  z-index:9999;pointer-events:none;
+  background:linear-gradient(135deg,#7c6aff 0%,#c084fc 50%,#f59e0b 100%);
+  border-radius:18px;padding:1px;
+  display:none;
+  box-shadow:0 0 40px rgba(124,106,255,.7);
+}
+#levelup-notif.show{
+  display:block;
+  animation:levelup-slide 4s ease forwards;
+}
+#levelup-inner{
+  background:#10101e;border-radius:17px;
+  padding:.9rem 1.5rem;display:flex;flex-direction:column;align-items:center;gap:.35rem;
+}
+#levelup-label{font-size:.65rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#c084fc;}
+#levelup-lv{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#7c6aff,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;}
+#levelup-title{font-size:.78rem;color:var(--txt);font-weight:600;}
+#levelup-reward{font-size:.68rem;color:#f59e0b;font-weight:700;}
+
+/* XP bar in profile button */
+.pb-xp-bar-wrap{width:100%;height:3px;background:var(--bdr);border-radius:2px;margin-top:2px;}
+.pb-xp-bar{height:100%;background:linear-gradient(90deg,#7c6aff,#c084fc);border-radius:2px;transition:width .4s ease;}
+.pb-lv-badge{
+  font-family:'JetBrains Mono',monospace;font-size:.55rem;font-weight:800;
+  background:linear-gradient(135deg,#7c6aff,#c084fc);
+  color:#fff;padding:.1rem .35rem;border-radius:4px;
+  display:inline-block;
+}
+
+/* Profil seviye kartı */
+#pc-level-card{
+  background:linear-gradient(135deg,rgba(124,106,255,.12),rgba(192,132,252,.08));
+  border:1px solid rgba(124,106,255,.35);border-radius:14px;
+  padding:.9rem 1rem;display:flex;flex-direction:column;gap:.6rem;
+}
+.pc-lv-header{display:flex;align-items:center;justify-content:space-between;}
+.pc-lv-num{
+  font-size:1.8rem;font-weight:800;
+  background:linear-gradient(135deg,#7c6aff,#c084fc);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;
+}
+.pc-lv-title{font-size:.68rem;color:var(--muted);font-weight:700;}
+.pc-lv-xp{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--txt);}
+.pc-lv-bar-wrap{width:100%;height:8px;background:var(--bdr);border-radius:4px;overflow:hidden;}
+.pc-lv-bar{height:100%;background:linear-gradient(90deg,#7c6aff,#c084fc);border-radius:4px;transition:width .5s ease;}
+.pc-lv-legend{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);}
+.pc-lv-rewards{display:flex;flex-direction:column;gap:.35rem;}
+.pc-reward-item{
+  display:flex;align-items:center;gap:.55rem;
+  background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;
+  padding:.4rem .6rem;
+}
+.pc-reward-item.earned{border-color:rgba(124,106,255,.4);background:rgba(124,106,255,.08);}
+.pc-reward-lv{font-family:'JetBrains Mono',monospace;font-size:.6rem;font-weight:800;color:var(--accent);min-width:30px;}
+.pc-reward-icon{font-size:.9rem;}
+.pc-reward-name{font-size:.7rem;color:var(--txt);flex:1;}
+.pc-reward-check{font-size:.75rem;color:#10b981;}
+
+/* En Yüksek Seviyeler sıralama */
+.lvl-rank-row{
+  display:flex;align-items:center;gap:.55rem;
+  padding:.4rem .45rem;border-radius:8px;
+  transition:background .15s;border-bottom:1px solid var(--bdr);
+}
+.lvl-rank-row:last-child{border-bottom:none;}
+.lvl-rank-row:hover{background:var(--surf);}
+.lvl-rank-pos{
+  font-family:'JetBrains Mono',monospace;font-size:.65rem;font-weight:700;
+  color:var(--muted);min-width:20px;text-align:right;
+}
+.lvl-rank-av{
+  width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6rem;font-weight:800;color:#fff;flex-shrink:0;
+  background:linear-gradient(135deg,#7c6aff,#c084fc);
+}
+.lvl-rank-name{font-size:.72rem;font-weight:700;color:var(--txt);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lvl-rank-lv{
+  font-family:'JetBrains Mono',monospace;font-size:.62rem;font-weight:800;
+  background:linear-gradient(135deg,#7c6aff,#c084fc);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.lvl-rank-xp{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);}
 </style>
 </head>
 <body>
+
+<!-- Level-up bildirimi -->
+<div id="levelup-notif">
+  <div id="levelup-inner">
+    <div id="levelup-label">⬆ SEVİYE ATLADI!</div>
+    <div id="levelup-lv">LV 5</div>
+    <div id="levelup-title">Uzman Pikselci</div>
+    <div id="levelup-reward"></div>
+  </div>
+</div>
 
 <div id="login">
   <div class="lbox">
@@ -682,6 +787,10 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
       <div style="display:flex;flex-direction:column;gap:1px">
         <div class="pb-name" id="pb-name">—</div>
         <div class="pb-pix" id="pb-pix">— piksel</div>
+        <div style="display:flex;align-items:center;gap:.35rem;margin-top:1px;">
+          <span class="pb-lv-badge" id="pb-level-badge">Lv 1</span>
+          <div class="pb-xp-bar-wrap" style="flex:1"><div class="pb-xp-bar" id="pb-xp-bar" style="width:0%"></div></div>
+        </div>
         <div class="pb-faction" id="pb-faction">
           <div class="pb-faction-dot" id="pb-faction-dot" style="background:#7c6aff"></div>
           <div class="pb-faction-name" id="pb-faction-name">—</div>
@@ -734,6 +843,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
   </div>
   <div id="sidebar">
     <div class="scard"><h3>Genel Sıralama</h3><div id="pbars"></div></div>
+    <div class="scard"><h3>🏅 En Yüksek Seviyeler</h3><div id="level-leaderboard"><div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.5rem 0">Yükleniyor...</div></div></div>
     <div class="scard"><h3>Bölge / İl Sonuçları</h3><div id="rlist"></div></div>
     <div class="scard"><h3>Son Hamleler</h3><div id="afeed"></div></div>
   </div>
@@ -772,6 +882,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
     <!-- Tabs -->
     <div class="pc-tabs">
       <button class="pc-tab active" id="pctab-profil" onclick="switchProfileTab('profil')">👤 Profil</button>
+      <button class="pc-tab" id="pctab-seviye" onclick="switchProfileTab('seviye')">⭐ Seviye</button>
       <button class="pc-tab" id="pctab-stats" onclick="switchProfileTab('stats')">📊 İstatistik</button>
       <button class="pc-tab" id="pctab-ayarlar" onclick="switchProfileTab('ayarlar')">⚙ Ayarlar</button>
     </div>
@@ -804,9 +915,15 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
       </div>
     </div>
 
+    <!-- PANEL: Seviye -->
+    <div class="pc-panel" id="pcpanel-seviye">
+      <div id="pc-level-card">
+        <!-- JS ile doldurulur -->
+      </div>
+    </div>
+
     <!-- PANEL: İstatistik -->
-    <div class="pc-panel" id="pcpanel-stats">
-      <div class="pcs-grid" id="pcs-grid">
+    <div class="pc-panel" id="pcpanel-stats">      <div class="pcs-grid" id="pcs-grid">
         <!-- JS ile doldurulur -->
       </div>
       <div class="pc-section">
@@ -1329,6 +1446,8 @@ async function handleClick(mx,my){
     _setPixLeft(data.pix_left);
     try{localStorage.setItem('pv_px_'+username,_getPixLeft());}catch(e){}
     profileData.totalPlaced=(profileData.totalPlaced||0)+1;
+    // ── XP KAZANMA ──
+    gainXP(1);
     saveProfile();
     actLog.unshift({user:username,party:selParty,prov:PROV_NAMES[pid],t:now});
     updateDots();
@@ -1615,6 +1734,10 @@ function startGame(){
   document.getElementById('ubadge').textContent='👤 '+username;
   (async()=>{
     await loadData();await loadCD();updateDots();updateSidebar();
+    await loadProfile(); // önce profili yükle
+    await loadXPFromSupabase(); // XP'yi supabase'den yükle
+    updateXPUI(); // XP UI güncelle
+    renderLevelLeaderboard(); // seviye sıralamasını yükle
     await initMapData();
     resizeCanvas();
     if(mapImg.complete) buildOffscreens();
@@ -1625,6 +1748,8 @@ function startGame(){
 document.getElementById('uname').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
 window.addEventListener('resize',()=>{resizeCanvas();if(baseCanvas)draw();});
 setInterval(()=>{if(baseCanvas)updateSidebar();},5000);
+// Seviye sıralamasını her dakika güncelle
+setInterval(()=>{ if(typeof username!=='undefined'&&username) renderLevelLeaderboard(); },60000);
 
 // ── ADMIN MODE ──
 const ADMIN_PASS='admin123';
@@ -1955,6 +2080,244 @@ function rebuildProvinces(){
   },50);
 }
 
+// ═══════════════════════════════════════════════════════
+// XP / SEVİYE SİSTEMİ
+// ═══════════════════════════════════════════════════════
+
+const XP_LEVEL_TITLES = [
+  'Acemi', 'Pikselci', 'Çizici', 'Sanatçı', 'Uzman',
+  'Usta', 'Virtüöz', 'Şampiyon', 'Efsane', 'Titan',
+  'İmparator', 'Tanrısal', 'Ölümsüz', 'Yaratıcı', 'Evrensel',
+  'Kozmik', 'Sonsuz', 'Mutlak', 'Aşkın', 'Eşsiz',
+  'Gizemli', 'Kadim', 'Ruhsal', 'Ateşli', 'Kristal',
+  'Altın', 'Gümüş', 'Platin', 'Elmas', 'Kahraman'
+];
+
+const XP_REWARDS = {
+  5:  { icon: '🖼️', name: 'Özel Avatar Çerçevesi (Altın Halkası)', frame: 'gold' },
+  10: { icon: '🏅', name: 'Yeni Profil Rozeti (Piksel Madalyası)', badge: 'pixel_medal' },
+  15: { icon: '✨', name: 'Özel İsim Rengi (Mor Gradyan)', nameColor: 'purple' },
+  20: { icon: '💎', name: 'Nadir Avatar Çerçevesi (Gökkuşağı)', frame: 'rainbow' },
+  25: { icon: '👑', name: 'Özel Unvan: "Piksel Efendisi"', title: 'Piksel Efendisi' }
+};
+
+// Her seviye için gereken kümülatif XP
+function xpForLevel(lvl){
+  // 1: 0 XP (başlangıç), her seviye bir öncekinden %20 daha fazla
+  // LV1→LV2: 10, LV2→LV3: 25, LV3→LV4: 50, LV4→LV5: 100 ...
+  if(lvl <= 1) return 0;
+  // Kümülatif XP: sum of floor(10 * 1.5^(i-1)) for i=1 to lvl-1
+  let total = 0;
+  for(let i = 1; i < lvl; i++){
+    total += Math.floor(10 * Math.pow(1.5, i - 1));
+  }
+  return total;
+}
+
+function xpNeededForNextLevel(lvl){
+  return xpForLevel(lvl + 1) - xpForLevel(lvl);
+}
+
+function getLevelFromXP(xp){
+  let lvl = 1;
+  while(xpForLevel(lvl + 1) <= xp) lvl++;
+  return lvl;
+}
+
+function getLevelTitle(lvl){
+  return XP_LEVEL_TITLES[Math.min(lvl - 1, XP_LEVEL_TITLES.length - 1)] || 'Efsanevi';
+}
+
+function saveXPData(){
+  try{
+    localStorage.setItem('pv_xp_' + username, JSON.stringify({
+      xp: profileData.xp || 0,
+      level: profileData.level || 1
+    }));
+  }catch(e){}
+}
+
+async function syncXPToSupabase(){
+  try{
+    await supabase.from('user_levels').upsert({
+      username: username,
+      xp: profileData.xp || 0,
+      level: profileData.level || 1,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'username' });
+  }catch(e){ /* sessiz hata */ }
+}
+
+async function loadXPFromSupabase(){
+  try{
+    const {data, error} = await supabase.from('user_levels')
+      .select('xp,level').eq('username', username).limit(1);
+    if(!error && data && data.length > 0){
+      profileData.xp = data[0].xp || 0;
+      profileData.level = data[0].level || 1;
+      saveProfile();
+      saveXPData();
+      return;
+    }
+  }catch(e){}
+  // localStorage yedek
+  try{
+    const raw = localStorage.getItem('pv_xp_' + username);
+    if(raw){
+      const d = JSON.parse(raw);
+      profileData.xp = d.xp || 0;
+      profileData.level = d.level || 1;
+    }
+  }catch(e){}
+}
+
+function gainXP(amount){
+  const prevLevel = profileData.level || 1;
+  profileData.xp = (profileData.xp || 0) + amount;
+  const newLevel = getLevelFromXP(profileData.xp);
+  profileData.level = newLevel;
+
+  // XP kaydet
+  saveXPData();
+  // Supabase'e async gönder (bloklamaz)
+  syncXPToSupabase();
+
+  // Seviye atladıysa bildirim
+  if(newLevel > prevLevel){
+    for(let lv = prevLevel + 1; lv <= newLevel; lv++){
+      showLevelUpNotification(lv);
+    }
+  }
+
+  // UI güncelle
+  updateXPUI();
+}
+
+let _lvlUpQueue = [];
+let _lvlUpShowing = false;
+
+function showLevelUpNotification(lv){
+  _lvlUpQueue.push(lv);
+  if(!_lvlUpShowing) processLevelUpQueue();
+}
+
+function processLevelUpQueue(){
+  if(_lvlUpQueue.length === 0){ _lvlUpShowing = false; return; }
+  _lvlUpShowing = true;
+  const lv = _lvlUpQueue.shift();
+  const reward = XP_REWARDS[lv];
+  const title = getLevelTitle(lv);
+
+  const notif = document.getElementById('levelup-notif');
+  const lvEl = document.getElementById('levelup-lv');
+  const titleEl = document.getElementById('levelup-title');
+  const rewardEl = document.getElementById('levelup-reward');
+
+  lvEl.textContent = 'LV ' + lv;
+  titleEl.textContent = title;
+  rewardEl.textContent = reward ? reward.icon + ' ' + reward.name : '';
+
+  notif.classList.remove('show');
+  void notif.offsetWidth; // reflow
+  notif.classList.add('show');
+
+  setTimeout(() => {
+    notif.classList.remove('show');
+    setTimeout(processLevelUpQueue, 300);
+  }, 4000);
+}
+
+function updateXPUI(){
+  const xp = profileData.xp || 0;
+  const lvl = profileData.level || 1;
+  const curLvlXP = xpForLevel(lvl);
+  const nextLvlXP = xpForLevel(lvl + 1);
+  const needed = nextLvlXP - curLvlXP;
+  const progress = needed > 0 ? Math.min(100, Math.round(((xp - curLvlXP) / needed) * 100)) : 100;
+
+  // Profile button badge
+  const badge = document.getElementById('pb-level-badge');
+  if(badge) badge.textContent = 'Lv ' + lvl;
+  const bar = document.getElementById('pb-xp-bar');
+  if(bar) bar.style.width = progress + '%';
+}
+
+function renderLevelPanel(){
+  const xp = profileData.xp || 0;
+  const lvl = profileData.level || 1;
+  const title = getLevelTitle(lvl);
+  const curLvlXP = xpForLevel(lvl);
+  const nextLvlXP = xpForLevel(lvl + 1);
+  const needed = nextLvlXP - curLvlXP;
+  const earned = xp - curLvlXP;
+  const progress = needed > 0 ? Math.min(100, Math.round((earned / needed) * 100)) : 100;
+
+  // Ödüller listesi (tüm 5'in katlarını göster, max lv 25)
+  const rewardKeys = [5, 10, 15, 20, 25];
+  const rewardsHTML = rewardKeys.map(rlv => {
+    const r = XP_REWARDS[rlv];
+    const isEarned = lvl >= rlv;
+    return `<div class="pc-reward-item${isEarned ? ' earned' : ''}">
+      <div class="pc-reward-lv">Lv${rlv}</div>
+      <div class="pc-reward-icon">${r.icon}</div>
+      <div class="pc-reward-name">${r.name}</div>
+      ${isEarned ? '<div class="pc-reward-check">✓</div>' : ''}
+    </div>`;
+  }).join('');
+
+  document.getElementById('pc-level-card').innerHTML = `
+    <div class="pc-lv-header">
+      <div>
+        <div class="pc-lv-num">LV ${lvl}</div>
+        <div class="pc-lv-title">${title}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="pc-lv-xp">${xp.toLocaleString('tr-TR')} XP</div>
+        <div style="font-size:.58rem;color:var(--muted);margin-top:.1rem">Sonraki: ${nextLvlXP.toLocaleString('tr-TR')} XP</div>
+      </div>
+    </div>
+    <div class="pc-lv-bar-wrap"><div class="pc-lv-bar" style="width:${progress}%"></div></div>
+    <div class="pc-lv-legend">
+      <span>${earned.toLocaleString('tr-TR')} / ${needed.toLocaleString('tr-TR')} XP</span>
+      <span>${progress}%</span>
+    </div>
+    <div style="font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:.1rem">🎁 Seviye Ödülleri</div>
+    <div class="pc-lv-rewards">${rewardsHTML}</div>
+  `;
+}
+
+async function renderLevelLeaderboard(){
+  const el = document.getElementById('level-leaderboard');
+  if(!el) return;
+  try{
+    const {data, error} = await supabase.from('user_levels')
+      .select('username,xp,level')
+      .order('xp', { ascending: false })
+      .limit(10);
+    if(error || !data || data.length === 0){
+      el.innerHTML = '<div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.4rem 0">Henüz kimse yok.</div>';
+      return;
+    }
+    el.innerHTML = data.map((row, i) => {
+      const pos = i + 1;
+      const posIcon = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
+      const initials = (row.username || '?').slice(0, 2).toUpperCase();
+      const isMe = row.username === username;
+      return `<div class="lvl-rank-row" ${isMe ? 'style="background:rgba(124,106,255,.1);border-radius:8px;"' : ''}>
+        <div class="lvl-rank-pos">${posIcon}</div>
+        <div class="lvl-rank-av">${initials}</div>
+        <div class="lvl-rank-name">${row.username}${isMe ? ' <span style="font-size:.55rem;color:var(--accent)">(sen)</span>' : ''}</div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
+          <div class="lvl-rank-lv">Lv ${row.level || 1}</div>
+          <div class="lvl-rank-xp">${(row.xp || 0).toLocaleString('tr-TR')} XP</div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){
+    el.innerHTML = '<div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.4rem 0">Yüklenemedi.</div>';
+  }
+}
+
 // ── PROFILE ──
 const FRAMES=[
   {id:'none',   label:'Yok',    style:'background:linear-gradient(135deg,#7c6aff,#c084fc)'},
@@ -1970,7 +2333,7 @@ const FRAME_BORDERS={
   none:'#7c6aff',gold:'#f59e0b',red:'#e50000',green:'#02be01',
   cyan:'#00d3dd',pink:'#ff54b2',dark:'#5a5a80',rainbow:'#e59500'
 };
-let profileData={name:'',photo:'',frame:'none'};
+let profileData={name:'',photo:'',frame:'none',xp:0,level:1};
 
 function loadProfile(){
   try{const d=localStorage.getItem('pv_profile');if(d)profileData=JSON.parse(d);}catch(e){}
@@ -2029,6 +2392,7 @@ function switchProfileTab(tab){
   document.getElementById('pcpanel-'+tab).classList.add('active');
   if(tab==='stats') renderProfileStats();
   if(tab==='ayarlar') renderProfileSettings();
+  if(tab==='seviye') renderLevelPanel();
 }
 
 function renderProfileStats(){
@@ -2209,6 +2573,7 @@ function openProfileModal(){
   });
   // Set to profil tab by default
   switchProfileTab('profil');
+  updateXPUI();
   document.getElementById('profile-modal').classList.add('open');
 }
 function closeProfileModal(){
