@@ -1127,10 +1127,10 @@ function _generateToken(val) {
 }
 
 function _validateToken(val, token) {
-  // Mevcut ve bir önceki dakika slotu için kontrol et
+  // Mevcut ve önceki 2 dakika slotu için kontrol et (dakika sınırında false-positive önleme)
   const SALT = 'pv_' + navigator.userAgent.length + '_salt_9f2k';
   const slot = Math.floor(Date.now() / 60000);
-  for (let d = 0; d <= 1; d++) {
+  for (let d = 0; d <= 2; d++) {
     const expected = btoa(SALT + '|' + val + '|' + (slot - d)).replace(/=/g,'');
     if (expected === token) return true;
   }
@@ -1146,10 +1146,17 @@ function _setPixLeft(newVal, skipValidation) {
 
 function _getPixLeft() {
   // Token geçersizse (manipüle edilmişse) sıfırla
+  // Not: Sunucudan gelen değer zaten kontrol ediliyor; token sadece açık konsol manipülasyonunu engeller
   if (!_validateToken(_pixLeftInternal, _pixLeftToken)) {
-    console.warn('[AntiCheat] pixLeft token geçersiz, sıfırlanıyor.');
-    _pixLeftInternal = 0;
-    _pixLeftToken = _generateToken(0);
+    // Token süresi dolmuş olabilir — yenile ama sıfırlama
+    const currentVal = _pixLeftInternal;
+    _pixLeftToken = _generateToken(currentVal);
+    // Gerçek manipülasyon: değer 0-PIXEL_LIMIT dışındaysa sıfırla
+    if (currentVal < 0 || currentVal > PIXEL_LIMIT || !Number.isInteger(currentVal)) {
+      console.warn('[AntiCheat] pixLeft token geçersiz, sıfırlanıyor.');
+      _pixLeftInternal = 0;
+      _pixLeftToken = _generateToken(0);
+    }
   }
   return _pixLeftInternal;
 }
@@ -1168,6 +1175,14 @@ Object.defineProperty(window, 'pixLeft', {
   },
   configurable: false
 });
+
+// Token her 30 saniyede bir yenilenir — dakika sınırında sıfırlanma önlenir
+setInterval(() => {
+  const cur = _pixLeftInternal;
+  if (cur >= 0 && cur <= PIXEL_LIMIT && Number.isInteger(cur)) {
+    _pixLeftToken = _generateToken(cur);
+  }
+}, 30000);
 // ─────────────────────────────────────────────────────────────────────
 
 let username='',selParty=0,cdEnd=0,cdTick=null;
