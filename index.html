@@ -1145,13 +1145,10 @@ function _setPixLeft(newVal, skipValidation) {
 }
 
 function _getPixLeft() {
-  // Token geçersizse (manipüle edilmişse) sıfırla
-  // Not: Sunucudan gelen değer zaten kontrol ediliyor; token sadece açık konsol manipülasyonunu engeller
   if (!_validateToken(_pixLeftInternal, _pixLeftToken)) {
-    // Token süresi dolmuş olabilir — yenile ama sıfırlama
+    // Token süresi dolmuş olabilir — yenile ama gerçek manipülasyon değilse sıfırlama
     const currentVal = _pixLeftInternal;
     _pixLeftToken = _generateToken(currentVal);
-    // Gerçek manipülasyon: değer 0-PIXEL_LIMIT dışındaysa sıfırla
     if (currentVal < 0 || currentVal > PIXEL_LIMIT || !Number.isInteger(currentVal)) {
       console.warn('[AntiCheat] pixLeft token geçersiz, sıfırlanıyor.');
       _pixLeftInternal = 0;
@@ -1461,9 +1458,8 @@ async function handleClick(mx,my){
     _setPixLeft(data.pix_left);
     try{localStorage.setItem('pv_px_'+username,_getPixLeft());}catch(e){}
     profileData.totalPlaced=(profileData.totalPlaced||0)+1;
-    // ── XP KAZANMA ──
+    // ── XP KAZANMA (saveProfile ve saveXPData gainXP içinde çağrılıyor) ──
     gainXP(1);
-    saveProfile();
     actLog.unshift({user:username,party:selParty,prov:PROV_NAMES[pid],t:now});
     updateDots();
     showPopup(`\u2713 ${PARTIES[selParty].name} \u2192 ${PROV_NAMES[pid]}`);
@@ -2192,8 +2188,9 @@ function gainXP(amount){
   const newLevel = getLevelFromXP(profileData.xp);
   profileData.level = newLevel;
 
-  // XP kaydet
+  // Her iki storage'a da kaydet (pv_xp_ ve pv_profile ikisi de güncel kalsın)
   saveXPData();
+  saveProfile();
   // Supabase'e async gönder (bloklamaz)
   syncXPToSupabase();
 
@@ -2351,7 +2348,18 @@ const FRAME_BORDERS={
 let profileData={name:'',photo:'',frame:'none',xp:0,level:1};
 
 function loadProfile(){
-  try{const d=localStorage.getItem('pv_profile');if(d)profileData=JSON.parse(d);}catch(e){}
+  try{
+    const d=localStorage.getItem('pv_profile');
+    if(d){
+      const parsed=JSON.parse(d);
+      // xp ve level alanlarını koru — eski kayıtta yoksa mevcut değerleri sıfırlama
+      const savedXP = profileData.xp || 0;
+      const savedLevel = profileData.level || 1;
+      profileData = parsed;
+      if(profileData.xp === undefined || profileData.xp === null) profileData.xp = savedXP;
+      if(profileData.level === undefined || profileData.level === null) profileData.level = savedLevel;
+    }
+  }catch(e){}
 }
 function saveProfile(){
   try{
