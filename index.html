@@ -24,9 +24,12 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
 .btn{background:var(--accent);color:#fff;border:none;border-radius:9px;padding:.8rem 1.5rem;font-family:'Inter',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:opacity .2s,transform .1s;}
 .btn:hover{opacity:.85;transform:translateY(-1px);}
 #topbar{flex-shrink:0;height:56px;background:var(--surf);border-bottom:1px solid var(--bdr);display:none;align-items:center;padding:0 1.5rem;gap:1.2rem;}
-#topbar h1{font-size:1.05rem;font-weight:800;background:linear-gradient(135deg,#7c6aff,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;}
-.sep{flex:1;}
-#ubadge{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);background:var(--surf2);border:1px solid var(--bdr);border-radius:6px;padding:.3rem .75rem;}
+#topbar h1{font-size:1.05rem;font-weight:800;background:linear-gradient(135deg,#7c6aff,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.sep{flex:1;min-width:0;}
+#ubadge{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);background:var(--surf2);border:1px solid var(--bdr);border-radius:6px;padding:.3rem .75rem;flex-shrink:0;}
+/* Admin butonu hiçbir zaman daraltılıp görünmez hâle gelmesin —
+   dar ekranlarda yer kalmazsa onun yerine başlık (h1) kısalır. */
+#adminbtn{flex-shrink:0;}
 /* pdot used by pixel widget */
 .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 3px var(--accent);transition:all .3s;flex-shrink:0;}
 .pdot.used{background:#252538;box-shadow:none;}
@@ -1259,7 +1262,6 @@ button, [onclick], .pc-frame {
     </div>
   </div>
   <div id="sidebar">
-    <div class="scard"><h3>Genel Sıralama</h3><div id="pbars"></div></div>
     <div class="scard"><h3>🏅 En Yüksek Seviyeler</h3><div id="level-leaderboard"><div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.5rem 0">Yükleniyor...</div></div></div>
     <div class="scard"><h3>Bölge / İl Sonuçları</h3><div id="rlist"></div></div>
     <div class="scard"><h3>Son Hamleler</h3><div id="afeed"></div></div>
@@ -2222,11 +2224,6 @@ function globalCounts(){
 }
 function tsince(t){const s=Math.floor((Date.now()-t)/1000);return s<60?s+'sn':s<3600?Math.floor(s/60)+'dk':Math.floor(s/3600)+'sa';}
 function updateSidebar(){
-  const gc=globalCounts(),tot=gc.reduce((a,b)=>a+b,0)||1;
-  document.getElementById('pbars').innerHTML=PARTIES.map((p,i)=>{
-    const pct=(gc[i]/tot*100).toFixed(1);
-    return `<div class="prow"><div class="prtop"><span class="prname"><span class="prd" style="background:${p.color}"></span>${p.name}</span><span class="prpct">${pct}%</span></div><div class="prbg"><div class="prfill" style="width:${pct}%;background:${p.color}"></div></div></div>`;
-  }).join('');
   const seen=new Set();
   document.getElementById('rlist').innerHTML=REGION_ORDER.map(rid=>{
     const reg=REGIONS[rid];
@@ -2307,7 +2304,11 @@ async function initMapData(){
   PROV_IDS.forEach(pid => { PROV_PIXELS[pid] = []; });
   for(let i=0;i<FLAT_TO_PROV.length;i++){
     const pi = FLAT_TO_PROV[i];
-    if(pi>=0) PROV_PIXELS[PROV_IDS[pi]].push(i);
+    // Sınır (WHITE_SET) piksellerini il alanına dahil etme — admin
+    // seçimi (flashProvince), etiket/merkez hesabı ve tıklama mantığı
+    // PROV_PIXELS'i temel aldığı için, buradaki sızıntı doğrudan
+    // "komşu ilden parça seçiliyor" hatasına yol açıyordu.
+    if(pi>=0 && !WHITE_SET.has(i)) PROV_PIXELS[PROV_IDS[pi]].push(i);
   }
 
   showPopup('Harita hazır!');
@@ -2417,6 +2418,7 @@ document.getElementById('uname').addEventListener('keydown',e=>{if(e.key==='Ente
     (async()=>{
       await loadData(); updateSidebar();
       await initMapData();
+      recalcAutoCenters();
       resizeCanvas();
       const afterLoad=()=>{
         buildOffscreens();
@@ -2426,6 +2428,24 @@ document.getElementById('uname').addEventListener('keydown',e=>{if(e.key==='Ente
         loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); });
         // IP bağlamasını sessizce güncelle (kayıt yoksa ekle)
         _getClientIP().then(ip=>{ if(ip) _checkAndBindIP(ip, savedName); });
+        // Otomatik girişte de startGame() ile aynı arayüz elemanlarını göster
+        // (admin butonu, sohbet butonu, kenar panel butonu vb.) — normalde
+        // bunlar sadece startGame() çağrıldığında görünür hale geliyordu,
+        // ama otomatik giriş akışı startGame()'i hiç çağırmıyordu.
+        document.getElementById('adminbtn').style.display='';
+        if(typeof loadAdminData==='function') loadAdminData();
+        document.getElementById('chat-btn').style.display='flex';
+        document.getElementById('sidebar-toggle').style.display='flex';
+        if(typeof initSidebarToggle==='function') initSidebarToggle();
+        if(typeof updateProfileBtn==='function') updateProfileBtn();
+        if(typeof loadFactions==='function') loadFactions();
+        if(typeof updateChatFactionTab==='function') updateChatFactionTab();
+        if(typeof loadChat==='function') loadChat();
+        try{
+          if(username){
+            localStorage.setItem('pv_profile_'+username,JSON.stringify(profileData));
+          }
+        }catch(e){}
       };
       if(mapImg.complete) afterLoad();
       else mapImg.onload=afterLoad;
@@ -2436,6 +2456,7 @@ document.getElementById('uname').addEventListener('keydown',e=>{if(e.key==='Ente
     (async()=>{
       await loadData(); updateSidebar();
       await initMapData();
+      recalcAutoCenters();
       resizeCanvas();
       if(mapImg.complete) buildOffscreens();
       else mapImg.onload=()=>{ buildOffscreens(); };
@@ -2661,6 +2682,223 @@ function clearPaintEdits(){
   }
 }
 
+// ── Sınır maskesini 1px (8-yönlü) genişletir ──
+// Amaç: ince/anti-aliased veya tek piksellik boşluğu olan sınır
+// çizgilerini "kapatmak". Bu boşluklar, flood-fill'in iki komşu ilin
+// iç alanını tek bir bağlı bileşen olarak birleştirmesinin ana
+// sebebiydi (bkz. rebuildProvinces açıklaması).
+function dilateBorderMask(mask,W,H){
+  const out=new Uint8Array(mask);
+  for(let r=0;r<H;r++){
+    const rowOff=r*W;
+    for(let c=0;c<W;c++){
+      const f=rowOff+c;
+      if(mask[f]) continue;
+      if((r>0&&mask[f-W])||(r<H-1&&mask[f+W])||(c>0&&mask[f-1])||(c<W-1&&mask[f+1])||
+         (r>0&&c>0&&mask[f-W-1])||(r>0&&c<W-1&&mask[f-W+1])||
+         (r<H-1&&c>0&&mask[f+W-1])||(r<H-1&&c<W-1&&mask[f+W+1])){
+        out[f]=1;
+      }
+    }
+  }
+  return out;
+}
+
+// ── Bir bileşen içinde, belirli bir noktaya en yakın "geçerli"
+// (sınır olmayan, dış alan olmayan ve bileşene ait) pikseli bulur ──
+// İl merkezi (PROV_CENTERS) tam olarak bileşenin içine düşmüyorsa
+// ya da bir sınır pikseline denk geliyorsa kullanılır.
+function findNearestComponentPixel(cx,cy,compSet,isWhite,outside,W,H){
+  const startF=cy*W+cx;
+  if(compSet.has(startF)&&!isWhite[startF]&&!outside[startF]) return startF;
+  const maxR=48;
+  for(let rad=1;rad<=maxR;rad++){
+    const y0=Math.max(0,cy-rad), y1=Math.min(H-1,cy+rad);
+    for(let ny=y0;ny<=y1;ny++){
+      const dy=Math.abs(ny-cy);
+      const x0=Math.max(0,cx-rad), x1=Math.min(W-1,cx+rad);
+      for(let nx=x0;nx<=x1;nx++){
+        if(Math.max(Math.abs(nx-cx),dy)!==rad) continue; // sadece halka kenarı
+        const nf=ny*W+nx;
+        if(compSet.has(nf)&&!isWhite[nf]&&!outside[nf]) return nf;
+      }
+    }
+  }
+  return null;
+}
+
+// ── Bir ilin, verilen bileşen içindeki "tohum" (seed) pikselini bulur ──
+// Öncelik: PROV_CENTERS noktası bileşenin içindeyse onu kullan.
+// Değilse, bileşendeki eski FLAT_TO_PROV verisine göre bu ile ait
+// piksellerin ağırlık merkezini (centroid) bulup en yakın geçerli
+// pikselle eşleştir. Hiçbiri yoksa bileşenin ilk uygun pikseline düş.
+function findProvinceSeed(pid,pixels,compSet,isWhite,outside,W,H){
+  const ctr=PROV_CENTERS[pid];
+  if(ctr){
+    const cf=ctr[1]*W+ctr[0];
+    if(compSet.has(cf)&&!isWhite[cf]&&!outside[cf]) return cf;
+  }
+  const pi=PROV_IDS.indexOf(pid);
+  let sx=0,sy=0,n=0;
+  for(const f of pixels){
+    if(FLAT_TO_PROV[f]===pi){ sx+=f%W; sy+=Math.floor(f/W); n++; }
+  }
+  if(n>0){
+    const found=findNearestComponentPixel(Math.round(sx/n),Math.round(sy/n),compSet,isWhite,outside,W,H);
+    if(found!=null) return found;
+  }
+  for(const f of pixels){ if(!isWhite[f]&&!outside[f]) return f; }
+  return null;
+}
+
+// ── "Sızıntı" sonucu birden fazla ile ait pikseli içeren bir bileşeni
+// güvenli şekilde paylaştırır ──
+// Eski mantık (en çok overlap'e sahip il TÜM bileşeni alır) yerine,
+// karışan illerin kendi merkez noktalarından EŞZAMANLI büyüyen bağlı
+// bileşenler (multi-source BFS / "geodesic" paylaşım) kullanılır.
+// Böylece bir il diğerinin alanını tamamen yutamaz; her piksel kendi
+// merkezine en yakın (bileşen içi en kısa yol) ile atanır.
+function assignByCenterGrowth(pixels,pidList,newFlatToProv,isWhite,outside,W,H){
+  const compSet=new Set(pixels);
+  const visited=new Uint8Array(W*H);
+  const queue=[];
+  pidList.forEach(pid=>{
+    const pi=PROV_IDS.indexOf(pid);
+    if(pi<0) return;
+    const seed=findProvinceSeed(pid,pixels,compSet,isWhite,outside,W,H);
+    if(seed==null) return;
+    if(visited[seed]) return; // iki ilin tohumu çakışırsa ilk gelen kazanır
+    visited[seed]=1;
+    newFlatToProv[seed]=pi;
+    queue.push(seed);
+  });
+  let qi=0;
+  while(qi<queue.length){
+    const f=queue[qi++];
+    const pi=newFlatToProv[f];
+    const r=Math.floor(f/W),c=f%W;
+    for(const[dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){
+      const nr=r+dr,nc=c+dc;
+      if(nr<0||nr>=H||nc<0||nc>=W) continue;
+      const nf=nr*W+nc;
+      if(visited[nf]||!compSet.has(nf)) continue;
+      visited[nf]=1;
+      newFlatToProv[nf]=pi;
+      queue.push(nf);
+    }
+  }
+}
+
+// ── İl için en "derin" iç noktayı bulur (sınırdan en uzak piksel —
+// "pole of inaccessibility" yaklaşımı). Basit centroid yerine bu
+// kullanılır, çünkü centroid; tırnaklı/girintili (concave) il
+// şekillerinde (örn. Bilecik, Osmaniye) kolayca komşu ile veya sınır
+// şeridine denk gelebilir. Etiket/merkez bu noktaya konursa, il ne
+// kadar küçük/eğri olursa olsun her zaman kendi GERÇEK iç alanında
+// kalır. PROV_PIXELS halihazırda WHITE_SET'i dışladığı için burada
+// ekstra sınır kontrolüne gerek yok. ──
+function findInteriorAnchor(pid){
+  const pixels=PROV_PIXELS[pid];
+  if(!pixels||!pixels.length) return null;
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity,sx=0,sy=0;
+  for(const f of pixels){
+    const x=f%IMG_W,y=Math.floor(f/IMG_W);
+    if(x<minX)minX=x; if(x>maxX)maxX=x;
+    if(y<minY)minY=y; if(y>maxY)maxY=y;
+    sx+=x; sy+=y;
+  }
+  const cx=sx/pixels.length, cy=sy/pixels.length;
+  const w=maxX-minX+1, h=maxY-minY+1;
+  // Performans güvenliği: bbox aşırı büyük/seyrekse (örn. çok parçalı
+  // ada+anakara birleşimi) tam mesafe dönüşümü yerine centroid'e en
+  // yakın geçerli piksele düş.
+  if(w*h>3000000){
+    let best=null,bestD=Infinity;
+    for(const f of pixels){
+      const x=f%IMG_W,y=Math.floor(f/IMG_W);
+      const d=(x-cx)*(x-cx)+(y-cy)*(y-cy);
+      if(d<bestD){bestD=d;best=f;}
+    }
+    return best!=null?[best%IMG_W,Math.floor(best/IMG_W)]:null;
+  }
+  const own=new Uint8Array(w*h);
+  for(const f of pixels){
+    const x=(f%IMG_W)-minX, y=Math.floor(f/IMG_W)-minY;
+    own[y*w+x]=1;
+  }
+  // Sınıra bitişik (veya bbox kenarındaki) hücrelerden başlayan çok-
+  // kaynaklı BFS ile her hücrenin "kendi ilinin dışındaki en yakın
+  // hücreye" mesafesini hesapla (basit bir mesafe dönüşümü).
+  const dist=new Int32Array(w*h).fill(-1);
+  const queue=[];
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const i=y*w+x;
+      if(!own[i]) continue;
+      const isEdge = x===0||y===0||x===w-1||y===h-1 ||
+        !own[i-1]||!own[i+1]||!own[i-w]||!own[i+w];
+      if(isEdge){dist[i]=0;queue.push(i);}
+    }
+  }
+  let qi=0,bestI=queue.length?queue[0]:-1,bestDist=0,bestCDist=Infinity;
+  const lcx=cx-minX, lcy=cy-minY;
+  while(qi<queue.length){
+    const i=queue[qi++];
+    const d=dist[i];
+    const x=i%w,y=Math.floor(i/w);
+    const cDist=(x-lcx)*(x-lcx)+(y-lcy)*(y-lcy);
+    if(d>bestDist || (d===bestDist&&cDist<bestCDist)){bestDist=d;bestI=i;bestCDist=cDist;}
+    if(x>0&&own[i-1]&&dist[i-1]===-1){dist[i-1]=d+1;queue.push(i-1);}
+    if(x<w-1&&own[i+1]&&dist[i+1]===-1){dist[i+1]=d+1;queue.push(i+1);}
+    if(y>0&&own[i-w]&&dist[i-w]===-1){dist[i-w]=d+1;queue.push(i-w);}
+    if(y<h-1&&own[i+w]&&dist[i+w]===-1){dist[i+w]=d+1;queue.push(i+w);}
+  }
+  if(bestI<0) return null;
+  const bx=bestI%w, by=Math.floor(bestI/w);
+  return [minX+bx, minY+by];
+}
+
+// ── Admin tarafından elle SABİTLENMEMİŞ (adminCustomCenters'ta olmayan)
+// tüm illerin etiket/merkez noktasını findInteriorAnchor ile yeniden
+// hesaplar. Admin'in elle yaptığı düzeltmeye asla dokunmaz — manuel
+// değer her zaman önceliklidir. ──
+function recalcAutoCenters(){
+  PROV_IDS.forEach(pid=>{
+    if(typeof adminCustomCenters!=='undefined' && adminCustomCenters &&
+       Object.prototype.hasOwnProperty.call(adminCustomCenters,pid)) return;
+    const anchor=findInteriorAnchor(pid);
+    if(anchor) PROV_CENTERS[pid]=anchor;
+  });
+  if(typeof buildLabels==='function' && typeof labelEls!=='undefined') buildLabels();
+}
+
+// ── Birden çok ile ait piksel içeren bir bileşen assignByCenterGrowth
+// ile paylaştırıldıktan SONRA çağrılır: iki ile yeni atanmış piksellerin
+// doğrudan birbirine bitişik kalmasını önlemek için aralarına ince bir
+// "dikiş sınırı" (seam) açar — tıpkı gerçek bir il sınırı gibi. Böylece
+// önceden sızan/birleşen bölge net bir çizgiyle ayrılır; hiçbir piksel
+// aynı anda iki ile de "ait" görünmez. ──
+function cleanComponentSeams(pixels,newFlatToProv,isWhiteOut,W,H){
+  const toBorder=[];
+  for(const f of pixels){
+    const myPi=newFlatToProv[f];
+    if(myPi<0) continue;
+    const r=Math.floor(f/W),c=f%W;
+    for(const[dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){
+      const nr=r+dr,nc=c+dc;
+      if(nr<0||nr>=H||nc<0||nc>=W) continue;
+      const nf=nr*W+nc;
+      const nPi=newFlatToProv[nf];
+      if(nPi>=0 && nPi!==myPi){ toBorder.push(f); break; }
+    }
+  }
+  toBorder.forEach(f=>{
+    newFlatToProv[f]=-1;
+    isWhiteOut[f]=1;
+    WHITE_SET.add(f);
+  });
+}
+
 function rebuildProvinces(){
   showPopup('Rebuilding provinces...');
   setTimeout(()=>{
@@ -2672,11 +2910,14 @@ function rebuildProvinces(){
     const d=imgData.data;
 
     // Classify pixels
-    const isWhite=new Uint8Array(W*H);
+    const isWhiteRaw=new Uint8Array(W*H);
     for(let i=0;i<W*H;i++){
       const p=i*4;
-      if(d[p]>200&&d[p+1]>200&&d[p+2]>200) isWhite[i]=1;
+      if(d[p]>200&&d[p+1]>200&&d[p+2]>200) isWhiteRaw[i]=1;
     }
+    // Sınırı 1px güvenlik payıyla genişlet — ince/kopuk sınır
+    // çizgilerindeki boşluklardan komşu illerin birbirine sızmasını önler.
+    const isWhite=dilateBorderMask(isWhiteRaw,W,H);
 
     // Flood fill from edges to find outside
     const outside=new Uint8Array(W*H);
@@ -2743,12 +2984,11 @@ function rebuildProvinces(){
     for(let i=0;i<W*H;i++){if(isWhite[i]) WHITE_SET.add(i);}
 
     // Rebuild FLAT_TO_PROV
-    // Keep existing province->pixel mapping but update with new regions
-    // Find which province each new region belongs to by checking existing assignments
     const newFlatToProv=new Int16Array(W*H).fill(-1);
-    
-    // For each new region, find which old province has the most overlap
-    Object.entries(labelPixels).forEach(([lbl,pixels])=>{
+
+    // Her bağlı bileşen için: eski FLAT_TO_PROV'a göre hangi il(ler)in
+    // pikseli bu bileşende anlamlı oranda var, ona bak.
+    Object.values(labelPixels).forEach(pixels=>{
       const votes={};
       pixels.forEach(f=>{
         const oldPi=FLAT_TO_PROV[f];
@@ -2759,9 +2999,29 @@ function rebuildProvinces(){
       });
       const entries=Object.entries(votes);
       if(entries.length===0) return;
-      const bestPid=entries.reduce((a,b)=>b[1]>a[1]?b:a)[0];
-      const bestPi=PROV_IDS.indexOf(bestPid);
-      if(bestPi>=0) pixels.forEach(f=>newFlatToProv[f]=bestPi);
+
+      // "Anlamlı" katkı eşiği: en az 25px VEYA bileşenin %3'ü.
+      // Bunun altında kalan eski-il izleri gürültü kabul edilir.
+      const total=pixels.length;
+      const significant=entries.filter(([,cnt])=>cnt>=Math.max(25,total*0.03));
+
+      if(significant.length<=1){
+        // Güvenli durum: bileşen pratikte tek bir ile ait
+        // (kopuk parçalar / adalar bu yolla doğru ile atanır).
+        const bestPid=entries.reduce((a,b)=>b[1]>a[1]?b:a)[0];
+        const bestPi=PROV_IDS.indexOf(bestPid);
+        if(bestPi>=0) pixels.forEach(f=>newFlatToProv[f]=bestPi);
+        return;
+      }
+
+      // Riskli durum: bileşen birden fazla ile ait piksel içeriyor —
+      // bu, sınırda bir sızıntı/birleşme olduğunun işareti.
+      // "Kazanan hepsini alır" yerine, karışan illerin merkezlerinden
+      // eşzamanlı büyüyen bağlı bileşenle bileşeni güvenle paylaştır.
+      assignByCenterGrowth(pixels,significant.map(e=>e[0]),newFlatToProv,isWhite,outside,W,H);
+      // Paylaşım sonrası, iki ile atanan piksellerin birbirine doğrudan
+      // bitişik kalmasını önlemek için arada ince bir sınır şeridi aç.
+      cleanComponentSeams(pixels,newFlatToProv,isWhite,W,H);
     });
 
     // Update global FLAT_TO_PROV and PROV_PIXELS
@@ -2771,13 +3031,41 @@ function rebuildProvinces(){
     });
     for(let f=0;f<W*H;f++){
       const pi=newFlatToProv[f];
-      if(pi>=0) PROV_PIXELS[PROV_IDS[pi]].push(f);
+      if(pi>=0 && !WHITE_SET.has(f)) PROV_PIXELS[PROV_IDS[pi]].push(f);
     }
+
+    // İl merkezlerini (etiket konumlarını) yeni alanlara göre yeniden
+    // hesapla — admin'in elle sabitlediği iller hariç. Böylece her
+    // etiket, küçük/girintili iller dahil, her zaman kendi ilinin
+    // gerçek iç alanına oturur.
+    recalcAutoCenters();
 
     redrawPixelCanvas();
     draw();
     showPopup('Provinces rebuilt! '+curLabel+' regions detected.');
   },50);
+}
+
+// ── Opsiyonel doğrulama yardımcısı (devtools konsolundan çalıştırılabilir) ──
+// Hiçbir mevcut akışı tetiklemez; sadece rebuildProvinces() sonrası
+// sağlık kontrolü için elle çağrılır: validateProvinces()
+function validateProvinces(){
+  const report=[];
+  PROV_IDS.forEach(pid=>{
+    const pixels=PROV_PIXELS[pid]||[];
+    const ctr=PROV_CENTERS[pid];
+    const ctrFlat=ctr?ctr[1]*IMG_W+ctr[0]:-1;
+    const ctrInsideOwn=ctr?FLAT_TO_PROV[ctrFlat]===PROV_IDS.indexOf(pid):false;
+    if(pixels.length===0||!ctrInsideOwn){
+      report.push({pid,pixelCount:pixels.length,centerInsideOwnProvince:ctrInsideOwn});
+    }
+  });
+  if(report.length){
+    console.warn('[validateProvinces] Şüpheli iller:',report);
+  }else{
+    console.log('[validateProvinces] Tüm iller OK görünüyor.');
+  }
+  return report;
 }
 
 // ═══════════════════════════════════════════════════════
