@@ -10,7 +10,7 @@
 :root{--bg:#06060f;--surf:#10101e;--surf2:#191928;--bdr:#222236;--txt:#e8e8f4;--muted:#5a5a80;--accent:#7c6aff;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
-#login{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;}
+#login{position:fixed;inset:0;background:rgba(6,6,15,.85);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:999;transition:opacity .25s;}
 .lbox{background:var(--surf);border:1px solid var(--bdr);border-radius:18px;padding:2.5rem 3rem;width:420px;display:flex;flex-direction:column;gap:1.3rem;}
 .lbox h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#7c6aff,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .lbox p{color:var(--muted);font-size:.9rem;line-height:1.65;}
@@ -1087,10 +1087,11 @@ html, body {
 
 <div id="login">
   <div class="lbox">
-    <h1>🗳 PixelVote</h1>
-    <p>Türkiye'nin seçim haritasını şekillendir.<br>Her <b>3 dakikada</b> bir <b>7 piksel</b> hakkın var.<br>İlin içine tıkla — sınırlara tıklanamaz.</p>
+    <h1 id="login-title">🗳 PixelVote</h1>
+    <p id="login-desc">Türkiye'nin seçim haritasını şekillendir.<br>Her <b>3 dakikada</b> bir <b>7 piksel</b> hakkın var.<br>İlin içine tıkla — sınırlara tıklanamaz.</p>
     <input id="uname" placeholder="Kullanıcı adı seç..." maxlength="20"/>
-    <button class="btn" onclick="startGame()">Haritaya Gir →</button>
+    <div id="login-err" style="color:#ef4444;font-size:.78rem;font-family:'JetBrains Mono',monospace;min-height:1rem;line-height:1.5;"></div>
+    <button class="btn" id="login-btn" onclick="startGame()">Haritaya Gir →</button>
   </div>
 </div>
 
@@ -1858,6 +1859,11 @@ canvas.addEventListener('touchend',e=>{
 });
 
 async function handleClick(mx,my){
+  // Kayıt olmadan piksel basılamaz — kayıt ekranını göster
+  if(!username){
+    showRegisterPrompt(mx,my);
+    return;
+  }
   const flat=canvasToFlat(mx,my);
   if(flat<0) return;
   if(WHITE_SET.has(flat)){showPopup('⚠ Sınıra tıkladın — ilin içine tıkla!');return;}
@@ -2218,28 +2224,135 @@ async function initMapData(){
   showPopup('Harita hazır!');
 }
 
-function startGame(){
+// Kayıt modalını aç (pixel basmaya çalışınca)
+let _pendingClickMx=null, _pendingClickMy=null;
+function showRegisterPrompt(mx, my){
+  _pendingClickMx=mx; _pendingClickMy=my;
+  document.getElementById('login-title').textContent='✏ Kullanıcı Adı Seç';
+  document.getElementById('login-desc').innerHTML='Piksel basmak için bir kullanıcı adı seç.<br>İstediğin zaman değiştirebilirsin.';
+  document.getElementById('login-btn').textContent='Devam Et →';
+  document.getElementById('login-err').textContent='';
+  document.getElementById('login').style.display='flex';
+  setTimeout(()=>document.getElementById('uname').focus(), 80);
+}
+
+function _activateUser(v){
+  username=v;
+  try{ localStorage.setItem('pv_uname', v); }catch(e){}
+  document.getElementById('login').style.display='none';
+  document.getElementById('ubadge').textContent='👤 '+username;
+  startRealtimeSync();
+  loadCD(); updateDots();
+  loadProfile();
+  loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); });
+}
+
+// IP adresini al (ipify - ücretsiz, CORS destekli)
+async function _getClientIP(){
+  try{
+    const r=await fetch('https://api.ipify.org?format=json',{cache:'force-cache'});
+    const d=await r.json();
+    return d.ip||null;
+  }catch(e){ return null; }
+}
+
+// IP → username bağlamasını Supabase'de kontrol et / kaydet
+async function _checkAndBindIP(ip, requestedName){
+  if(!ip) return {ok:true}; // IP alınamazsa geçir (engelleme yapma)
+  try{
+    // Bu IP daha önce kayıt olmuş mu?
+    const {data,error}=await supabase
+      .from('ip_users')
+      .select('username')
+      .eq('ip', ip)
+      .maybeSingle();
+    if(error) return {ok:true}; // Supabase hatası → geçir
+    if(data){
+      // IP kayıtlı — aynı isim mi?
+      if(data.username===requestedName) return {ok:true};
+      // Farklı isim → reddet
+      return {ok:false, bound: data.username};
+    }
+    // IP henüz kayıtlı değil → kaydet
+    await supabase.from('ip_users').insert({ip, username:requestedName});
+    return {ok:true};
+  }catch(e){ return {ok:true}; }
+}
+
+async function startGame(){
   const v=document.getElementById('uname').value.trim();
   if(!v){document.getElementById('uname').style.borderColor='#e63946';return;}
-  username=v;
-  document.getElementById('login').style.display='none';
-  document.getElementById('topbar').style.display='flex';
-  document.getElementById('main').style.display='grid';
-  document.getElementById('ubadge').textContent='👤 '+username;
-  (async()=>{
-    await loadData();await loadCD();updateDots();updateSidebar();
-    await loadProfile(); // önce profili yükle
-    await loadXPFromSupabase(); // XP'yi supabase'den yükle
-    updateXPUI(); // XP UI güncelle
-    renderLevelLeaderboard(); // seviye sıralamasını yükle
-    await initMapData();
-    resizeCanvas();
-    if(mapImg.complete) buildOffscreens();
-    else mapImg.onload=()=>buildOffscreens();
-    startRealtimeSync();
-  })();
+  const btn=document.getElementById('login-btn');
+  const errEl=document.getElementById('login-err');
+  btn.disabled=true;
+  btn.textContent='Kontrol ediliyor...';
+  errEl.textContent='';
+
+  const ip=await _getClientIP();
+  const check=await _checkAndBindIP(ip, v);
+
+  if(!check.ok){
+    // Bu IP başka bir isimle kayıtlı
+    errEl.textContent='⛔ Bu cihaz zaten "'+check.bound+'" adıyla kayıtlı. Farklı bir isim kullanamazsın.';
+    document.getElementById('uname').value='';
+    document.getElementById('uname').style.borderColor='#e63946';
+    document.getElementById('uname').placeholder=check.bound;
+    btn.disabled=false;
+    btn.textContent='Devam Et →';
+    return;
+  }
+
+  btn.disabled=false;
+  btn.textContent='Devam Et →';
+  _activateUser(v);
+  if(_pendingClickMx!==null){
+    setTimeout(()=>{ window.handleClick(_pendingClickMx,_pendingClickMy); _pendingClickMx=_pendingClickMy=null; },200);
+  }
 }
 document.getElementById('uname').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+
+// Haritayı hemen başlat — login gerekmez
+(function initMapWithoutLogin(){
+  document.getElementById('topbar').style.display='flex';
+  document.getElementById('main').style.display='grid';
+
+  // Daha önce kaydedilmiş kullanıcı adı varsa otomatik giriş yap
+  let savedName='';
+  try{ savedName=localStorage.getItem('pv_uname')||''; }catch(e){}
+
+  if(savedName){
+    // Otomatik giriş — IP uyumu arka planda kontrol edilir
+    username=savedName;
+    document.getElementById('ubadge').textContent='👤 '+username;
+    document.getElementById('uname').value=savedName;
+    (async()=>{
+      await loadData(); updateSidebar();
+      await initMapData();
+      resizeCanvas();
+      const afterLoad=()=>{
+        buildOffscreens();
+        startRealtimeSync();
+        loadCD(); updateDots();
+        loadProfile();
+        loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); });
+        // IP bağlamasını sessizce güncelle (kayıt yoksa ekle)
+        _getClientIP().then(ip=>{ if(ip) _checkAndBindIP(ip, savedName); });
+      };
+      if(mapImg.complete) afterLoad();
+      else mapImg.onload=afterLoad;
+    })();
+  } else {
+    // Misafir olarak haritayı göster
+    document.getElementById('ubadge').textContent='👤 Misafir';
+    (async()=>{
+      await loadData(); updateSidebar();
+      await initMapData();
+      resizeCanvas();
+      if(mapImg.complete) buildOffscreens();
+      else mapImg.onload=()=>{ buildOffscreens(); };
+    })();
+  }
+})();
 window.addEventListener('resize',()=>{resizeCanvas();if(baseCanvas)draw();});
 setInterval(()=>{if(baseCanvas)updateSidebar();},5000);
 // Seviye sıralamasını her dakika güncelle
