@@ -1636,9 +1636,23 @@ function startRealtimeSync(){
   supabase.channel('chat-changes').on(
     'postgres_changes',
     {event:'INSERT',schema:'public',table:'chat_messages',filter:'channel=eq.global'},
-    ()=>{
+    (payload)=>{
       if(document.getElementById('chat-panel').classList.contains('open')&&currentChatTab==='global'){
-        renderChatMessages();
+        const row=payload.new;
+        if(!row) return;
+        const uname=typeof username!=='undefined'?username:'';
+        // Kendi mesajımızı optimistic olarak zaten ekledik, tekrar ekleme
+        if(row.username===uname && Date.now()-new Date(row.created_at).getTime()<5000) return;
+        const entry={user:row.username,text:row.message,t:new Date(row.created_at).getTime(),photo:'',frame:'none'};
+        const isMe=entry.user===uname;
+        const box=document.getElementById('chat-messages');
+        const el=document.createElement('div');
+        el.className='cm '+(isMe?'user':'other');
+        el.appendChild(buildChatAvatar(entry));
+        el.appendChild(buildChatBubble(entry,isMe));
+        box.appendChild(el);
+        box.scrollTop=box.scrollHeight;
+        if(_chatMsgCache) _chatMsgCache._globalKey='';
       }
     }
   ).subscribe();
@@ -3477,10 +3491,7 @@ function updateChatFactionTab(){
   }
 }
 
-// Poll for new messages every 8s (realtime subscription handles instant updates)
-setInterval(()=>{
-  if(document.getElementById('chat-panel').classList.contains('open')) renderChatMessages();
-},8000);
+// Realtime subscription mesajları anlık getiriyor, polling kaldırıldı
 
 // Show chat+sidebar buttons after login
 const _origStartGame2=window.startGame;
