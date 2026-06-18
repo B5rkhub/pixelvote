@@ -30,6 +30,20 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
 /* Admin butonu hiçbir zaman daraltılıp görünmez hâle gelmesin —
    dar ekranlarda yer kalmazsa onun yerine başlık (h1) kısalır. */
 #adminbtn{flex-shrink:0;}
+#online-badge{
+  display:flex;align-items:center;gap:.4rem;
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;
+  color:var(--muted);background:var(--surf2);
+  border:1px solid var(--bdr);border-radius:6px;
+  padding:.3rem .75rem;flex-shrink:0;
+  transition:color .3s;
+}
+#online-badge .ob-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#22c55e;box-shadow:0 0 5px #22c55e;
+  flex-shrink:0;animation:blink-dot 2s infinite;
+}
+#online-badge .ob-count{color:var(--txt);font-weight:700;}
 /* pdot used by pixel widget */
 .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 3px var(--accent);transition:all .3s;flex-shrink:0;}
 .pdot.used{background:#252538;box-shadow:none;}
@@ -416,9 +430,21 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
 .pi{display:flex;justify-content:space-between;align-items:center;padding:.28rem .4rem;border-bottom:1px solid var(--bdr);font-size:.7rem;}
 .pi:last-child{border-bottom:none;}
 .pbadge{font-size:.6rem;font-family:'JetBrains Mono',monospace;padding:.1rem .4rem;border-radius:3px;font-weight:700;color:#fff;}
-.af{font-size:.68rem;font-family:'JetBrains Mono',monospace;color:var(--muted);padding:.22rem 0;border-bottom:1px solid var(--bdr);line-height:1.5;}
+.af{display:flex;align-items:center;gap:.45rem;font-size:.68rem;font-family:'JetBrains Mono',monospace;color:var(--muted);padding:.3rem 0;border-bottom:1px solid var(--bdr);line-height:1.4;min-width:0;}
 .af:last-child{border-bottom:none;}
 .af span{color:var(--txt);}
+.af-color{width:10px;height:10px;border-radius:3px;flex-shrink:0;border:1px solid rgba(255,255,255,0.12);}
+.af-user{color:var(--txt);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px;flex-shrink:0;}
+.af-prov{color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
+.af-time{color:var(--muted);flex-shrink:0;font-size:.58rem;}
+.af-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 5px #10b981;animation:blink-dot 1.8s ease-in-out infinite;margin-left:.3rem;vertical-align:middle;}
+#afeed-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+#afeed-header h3{margin-bottom:0;}
+#afeed{max-height:180px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent;}
+#afeed::-webkit-scrollbar{width:3px;}
+#afeed::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px;}
+@keyframes af-slide-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.af.new{animation:af-slide-in .25s ease;}
 #pixel-widget{
   position:absolute;
   top:10px;left:50%;transform:translateX(-50%);
@@ -772,6 +798,8 @@ button, [onclick], .pc-frame {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  #online-badge { font-size: .6rem; padding: .18rem .45rem; gap: .3rem; }
+  #online-badge .ob-dot { width: 6px; height: 6px; }
   #adminbtn { font-size: .6rem !important; padding: .25rem .5rem !important; }
 
   /* ── Ana layout ── */
@@ -1056,7 +1084,9 @@ button, [onclick], .pc-frame {
   .scard h3 { font-size: .58rem; }
   .prtop { font-size: .72rem; }
   .pi { font-size: .65rem; }
-  .af { font-size: .62rem; }
+  .af { font-size: .6rem; }
+  .af-user { max-width: 58px; }
+  .af-color { width: 8px; height: 8px; }
   .lvl-rank-row { padding: .35rem; }
   .lvl-rank-name { font-size: .68rem; }
 
@@ -1142,6 +1172,11 @@ button, [onclick], .pc-frame {
   <h1>🗳 PixelVote — Türkiye</h1>
 
   <div class="sep"></div>
+  <div id="online-badge" title="Son 5 dakikada aktif oyuncular">
+    <span class="ob-dot"></span>
+    <span class="ob-count" id="online-count">—</span>
+    <span>çevrimiçi</span>
+  </div>
   <div id="ubadge"></div>
   <button id="adminbtn" class="btn" style="font-size:.7rem;padding:.3rem .7rem;background:#dc2626;display:none" onclick="toggleAdmin()">⚙ Admin</button>
 </div>
@@ -1264,7 +1299,13 @@ button, [onclick], .pc-frame {
   <div id="sidebar">
     <div class="scard"><h3>🏅 En Yüksek Seviyeler</h3><div id="level-leaderboard"><div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.5rem 0">Yükleniyor...</div></div></div>
     <div class="scard"><h3>Bölge / İl Sonuçları</h3><div id="rlist"></div></div>
-    <div class="scard"><h3>Son Hamleler</h3><div id="afeed"></div></div>
+    <div class="scard">
+      <div id="afeed-header">
+        <h3 style="margin-bottom:0">⚡ Son Hamleler<span class="af-live-dot" title="Canlı"></span></h3>
+        <span id="afeed-count" style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted)"></span>
+      </div>
+      <div id="afeed"></div>
+    </div>
   </div>
 </div>
 <div id="popup"></div>
@@ -2014,7 +2055,9 @@ async function handleClick(mx,my){
     profileData.totalPlaced=(profileData.totalPlaced||0)+1;
     // ── XP KAZANMA (saveProfile ve saveXPData gainXP içinde çağrılıyor) ──
     gainXP(1);
-    actLog.unshift({user:username,party:selParty,prov:PROV_NAMES[pid],t:now});
+    actLog.unshift({user:username,party:selParty,color:PARTIES[selParty].color,prov:PROV_NAMES[pid],t:now});
+    if(actLog.length > ACT_LOG_MAX) actLog.length = ACT_LOG_MAX;
+    renderActFeed(true);
     updateDots();
     showPopup(`\u2713 ${PARTIES[selParty].name} \u2192 ${PROV_NAMES[pid]}`);
     if(!cdTick) startCooldown();
@@ -2164,7 +2207,7 @@ async function loadData(){
   }catch(e){
     try{const d=localStorage.getItem('pv3_data');if(d)pixData=JSON.parse(d);}catch(e2){}
   }
-  try{const a=localStorage.getItem('pv3_act');if(a)actLog=JSON.parse(a);}catch(e){}
+  try{const a=localStorage.getItem('pv3_act');if(a){actLog=JSON.parse(a);renderActFeed(false);}}catch(e){}
 }
 function startRealtimeSync(){
   supabase.channel('pixels-changes').on(
@@ -2182,6 +2225,14 @@ function startRealtimeSync(){
         const pctx=pixelCanvas.getContext('2d');
         pctx.fillStyle=PARTIES[row.party].color;
         pctx.fillRect(row.flat%IMG_W,Math.floor(row.flat/IMG_W),1,1);
+      }
+      // ── Son Hamleler feed: başkasının hareketlerini de göster ──
+      if(row.username && row.username !== username){
+        const provName = (typeof PROV_NAMES !== 'undefined' && PROV_NAMES[row.province]) ? PROV_NAMES[row.province] : row.province;
+        const col = PARTIES[row.party] ? PARTIES[row.party].color : '#888';
+        actLog.unshift({user:row.username, party:row.party, color:col, prov:provName, t:Date.now()});
+        if(actLog.length > ACT_LOG_MAX) actLog.length = ACT_LOG_MAX;
+        renderActFeed(true);
       }
       draw();updateSidebar();
     }
@@ -2223,6 +2274,34 @@ function globalCounts(){
   return c;
 }
 function tsince(t){const s=Math.floor((Date.now()-t)/1000);return s<60?s+'sn':s<3600?Math.floor(s/60)+'dk':Math.floor(s/3600)+'sa';}
+
+// ── Son Hamleler feed renderer ──
+const ACT_LOG_MAX = 20;
+function renderActFeed(highlightFirst){
+  const feed = document.getElementById('afeed');
+  const countEl = document.getElementById('afeed-count');
+  if(!feed) return;
+  if(!actLog.length){
+    feed.innerHTML = '<div style="font-size:.65rem;color:var(--muted);padding:.3rem 0">Henüz hamle yok...</div>';
+    if(countEl) countEl.textContent = '';
+    return;
+  }
+  const items = actLog.slice(0, ACT_LOG_MAX);
+  if(countEl) countEl.textContent = items.length + ' kayıt';
+  feed.innerHTML = items.map((a, i) => {
+    const col = a.color || (PARTIES[a.party] ? PARTIES[a.party].color : '#888');
+    return `<div class="af${highlightFirst && i===0 ? ' new' : ''}">` +
+      `<span class="af-color" style="background:${col}"></span>` +
+      `<span class="af-user" title="${a.user}">${a.user}</span>` +
+      `<span style="color:var(--muted);flex-shrink:0">→</span>` +
+      `<span class="af-prov" title="${a.prov}">${a.prov}</span>` +
+      `<span class="af-time">${tsince(a.t)}</span>` +
+      `</div>`;
+  }).join('');
+}
+
+// Zaman etiketlerini her 30sn'de bir tazele (yeni sorgu yapmadan)
+setInterval(()=>{ if(actLog.length) renderActFeed(false); }, 30000);
 function updateSidebar(){
   const seen=new Set();
   document.getElementById('rlist').innerHTML=REGION_ORDER.map(rid=>{
@@ -2237,9 +2316,7 @@ function updateSidebar(){
     }).join('');
     return `<div class="rblock"><div class="rhdr" style="background:${reg.color}22;color:${reg.color}"><span>${reg.label}</span><span style="opacity:.6;font-size:.58rem">${provs.length} il</span></div>${items}</div>`;
   }).join('');
-  document.getElementById('afeed').innerHTML=actLog.length
-    ?actLog.slice(0,12).map(a=>`<div class="af"><span>${a.user}</span> → <span style="color:${PARTIES[a.party].color}">${PARTIES[a.party].name}</span> / ${a.prov} <span style="opacity:.4">${tsince(a.t)}</span></div>`).join('')
-    :`<div class="af" style="color:var(--muted)">Henüz hamle yok...</div>`;
+  renderActFeed();
 }
 let ptmo;
 function showPopup(msg){const el=document.getElementById('popup');el.textContent=msg;el.classList.add('show');clearTimeout(ptmo);ptmo=setTimeout(()=>el.classList.remove('show'),2800);}
@@ -4766,9 +4843,29 @@ setInterval(()=>{
   }catch(e){}
 }, 800);
 
-// Initialize on load
-loadPixelEventState();
-resizeRippleCanvas();
+// ── ÇEVRİMİÇİ OYUNCU SAYACI ──
+// user_levels.updated_at son 5 dk içinde güncellenenleri sayar
+// (syncXPToSupabase zaten her pixel hamlesinde bunu güncelliyor)
+async function updateOnlineCount(){
+  try{
+    const since=new Date(Date.now()-5*60*1000).toISOString();
+    const {count,error}=await supabase
+      .from('user_levels')
+      .select('username',{count:'exact',head:true})
+      .gte('updated_at',since);
+    if(!error && count!=null){
+      document.getElementById('online-count').textContent=count;
+    }
+  }catch(e){}
+}
+
+// Sayfa yüklenince ve her 30 sn'de bir güncelle
+updateOnlineCount();
+setInterval(updateOnlineCount, 30000);
+
+// Kullanıcı pixel koyduğunda anında kendi varlığını da güncelle
+// syncXPToSupabase zaten updated_at gönderiyor — ekstra iş yok.
+
 </script>
 </body>
 </html>
