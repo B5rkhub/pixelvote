@@ -695,6 +695,151 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
 .lvl-rank-xp{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted);}
+
+/* ══════════════════════════════════════
+   MOBİL DESTEK — @media max-width:768px
+══════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Login kutusu tam genişlik */
+  .lbox {
+    width: calc(100vw - 2rem);
+    padding: 1.8rem 1.4rem;
+    border-radius: 14px;
+  }
+  .lbox h1 { font-size: 1.7rem; }
+
+  /* Topbar küçült */
+  #topbar { padding: 0 .8rem; gap: .6rem; height: 50px; }
+  #topbar h1 { font-size: .82rem; }
+  #ubadge { font-size: .62rem; padding: .2rem .5rem; }
+
+  /* Ana grid — tam ekran canvas */
+  #main { grid-template-columns: 1fr !important; }
+
+  /* Sidebar mobilde gizli, altta drawer olarak */
+  #sidebar {
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 55vh;
+    border-left: none !important;
+    border-top: 1px solid var(--bdr);
+    border-radius: 18px 18px 0 0;
+    transform: translateY(100%) !important;
+    transition: transform .35s cubic-bezier(.4,0,.2,1) !important;
+    z-index: 60;
+  }
+  #sidebar.mobile-open {
+    transform: translateY(0) !important;
+  }
+  #sidebar.hidden {
+    transform: translateY(100%) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Sidebar toggle — mobilde alt orta */
+  #sidebar-toggle {
+    top: auto !important;
+    bottom: 0 !important;
+    right: 50% !important;
+    transform: translateX(50%) !important;
+    width: 60px !important;
+    height: 22px !important;
+    border-radius: 8px 8px 0 0 !important;
+    border-right: 1px solid var(--bdr) !important;
+    border-bottom: none !important;
+  }
+
+  /* Profile butonu — sol üst, daha küçük */
+  #faction-btn {
+    top: 58px !important;
+    left: 8px !important;
+  }
+  #profile-btn {
+    padding: .3rem .5rem;
+    border-radius: 10px;
+  }
+  .pb-avatar { width: 26px; height: 26px; font-size: .7rem; }
+  #profile-btn .pb-name { font-size: .6rem; max-width: 70px; }
+  #profile-btn .pb-pix { font-size: .52rem; }
+
+  /* Zoom butonları — sağ alt */
+  #zbtn {
+    bottom: 70px !important;
+    left: auto !important;
+    right: 8px !important;
+  }
+  .zb { width: 36px !important; height: 36px !important; font-size: 1rem !important; }
+
+  /* Piksel toolbar — alt orta, her zaman açık */
+  #ptoolbar {
+    bottom: 8px !important;
+    right: 50% !important;
+    transform: translateX(50%) !important;
+    left: auto !important;
+    max-width: calc(100vw - 16px) !important;
+    border-radius: 20px !important;
+  }
+  #ptoolbar.expanded { max-width: calc(100vw - 16px) !important; }
+
+  /* Piksel widget — üst orta, küçük */
+  #pixel-widget {
+    top: 58px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    padding: .2rem .5rem;
+    border-radius: 8px;
+  }
+  #pixel-dots-wrap { max-width: 100px; gap: 2px; }
+  .pdot { width: 5px; height: 5px; }
+  #pixel-count-row { font-size: .68rem; }
+  #cdlabel { font-size: .55rem; }
+
+  /* Chat butonu — sağ alt (zoom butonlarının üstü) */
+  #chat-btn {
+    bottom: 70px !important;
+    left: 8px !important;
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 1rem !important;
+  }
+
+  /* Chat paneli — neredeyse tam ekran */
+  #chat-panel {
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 65vh !important;
+    border-radius: 18px 18px 0 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+  }
+
+  /* Chat input alanı büyüt — mobil klavye için */
+  #chat-input { font-size: .9rem !important; padding: .6rem .8rem !important; }
+  #chat-send { padding: .6rem .9rem !important; font-size: .9rem !important; }
+
+  /* Faction modal tam ekran */
+  #faction-card {
+    width: calc(100vw - 1rem) !important;
+    max-height: 85vh !important;
+    border-radius: 18px 18px 0 0;
+  }
+  #faction-modal { align-items: flex-end !important; }
+
+  /* Popup konumu */
+  #popup { bottom: 80px !important; font-size: .72rem !important; }
+
+  /* Paint toolbar — mobilde küçük */
+  #paint-toolbar { top: auto !important; bottom: 60px; right: 8px !important; }
+  .ptbtn { font-size: .65rem !important; padding: .3rem .5rem !important; }
+}
 </style>
 </head>
 <body>
@@ -1378,14 +1523,31 @@ canvas.addEventListener('wheel',e=>{
   ox=mx-(mx-ox)*(ns/scale);oy=my-(my-oy)*(ns/scale);scale=ns;clampView();draw();
 },{passive:false});
 let lastT=null;
-canvas.addEventListener('touchstart',e=>{if(e.touches.length===1)lastT={x:e.touches[0].clientX,y:e.touches[0].clientY};});
+let touchMoved=false;
+canvas.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    lastT={x:e.touches[0].clientX,y:e.touches[0].clientY};
+    touchMoved=false;
+  }
+});
 canvas.addEventListener('touchmove',e=>{
   e.preventDefault();
-  if(e.touches.length===1&&lastT){ox+=e.touches[0].clientX-lastT.x;oy+=e.touches[0].clientY-lastT.y;lastT={x:e.touches[0].clientX,y:e.touches[0].clientY};clampView();draw();}
+  if(e.touches.length===1&&lastT){
+    const dx=e.touches[0].clientX-lastT.x, dy=e.touches[0].clientY-lastT.y;
+    if(Math.abs(dx)>4||Math.abs(dy)>4) touchMoved=true;
+    ox+=dx;oy+=dy;
+    lastT={x:e.touches[0].clientX,y:e.touches[0].clientY};
+    clampView();draw();
+  }
 },{passive:false});
 canvas.addEventListener('touchend',e=>{
   lastT=null;
-  if(e.changedTouches.length===1){const t=e.changedTouches[0];const r=canvas.getBoundingClientRect();window.handleClick(t.clientX-r.left,t.clientY-r.top);}
+  // Sadece sürükleme yoksa (tap) piksel koy
+  if(!touchMoved&&e.changedTouches.length===1){
+    const t=e.changedTouches[0];const r=canvas.getBoundingClientRect();
+    window.handleClick(t.clientX-r.left,t.clientY-r.top);
+  }
+  touchMoved=false;
 });
 
 async function handleClick(mx,my){
@@ -3217,20 +3379,32 @@ setInterval(updateProfileBtn,2000);
 
 // ── SIDEBAR TOGGLE ──
 const SIDEBAR_W=290;
+function isMobile(){ return window.innerWidth<=768; }
+
 function toggleSidebar(){
   const sidebar=document.getElementById('sidebar');
   const btn=document.getElementById('sidebar-toggle');
   const pt=document.getElementById('ptoolbar');
-  const hidden=sidebar.classList.toggle('hidden');
-  btn.textContent=hidden?'❮':'❯';
-  btn.style.right=hidden?'0':SIDEBAR_W+'px';
-  if(hidden) pt.classList.add('sidebar-gone');
-  else pt.classList.remove('sidebar-gone');
+  if(isMobile()){
+    const open=sidebar.classList.toggle('mobile-open');
+    btn.textContent=open?'▼':'▲';
+  } else {
+    const hidden=sidebar.classList.toggle('hidden');
+    btn.textContent=hidden?'❮':'❯';
+    btn.style.right=hidden?'0':SIDEBAR_W+'px';
+    if(hidden) pt.classList.add('sidebar-gone');
+    else pt.classList.remove('sidebar-gone');
+  }
 }
 function initSidebarToggle(){
   const btn=document.getElementById('sidebar-toggle');
-  btn.style.right=SIDEBAR_W+'px';
-  btn.textContent='❯';
+  if(isMobile()){
+    btn.textContent='▲';
+    btn.style.right='';
+  } else {
+    btn.style.right=SIDEBAR_W+'px';
+    btn.textContent='❯';
+  }
 }
 
 // ── PALETTE TOGGLE ──
