@@ -30,20 +30,6 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
 /* Admin butonu hiçbir zaman daraltılıp görünmez hâle gelmesin —
    dar ekranlarda yer kalmazsa onun yerine başlık (h1) kısalır. */
 #adminbtn{flex-shrink:0;}
-#online-badge{
-  display:flex;align-items:center;gap:.4rem;
-  font-family:'JetBrains Mono',monospace;font-size:.72rem;
-  color:var(--muted);background:var(--surf2);
-  border:1px solid var(--bdr);border-radius:6px;
-  padding:.3rem .75rem;flex-shrink:0;
-  transition:color .3s;
-}
-#online-badge .ob-dot{
-  width:7px;height:7px;border-radius:50%;
-  background:#22c55e;box-shadow:0 0 5px #22c55e;
-  flex-shrink:0;animation:blink-dot 2s infinite;
-}
-#online-badge .ob-count{color:var(--txt);font-weight:700;}
 /* pdot used by pixel widget */
 .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 3px var(--accent);transition:all .3s;flex-shrink:0;}
 .pdot.used{background:#252538;box-shadow:none;}
@@ -430,21 +416,9 @@ body{background:var(--bg);color:var(--txt);font-family:'Inter',sans-serif;height
 .pi{display:flex;justify-content:space-between;align-items:center;padding:.28rem .4rem;border-bottom:1px solid var(--bdr);font-size:.7rem;}
 .pi:last-child{border-bottom:none;}
 .pbadge{font-size:.6rem;font-family:'JetBrains Mono',monospace;padding:.1rem .4rem;border-radius:3px;font-weight:700;color:#fff;}
-.af{display:flex;align-items:center;gap:.45rem;font-size:.68rem;font-family:'JetBrains Mono',monospace;color:var(--muted);padding:.3rem 0;border-bottom:1px solid var(--bdr);line-height:1.4;min-width:0;}
+.af{font-size:.68rem;font-family:'JetBrains Mono',monospace;color:var(--muted);padding:.22rem 0;border-bottom:1px solid var(--bdr);line-height:1.5;}
 .af:last-child{border-bottom:none;}
 .af span{color:var(--txt);}
-.af-color{width:10px;height:10px;border-radius:3px;flex-shrink:0;border:1px solid rgba(255,255,255,0.12);}
-.af-user{color:var(--txt);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px;flex-shrink:0;}
-.af-prov{color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0;}
-.af-time{color:var(--muted);flex-shrink:0;font-size:.58rem;}
-.af-live-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;box-shadow:0 0 5px #10b981;animation:blink-dot 1.8s ease-in-out infinite;margin-left:.3rem;vertical-align:middle;}
-#afeed-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
-#afeed-header h3{margin-bottom:0;}
-#afeed{max-height:180px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--bdr) transparent;}
-#afeed::-webkit-scrollbar{width:3px;}
-#afeed::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px;}
-@keyframes af-slide-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-.af.new{animation:af-slide-in .25s ease;}
 #pixel-widget{
   position:absolute;
   top:10px;left:50%;transform:translateX(-50%);
@@ -798,8 +772,6 @@ button, [onclick], .pc-frame {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  #online-badge { font-size: .6rem; padding: .18rem .45rem; gap: .3rem; }
-  #online-badge .ob-dot { width: 6px; height: 6px; }
   #adminbtn { font-size: .6rem !important; padding: .25rem .5rem !important; }
 
   /* ── Ana layout ── */
@@ -1084,9 +1056,7 @@ button, [onclick], .pc-frame {
   .scard h3 { font-size: .58rem; }
   .prtop { font-size: .72rem; }
   .pi { font-size: .65rem; }
-  .af { font-size: .6rem; }
-  .af-user { max-width: 58px; }
-  .af-color { width: 8px; height: 8px; }
+  .af { font-size: .62rem; }
   .lvl-rank-row { padding: .35rem; }
   .lvl-rank-name { font-size: .68rem; }
 
@@ -1098,8 +1068,7 @@ button, [onclick], .pc-frame {
 
   /* ── Tüm metin girişleri — iOS otomatik zoom'u önlemek için 16px zorunlu ── */
   .pc-input,
-  .fc-chat-input,
-  #adminname {
+  .fc-chat-input {
     font-size: 16px !important;
   }
 
@@ -1108,10 +1077,6 @@ button, [onclick], .pc-frame {
 
   /* ── cwrap — dinamik viewport yüksekliği (adres çubuğu telafisi) ── */
   #cwrap { height: calc(100dvh - 48px); }
-
-  /* ── Admin modal — küçük ekranlarda taşmasın ── */
-  #adminmodal { padding: 1rem !important; }
-  #adminmodal button { min-height: 44px; }
 }
 
 /* ── Küçük ekranlar (≤480px) ── */
@@ -1172,11 +1137,6 @@ button, [onclick], .pc-frame {
   <h1>🗳 PixelVote — Türkiye</h1>
 
   <div class="sep"></div>
-  <div id="online-badge" title="Son 5 dakikada aktif oyuncular">
-    <span class="ob-dot"></span>
-    <span class="ob-count" id="online-count">—</span>
-    <span>çevrimiçi</span>
-  </div>
   <div id="ubadge"></div>
   <button id="adminbtn" class="btn" style="font-size:.7rem;padding:.3rem .7rem;background:#dc2626;display:none" onclick="toggleAdmin()">⚙ Admin</button>
 </div>
@@ -1224,15 +1184,7 @@ button, [onclick], .pc-frame {
       <div id="cdlabel" style="display:block">Sonraki piksel: <span id="cdtimer">—</span></div>
     </div>
     <div id="paint-toolbar">
-      <button class="ptbtn active" id="pt-draw" onclick="setPaintMode('draw')">✏ Draw Border</button>
-      <button class="ptbtn" id="pt-erase" onclick="setPaintMode('erase')">⌫ Erase Border</button>
-      <div style="border-top:1px solid var(--bdr);margin:.1rem 0"></div>
-      <button class="ptbtn" id="pt-label" onclick="setPaintMode('label')">🏷 Set Label</button>
-      <div style="border-top:1px solid var(--bdr);margin:.1rem 0"></div>
-      <button class="ptbtn success" onclick="rebuildProvinces()">⟳ Rebuild Provinces</button>
-      <div style="border-top:1px solid var(--bdr);margin:.1rem 0"></div>
-      <button class="ptbtn" id="pt-pixerase" onclick="setPaintMode('pixerase')">🗑 Erase Pixels</button>
-      <button class="ptbtn danger" onclick="clearPaintEdits()">✕ Clear All Edits</button>
+      <button class="ptbtn active" id="pt-pixerase">🗑 Erase Pixels</button>
       <div style="border-top:1px solid var(--bdr);margin:.1rem 0"></div>
       <button class="ptbtn" id="pt-event-toggle" onclick="togglePixelEvent()">⚡ Pixel Event: OFF</button>
     </div>
@@ -1299,13 +1251,7 @@ button, [onclick], .pc-frame {
   <div id="sidebar">
     <div class="scard"><h3>🏅 En Yüksek Seviyeler</h3><div id="level-leaderboard"><div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.5rem 0">Yükleniyor...</div></div></div>
     <div class="scard"><h3>Bölge / İl Sonuçları</h3><div id="rlist"></div></div>
-    <div class="scard">
-      <div id="afeed-header">
-        <h3 style="margin-bottom:0">⚡ Son Hamleler<span class="af-live-dot" title="Canlı"></span></h3>
-        <span id="afeed-count" style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--muted)"></span>
-      </div>
-      <div id="afeed"></div>
-    </div>
+    <div class="scard"><h3>Son Hamleler</h3><div id="afeed"></div></div>
   </div>
 </div>
 <div id="popup"></div>
@@ -1450,21 +1396,6 @@ button, [onclick], .pc-frame {
       <button class="pca-danger-btn" onclick="confirmResetStats()">🗑 İstatistikleri Sıfırla</button>
     </div>
 
-  </div>
-</div>
-<!-- Admin Modal -->
-<div id="adminmodal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;">
-  <div style="background:#10101e;border:1px solid #7c6aff;border-radius:14px;padding:1.5rem clamp(1rem,5vw,2rem);width:min(340px,100%);display:flex;flex-direction:column;gap:1rem;">
-    <h3 style="font-family:Inter,sans-serif;font-size:1rem;color:#e8e8f4;margin:0">⚙ İl Düzenle</h3>
-    <p style="font-size:.78rem;color:#5a5a80;font-family:'JetBrains Mono',monospace;margin:0">ID: <b id="adminpid" style="color:#7c6aff"></b></p>
-    <div id="adminflash" style="height:6px;border-radius:3px;background:#7c6aff;transition:background .3s"></div>
-    <p style="font-size:.75rem;color:#5a5a80;font-family:'JetBrains Mono',monospace;margin:0">İl mor renkte vurgulandı. Etiket konumunu değiştirmek için haritada farklı bir yere tıkla, sonra Kaydet.</p>
-    <label style="font-size:.8rem;color:#a0a0c0;font-family:'JetBrains Mono',monospace">Görünen İsim:</label>
-    <input id="adminname" style="background:#191928;border:1px solid #333350;border-radius:8px;padding:.65rem .9rem;color:#e8e8f4;font-family:'JetBrains Mono',monospace;font-size:.95rem;outline:none;width:100%;"/>
-    <div style="display:flex;gap:.7rem;justify-content:flex-end;margin-top:.3rem">
-      <button onclick="closeAdmin()" style="background:#222236;color:#e8e8f4;border:none;border-radius:8px;padding:.5rem 1.1rem;cursor:pointer;font-family:Inter,sans-serif;font-size:.9rem">İptal</button>
-      <button onclick="saveAdmin()" style="background:#7c6aff;color:#fff;border:none;border-radius:8px;padding:.5rem 1.1rem;cursor:pointer;font-family:Inter,sans-serif;font-weight:700;font-size:.9rem">Kaydet ✓</button>
-    </div>
   </div>
 </div>
 
@@ -2055,9 +1986,7 @@ async function handleClick(mx,my){
     profileData.totalPlaced=(profileData.totalPlaced||0)+1;
     // ── XP KAZANMA (saveProfile ve saveXPData gainXP içinde çağrılıyor) ──
     gainXP(1);
-    actLog.unshift({user:username,party:selParty,color:PARTIES[selParty].color,prov:PROV_NAMES[pid],t:now});
-    if(actLog.length > ACT_LOG_MAX) actLog.length = ACT_LOG_MAX;
-    renderActFeed(true);
+    actLog.unshift({user:username,party:selParty,prov:PROV_NAMES[pid],t:now});
     updateDots();
     showPopup(`\u2713 ${PARTIES[selParty].name} \u2192 ${PROV_NAMES[pid]}`);
     if(!cdTick) startCooldown();
@@ -2207,7 +2136,7 @@ async function loadData(){
   }catch(e){
     try{const d=localStorage.getItem('pv3_data');if(d)pixData=JSON.parse(d);}catch(e2){}
   }
-  try{const a=localStorage.getItem('pv3_act');if(a){actLog=JSON.parse(a);renderActFeed(false);}}catch(e){}
+  try{const a=localStorage.getItem('pv3_act');if(a)actLog=JSON.parse(a);}catch(e){}
 }
 function startRealtimeSync(){
   supabase.channel('pixels-changes').on(
@@ -2225,14 +2154,6 @@ function startRealtimeSync(){
         const pctx=pixelCanvas.getContext('2d');
         pctx.fillStyle=PARTIES[row.party].color;
         pctx.fillRect(row.flat%IMG_W,Math.floor(row.flat/IMG_W),1,1);
-      }
-      // ── Son Hamleler feed: başkasının hareketlerini de göster ──
-      if(row.username && row.username !== username){
-        const provName = (typeof PROV_NAMES !== 'undefined' && PROV_NAMES[row.province]) ? PROV_NAMES[row.province] : row.province;
-        const col = PARTIES[row.party] ? PARTIES[row.party].color : '#888';
-        actLog.unshift({user:row.username, party:row.party, color:col, prov:provName, t:Date.now()});
-        if(actLog.length > ACT_LOG_MAX) actLog.length = ACT_LOG_MAX;
-        renderActFeed(true);
       }
       draw();updateSidebar();
     }
@@ -2274,34 +2195,6 @@ function globalCounts(){
   return c;
 }
 function tsince(t){const s=Math.floor((Date.now()-t)/1000);return s<60?s+'sn':s<3600?Math.floor(s/60)+'dk':Math.floor(s/3600)+'sa';}
-
-// ── Son Hamleler feed renderer ──
-const ACT_LOG_MAX = 20;
-function renderActFeed(highlightFirst){
-  const feed = document.getElementById('afeed');
-  const countEl = document.getElementById('afeed-count');
-  if(!feed) return;
-  if(!actLog.length){
-    feed.innerHTML = '<div style="font-size:.65rem;color:var(--muted);padding:.3rem 0">Henüz hamle yok...</div>';
-    if(countEl) countEl.textContent = '';
-    return;
-  }
-  const items = actLog.slice(0, ACT_LOG_MAX);
-  if(countEl) countEl.textContent = items.length + ' kayıt';
-  feed.innerHTML = items.map((a, i) => {
-    const col = a.color || (PARTIES[a.party] ? PARTIES[a.party].color : '#888');
-    return `<div class="af${highlightFirst && i===0 ? ' new' : ''}">` +
-      `<span class="af-color" style="background:${col}"></span>` +
-      `<span class="af-user" title="${a.user}">${a.user}</span>` +
-      `<span style="color:var(--muted);flex-shrink:0">→</span>` +
-      `<span class="af-prov" title="${a.prov}">${a.prov}</span>` +
-      `<span class="af-time">${tsince(a.t)}</span>` +
-      `</div>`;
-  }).join('');
-}
-
-// Zaman etiketlerini her 30sn'de bir tazele (yeni sorgu yapmadan)
-setInterval(()=>{ if(actLog.length) renderActFeed(false); }, 30000);
 function updateSidebar(){
   const seen=new Set();
   document.getElementById('rlist').innerHTML=REGION_ORDER.map(rid=>{
@@ -2316,7 +2209,9 @@ function updateSidebar(){
     }).join('');
     return `<div class="rblock"><div class="rhdr" style="background:${reg.color}22;color:${reg.color}"><span>${reg.label}</span><span style="opacity:.6;font-size:.58rem">${provs.length} il</span></div>${items}</div>`;
   }).join('');
-  renderActFeed();
+  document.getElementById('afeed').innerHTML=actLog.length
+    ?actLog.slice(0,12).map(a=>`<div class="af"><span>${a.user}</span> → <span style="color:${PARTIES[a.party].color}">${PARTIES[a.party].name}</span> / ${a.prov} <span style="opacity:.4">${tsince(a.t)}</span></div>`).join('')
+    :`<div class="af" style="color:var(--muted)">Henüz hamle yok...</div>`;
 }
 let ptmo;
 function showPopup(msg){const el=document.getElementById('popup');el.textContent=msg;el.classList.add('show');clearTimeout(ptmo);ptmo=setTimeout(()=>el.classList.remove('show'),2800);}
@@ -2381,10 +2276,10 @@ async function initMapData(){
   PROV_IDS.forEach(pid => { PROV_PIXELS[pid] = []; });
   for(let i=0;i<FLAT_TO_PROV.length;i++){
     const pi = FLAT_TO_PROV[i];
-    // Sınır (WHITE_SET) piksellerini il alanına dahil etme — admin
-    // seçimi (flashProvince), etiket/merkez hesabı ve tıklama mantığı
-    // PROV_PIXELS'i temel aldığı için, buradaki sızıntı doğrudan
-    // "komşu ilden parça seçiliyor" hatasına yol açıyordu.
+    // Sınır (WHITE_SET) piksellerini il alanına dahil etme —
+    // etiket/merkez hesabı ve tıklama mantığı PROV_PIXELS'i temel
+    // aldığı için, buradaki sızıntı doğrudan "komşu ilden parça
+    // seçiliyor" hatasına yol açıyordu.
     if(pi>=0 && !WHITE_SET.has(i)) PROV_PIXELS[PROV_IDS[pi]].push(i);
   }
 
@@ -2510,7 +2405,6 @@ document.getElementById('uname').addEventListener('keydown',e=>{if(e.key==='Ente
         // bunlar sadece startGame() çağrıldığında görünür hale geliyordu,
         // ama otomatik giriş akışı startGame()'i hiç çağırmıyordu.
         document.getElementById('adminbtn').style.display='';
-        if(typeof loadAdminData==='function') loadAdminData();
         document.getElementById('chat-btn').style.display='flex';
         document.getElementById('sidebar-toggle').style.display='flex';
         if(typeof initSidebarToggle==='function') initSidebarToggle();
@@ -2549,27 +2443,10 @@ setInterval(()=>{if(baseCanvas)updateSidebar();},5000);
 // Seviye sıralamasını her dakika güncelle
 setInterval(()=>{ if(typeof username!=='undefined'&&username) renderLevelLeaderboard(); },60000);
 
-// ── ADMIN MODE ──
+// ── ADMIN MODE (sadece oy pikseli silme aracı için) ──
 const ADMIN_PASS='admin123';
-let adminMode=false,adminPending=null,adminCustomNames={},adminCustomCenters={};
+let adminMode=false;
 
-function loadAdminData(){
-  try{
-    const n=localStorage.getItem('pv_admin_names');
-    const c=localStorage.getItem('pv_admin_centers');
-    if(n) adminCustomNames=JSON.parse(n);
-    if(c) adminCustomCenters=JSON.parse(c);
-    Object.entries(adminCustomNames).forEach(([pid,name])=>PROV_NAMES[pid]=name);
-    Object.entries(adminCustomCenters).forEach(([pid,ctr])=>PROV_CENTERS[pid]=ctr);
-    if(window.labelEls) buildLabels();
-  }catch(e){}
-}
-function saveAdminData(){
-  try{
-    localStorage.setItem('pv_admin_names',JSON.stringify(adminCustomNames));
-    localStorage.setItem('pv_admin_centers',JSON.stringify(adminCustomCenters));
-  }catch(e){}
-}
 function toggleAdmin(){
   if(!adminMode){
     const p=prompt('Admin şifresi:');
@@ -2577,292 +2454,47 @@ function toggleAdmin(){
     adminMode=true;
     document.getElementById('adminbtn').style.background='#16a34a';
     document.getElementById('adminbtn').textContent='⚙ Admin ON';
-    showPopup('Admin modu — bir ile tıkla');
+    showPopup('Admin modu — piksel silmek için bir piksele tıkla');
   } else {
-    adminMode=false; adminPending=null;
-    document.getElementById('adminmodal').style.display='none';
+    adminMode=false;
     document.getElementById('adminbtn').style.background='#dc2626';
     document.getElementById('adminbtn').textContent='⚙ Admin';
     showPopup('Admin modu kapatıldı');
   }
 }
-function flashProvince(pid){
-  const pixels=PROV_PIXELS[pid];
-  if(!pixels||!pixels.length) return;
-  const pctx=pixelCanvas.getContext('2d');
-  pixels.forEach(flat=>{pctx.fillStyle='#a78bfa';pctx.fillRect(flat%IMG_W,Math.floor(flat/IMG_W),1,1);});
-  draw();
-  setTimeout(()=>{redrawPixelCanvas();draw();},1800);
-}
-function openAdminModal(pid,flat){
-  adminPending={pid,flat};
-  document.getElementById('adminmodal').style.display='flex';
-  document.getElementById('adminpid').textContent=pid;
-  document.getElementById('adminname').value=PROV_NAMES[pid]||pid;
-  setTimeout(()=>{document.getElementById('adminname').focus();document.getElementById('adminname').select();},50);
-  flashProvince(pid);
-}
-function closeAdmin(){
-  document.getElementById('adminmodal').style.display='none';
-  adminPending=null;
-  redrawPixelCanvas();draw();
-}
-function saveAdmin(){
-  if(!adminPending) return;
-  const {pid,flat}=adminPending;
-  const name=document.getElementById('adminname').value.trim();
-  if(!name) return;
-  adminCustomNames[pid]=name; PROV_NAMES[pid]=name;
-  const cx=flat%IMG_W, cy=Math.floor(flat/IMG_W);
-  adminCustomCenters[pid]=[cx,cy]; PROV_CENTERS[pid]=[cx,cy];
-  saveAdminData();
-  document.getElementById('adminmodal').style.display='none';
-  adminPending=null;
-  buildLabels();redrawPixelCanvas();draw();
-  showPopup('✓ Kaydedildi: '+name);
-}
-// Intercept clicks for admin
+// Admin modundayken normal oy tıklamasını engelle (piksel silme ayrı bir
+// mousedown dinleyicisiyle ele alınıyor — burada sadece oy verilmesini önlüyoruz).
 const _ohc=handleClick;
 window.handleClick=function(mx,my){
   if(!adminMode){_ohc(mx,my);return;}
-  const flat=canvasToFlat(mx,my);
-  if(flat<0) return;
-  if(WHITE_SET.has(flat)){showPopup('Sınıra değil, ilin içine tıkla');return;}
-  const pi=FLAT_TO_PROV[flat];
-  if(pi<0){showPopup('Bir ilin içine tıkla');return;}
-  const pid=PROV_IDS[pi];
-  if(adminPending){
-    // Update position only
-    adminPending.flat=flat;
-    showPopup('Pozisyon güncellendi — Kaydete bas');
-    return;
-  }
-  openAdminModal(pid,flat);
 };
-document.getElementById('adminname').addEventListener('keydown',e=>{
-  if(e.key==='Enter') saveAdmin();
-  if(e.key==='Escape') closeAdmin();
-});
 // Show admin button after login
 const _osg=startGame;
 window.startGame=async function(){
   _osg();
   document.getElementById('adminbtn').style.display='';
-  loadAdminData();
 };
 
-// ── PAINT MODE ──
-let paintMode='draw';   // 'draw' | 'erase' | 'label'
+// ── PAINT MODE (sadece oy pikseli silme) ──
 let isPainting=false;
-let paintEdits={};      // flat_idx -> 'W' or 'B' (white/black)
-let paintCanvas=null;   // offscreen canvas for paint edits overlay
-
-function loadPaintEdits(){
-  try{
-    const s=localStorage.getItem('pv_paint');
-    if(s) paintEdits=JSON.parse(s);
-    applyPaintEdits();
-  }catch(e){}
-}
-function savePaintEdits(){
-  try{ localStorage.setItem('pv_paint',JSON.stringify(paintEdits)); }catch(e){}
-}
-function applyPaintEdits(){
-  if(!baseCanvas||!_origBaseImageData) return;
-  const bctx=baseCanvas.getContext('2d');
-  // Start from clean snapshot each time
-  const imgData=new ImageData(
-    new Uint8ClampedArray(_origBaseImageData.data),
-    _origBaseImageData.width, _origBaseImageData.height
-  );
-  const d=imgData.data;
-  Object.entries(paintEdits).forEach(([flat,type])=>{
-    const i=+flat*4;
-    if(type==='W'){d[i]=255;d[i+1]=255;d[i+2]=255;d[i+3]=255;}
-    else{d[i]=0;d[i+1]=0;d[i+2]=0;d[i+3]=255;}
-  });
-  bctx.putImageData(imgData,0,0);
-  // Rebuild WHITE_SET
-  WHITE_SET.clear();
-  for(let i=0;i<IMG_W*IMG_H;i++){
-    if(d[i*4]>200&&d[i*4+1]>200&&d[i*4+2]>200) WHITE_SET.add(i);
-  }
-}
-
-function setPaintMode(mode){
-  paintMode=mode;
-  ['draw','erase','label','pixerase'].forEach(m=>{
-    const el=document.getElementById('pt-'+m);
-    if(el) el.classList.toggle('active',m===mode);
-  });
-  if(mode==='label') showPopup('Label mode: click a province to set its name & position');
-  else if(mode==='draw') showPopup('Draw mode: click/drag to add white border pixels');
-  else if(mode==='pixerase') showPopup('Pixel erase: click/drag to delete placed vote pixels');
-  else showPopup('Erase mode: click/drag to remove border pixels (merge provinces)');
-}
 
 function paintPixel(mx,my){
   const flat=canvasToFlat(mx,my);
   if(flat<0||flat>=IMG_W*IMG_H) return;
-  const bctx=baseCanvas.getContext('2d');
   const px=flat%IMG_W, py=Math.floor(flat/IMG_W);
-  if(paintMode==='draw'){
-    bctx.fillStyle='#ffffff';
-    bctx.fillRect(px,py,1,1);
-    paintEdits[flat]='W';
-    WHITE_SET.add(flat);
-    savePaintEdits();
+  // Find which province owns this flat pixel and remove votes at this exact pixel
+  const pi=FLAT_TO_PROV[flat];
+  if(pi<0) return;
+  const pid=PROV_IDS[pi];
+  if(!pixData[pid]) return;
+  const before=pixData[pid].length;
+  pixData[pid]=pixData[pid].filter(v=>v.flat!==flat);
+  if(pixData[pid].length!==before){
+    saveData();
+    // Clear just this pixel on the pixel canvas
+    const pctx=pixelCanvas.getContext('2d');
+    pctx.clearRect(px,py,1,1);
     draw();
-  } else if(paintMode==='erase'){
-    bctx.fillStyle='#000000';
-    bctx.fillRect(px,py,1,1);
-    paintEdits[flat]='B';
-    WHITE_SET.delete(flat);
-    savePaintEdits();
-    draw();
-  } else if(paintMode==='pixerase'){
-    // Find which province owns this flat pixel and remove votes at this exact pixel
-    const pi=FLAT_TO_PROV[flat];
-    if(pi<0) return;
-    const pid=PROV_IDS[pi];
-    if(!pixData[pid]) return;
-    const before=pixData[pid].length;
-    pixData[pid]=pixData[pid].filter(v=>v.flat!==flat);
-    if(pixData[pid].length!==before){
-      saveData();
-      // Clear just this pixel on the pixel canvas
-      const pctx=pixelCanvas.getContext('2d');
-      pctx.clearRect(px,py,1,1);
-      draw();
-    }
-  }
-}
-
-function clearPaintEdits(){
-  if(!confirm('Clear all border edits? This cannot be undone.')) return;
-  paintEdits={};
-  savePaintEdits();
-  // Restore from clean snapshot instead of rebuilding everything
-  if(_origBaseImageData && baseCanvas){
-    baseCanvas.getContext('2d').putImageData(_origBaseImageData,0,0);
-    // Rebuild WHITE_SET from clean image
-    const d=_origBaseImageData.data;
-    WHITE_SET.clear();
-    for(let i=0;i<IMG_W*IMG_H;i++){
-      if(d[i*4]>200&&d[i*4+1]>200&&d[i*4+2]>200) WHITE_SET.add(i);
-    }
-    draw();
-    showPopup('All border edits cleared');
-  } else {
-    buildOffscreens();
-    showPopup('All border edits cleared');
-  }
-}
-
-// ── Sınır maskesini 1px (8-yönlü) genişletir ──
-// Amaç: ince/anti-aliased veya tek piksellik boşluğu olan sınır
-// çizgilerini "kapatmak". Bu boşluklar, flood-fill'in iki komşu ilin
-// iç alanını tek bir bağlı bileşen olarak birleştirmesinin ana
-// sebebiydi (bkz. rebuildProvinces açıklaması).
-function dilateBorderMask(mask,W,H){
-  const out=new Uint8Array(mask);
-  for(let r=0;r<H;r++){
-    const rowOff=r*W;
-    for(let c=0;c<W;c++){
-      const f=rowOff+c;
-      if(mask[f]) continue;
-      if((r>0&&mask[f-W])||(r<H-1&&mask[f+W])||(c>0&&mask[f-1])||(c<W-1&&mask[f+1])||
-         (r>0&&c>0&&mask[f-W-1])||(r>0&&c<W-1&&mask[f-W+1])||
-         (r<H-1&&c>0&&mask[f+W-1])||(r<H-1&&c<W-1&&mask[f+W+1])){
-        out[f]=1;
-      }
-    }
-  }
-  return out;
-}
-
-// ── Bir bileşen içinde, belirli bir noktaya en yakın "geçerli"
-// (sınır olmayan, dış alan olmayan ve bileşene ait) pikseli bulur ──
-// İl merkezi (PROV_CENTERS) tam olarak bileşenin içine düşmüyorsa
-// ya da bir sınır pikseline denk geliyorsa kullanılır.
-function findNearestComponentPixel(cx,cy,compSet,isWhite,outside,W,H){
-  const startF=cy*W+cx;
-  if(compSet.has(startF)&&!isWhite[startF]&&!outside[startF]) return startF;
-  const maxR=48;
-  for(let rad=1;rad<=maxR;rad++){
-    const y0=Math.max(0,cy-rad), y1=Math.min(H-1,cy+rad);
-    for(let ny=y0;ny<=y1;ny++){
-      const dy=Math.abs(ny-cy);
-      const x0=Math.max(0,cx-rad), x1=Math.min(W-1,cx+rad);
-      for(let nx=x0;nx<=x1;nx++){
-        if(Math.max(Math.abs(nx-cx),dy)!==rad) continue; // sadece halka kenarı
-        const nf=ny*W+nx;
-        if(compSet.has(nf)&&!isWhite[nf]&&!outside[nf]) return nf;
-      }
-    }
-  }
-  return null;
-}
-
-// ── Bir ilin, verilen bileşen içindeki "tohum" (seed) pikselini bulur ──
-// Öncelik: PROV_CENTERS noktası bileşenin içindeyse onu kullan.
-// Değilse, bileşendeki eski FLAT_TO_PROV verisine göre bu ile ait
-// piksellerin ağırlık merkezini (centroid) bulup en yakın geçerli
-// pikselle eşleştir. Hiçbiri yoksa bileşenin ilk uygun pikseline düş.
-function findProvinceSeed(pid,pixels,compSet,isWhite,outside,W,H){
-  const ctr=PROV_CENTERS[pid];
-  if(ctr){
-    const cf=ctr[1]*W+ctr[0];
-    if(compSet.has(cf)&&!isWhite[cf]&&!outside[cf]) return cf;
-  }
-  const pi=PROV_IDS.indexOf(pid);
-  let sx=0,sy=0,n=0;
-  for(const f of pixels){
-    if(FLAT_TO_PROV[f]===pi){ sx+=f%W; sy+=Math.floor(f/W); n++; }
-  }
-  if(n>0){
-    const found=findNearestComponentPixel(Math.round(sx/n),Math.round(sy/n),compSet,isWhite,outside,W,H);
-    if(found!=null) return found;
-  }
-  for(const f of pixels){ if(!isWhite[f]&&!outside[f]) return f; }
-  return null;
-}
-
-// ── "Sızıntı" sonucu birden fazla ile ait pikseli içeren bir bileşeni
-// güvenli şekilde paylaştırır ──
-// Eski mantık (en çok overlap'e sahip il TÜM bileşeni alır) yerine,
-// karışan illerin kendi merkez noktalarından EŞZAMANLI büyüyen bağlı
-// bileşenler (multi-source BFS / "geodesic" paylaşım) kullanılır.
-// Böylece bir il diğerinin alanını tamamen yutamaz; her piksel kendi
-// merkezine en yakın (bileşen içi en kısa yol) ile atanır.
-function assignByCenterGrowth(pixels,pidList,newFlatToProv,isWhite,outside,W,H){
-  const compSet=new Set(pixels);
-  const visited=new Uint8Array(W*H);
-  const queue=[];
-  pidList.forEach(pid=>{
-    const pi=PROV_IDS.indexOf(pid);
-    if(pi<0) return;
-    const seed=findProvinceSeed(pid,pixels,compSet,isWhite,outside,W,H);
-    if(seed==null) return;
-    if(visited[seed]) return; // iki ilin tohumu çakışırsa ilk gelen kazanır
-    visited[seed]=1;
-    newFlatToProv[seed]=pi;
-    queue.push(seed);
-  });
-  let qi=0;
-  while(qi<queue.length){
-    const f=queue[qi++];
-    const pi=newFlatToProv[f];
-    const r=Math.floor(f/W),c=f%W;
-    for(const[dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){
-      const nr=r+dr,nc=c+dc;
-      if(nr<0||nr>=H||nc<0||nc>=W) continue;
-      const nf=nr*W+nc;
-      if(visited[nf]||!compSet.has(nf)) continue;
-      visited[nf]=1;
-      newFlatToProv[nf]=pi;
-      queue.push(nf);
-    }
   }
 }
 
@@ -2935,215 +2567,15 @@ function findInteriorAnchor(pid){
   return [minX+bx, minY+by];
 }
 
-// ── Admin tarafından elle SABİTLENMEMİŞ (adminCustomCenters'ta olmayan)
-// tüm illerin etiket/merkez noktasını findInteriorAnchor ile yeniden
-// hesaplar. Admin'in elle yaptığı düzeltmeye asla dokunmaz — manuel
-// değer her zaman önceliklidir. ──
+// ── Tüm illerin etiket/merkez noktasını findInteriorAnchor ile hesaplar. ──
 function recalcAutoCenters(){
   PROV_IDS.forEach(pid=>{
-    if(typeof adminCustomCenters!=='undefined' && adminCustomCenters &&
-       Object.prototype.hasOwnProperty.call(adminCustomCenters,pid)) return;
     const anchor=findInteriorAnchor(pid);
     if(anchor) PROV_CENTERS[pid]=anchor;
   });
   if(typeof buildLabels==='function' && typeof labelEls!=='undefined') buildLabels();
 }
 
-// ── Birden çok ile ait piksel içeren bir bileşen assignByCenterGrowth
-// ile paylaştırıldıktan SONRA çağrılır: iki ile yeni atanmış piksellerin
-// doğrudan birbirine bitişik kalmasını önlemek için aralarına ince bir
-// "dikiş sınırı" (seam) açar — tıpkı gerçek bir il sınırı gibi. Böylece
-// önceden sızan/birleşen bölge net bir çizgiyle ayrılır; hiçbir piksel
-// aynı anda iki ile de "ait" görünmez. ──
-function cleanComponentSeams(pixels,newFlatToProv,isWhiteOut,W,H){
-  const toBorder=[];
-  for(const f of pixels){
-    const myPi=newFlatToProv[f];
-    if(myPi<0) continue;
-    const r=Math.floor(f/W),c=f%W;
-    for(const[dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){
-      const nr=r+dr,nc=c+dc;
-      if(nr<0||nr>=H||nc<0||nc>=W) continue;
-      const nf=nr*W+nc;
-      const nPi=newFlatToProv[nf];
-      if(nPi>=0 && nPi!==myPi){ toBorder.push(f); break; }
-    }
-  }
-  toBorder.forEach(f=>{
-    newFlatToProv[f]=-1;
-    isWhiteOut[f]=1;
-    WHITE_SET.add(f);
-  });
-}
-
-function rebuildProvinces(){
-  showPopup('Rebuilding provinces...');
-  setTimeout(()=>{
-    // Run flood fill in JS to detect new province regions
-    const W=IMG_W, H=IMG_H;
-    // Build pixel arrays from baseCanvas
-    const bctx=baseCanvas.getContext('2d');
-    const imgData=bctx.getImageData(0,0,W,H);
-    const d=imgData.data;
-
-    // Classify pixels
-    const isWhiteRaw=new Uint8Array(W*H);
-    for(let i=0;i<W*H;i++){
-      const p=i*4;
-      if(d[p]>200&&d[p+1]>200&&d[p+2]>200) isWhiteRaw[i]=1;
-    }
-    // Sınırı 1px güvenlik payıyla genişlet — ince/kopuk sınır
-    // çizgilerindeki boşluklardan komşu illerin birbirine sızmasını önler.
-    const isWhite=dilateBorderMask(isWhiteRaw,W,H);
-
-    // Flood fill from edges to find outside
-    const outside=new Uint8Array(W*H);
-    const queue=[];
-    for(let r=0;r<H;r++){
-      for(const c of[0,W-1]){
-        const f=r*W+c;
-        if(!outside[f]&&!isWhite[f]){outside[f]=1;queue.push(f);}
-      }
-    }
-    for(let c=0;c<W;c++){
-      for(const r of[0,H-1]){
-        const f=r*W+c;
-        if(!outside[f]&&!isWhite[f]){outside[f]=1;queue.push(f);}
-      }
-    }
-    let qi=0;
-    while(qi<queue.length){
-      const f=queue[qi++];
-      const r=Math.floor(f/W),c=f%W;
-      for(const[dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){
-        const nr=r+dr,nc=c+dc;
-        if(nr>=0&&nr<H&&nc>=0&&nc<W){
-          const nf=nr*W+nc;
-          if(!outside[nf]&&!isWhite[nf]){outside[nf]=1;queue.push(nf);}
-        }
-      }
-    }
-
-    // Connected components of interior pixels
-    const labels=new Int32Array(W*H);
-    const labelPixels={};
-    let curLabel=0;
-    for(let sr=0;sr<H;sr++){
-      for(let sc=0;sc<W;sc++){
-        const sf=sr*W+sc;
-        if(!isWhite[sf]&&!outside[sf]&&labels[sf]===0){
-          curLabel++;
-          const q2=[sf];
-          labels[sf]=curLabel;
-          const px2=[];
-          let qi2=0;
-          while(qi2<q2.length){
-            const f=q2[qi2++];
-            px2.push(f);
-            const r=Math.floor(f/W),c=f%W;
-            for(const[dr,dc] of[[-1,0],[1,0],[0,-1],[0,1]]){
-              const nr=r+dr,nc=c+dc;
-              if(nr>=0&&nr<H&&nc>=0&&nc<W){
-                const nf=nr*W+nc;
-                if(!isWhite[nf]&&!outside[nf]&&labels[nf]===0){
-                  labels[nf]=curLabel;q2.push(nf);
-                }
-              }
-            }
-          }
-          if(px2.length>=10) labelPixels[curLabel]=px2;
-        }
-      }
-    }
-
-    // Update WHITE_SET from new isWhite
-    WHITE_SET.clear();
-    for(let i=0;i<W*H;i++){if(isWhite[i]) WHITE_SET.add(i);}
-
-    // Rebuild FLAT_TO_PROV
-    const newFlatToProv=new Int16Array(W*H).fill(-1);
-
-    // Her bağlı bileşen için: eski FLAT_TO_PROV'a göre hangi il(ler)in
-    // pikseli bu bileşende anlamlı oranda var, ona bak.
-    Object.values(labelPixels).forEach(pixels=>{
-      const votes={};
-      pixels.forEach(f=>{
-        const oldPi=FLAT_TO_PROV[f];
-        if(oldPi>=0){
-          const pid=PROV_IDS[oldPi];
-          votes[pid]=(votes[pid]||0)+1;
-        }
-      });
-      const entries=Object.entries(votes);
-      if(entries.length===0) return;
-
-      // "Anlamlı" katkı eşiği: en az 25px VEYA bileşenin %3'ü.
-      // Bunun altında kalan eski-il izleri gürültü kabul edilir.
-      const total=pixels.length;
-      const significant=entries.filter(([,cnt])=>cnt>=Math.max(25,total*0.03));
-
-      if(significant.length<=1){
-        // Güvenli durum: bileşen pratikte tek bir ile ait
-        // (kopuk parçalar / adalar bu yolla doğru ile atanır).
-        const bestPid=entries.reduce((a,b)=>b[1]>a[1]?b:a)[0];
-        const bestPi=PROV_IDS.indexOf(bestPid);
-        if(bestPi>=0) pixels.forEach(f=>newFlatToProv[f]=bestPi);
-        return;
-      }
-
-      // Riskli durum: bileşen birden fazla ile ait piksel içeriyor —
-      // bu, sınırda bir sızıntı/birleşme olduğunun işareti.
-      // "Kazanan hepsini alır" yerine, karışan illerin merkezlerinden
-      // eşzamanlı büyüyen bağlı bileşenle bileşeni güvenle paylaştır.
-      assignByCenterGrowth(pixels,significant.map(e=>e[0]),newFlatToProv,isWhite,outside,W,H);
-      // Paylaşım sonrası, iki ile atanan piksellerin birbirine doğrudan
-      // bitişik kalmasını önlemek için arada ince bir sınır şeridi aç.
-      cleanComponentSeams(pixels,newFlatToProv,isWhite,W,H);
-    });
-
-    // Update global FLAT_TO_PROV and PROV_PIXELS
-    FLAT_TO_PROV.set(newFlatToProv);
-    PROV_IDS.forEach((pid,i)=>{
-      PROV_PIXELS[pid]=[];
-    });
-    for(let f=0;f<W*H;f++){
-      const pi=newFlatToProv[f];
-      if(pi>=0 && !WHITE_SET.has(f)) PROV_PIXELS[PROV_IDS[pi]].push(f);
-    }
-
-    // İl merkezlerini (etiket konumlarını) yeni alanlara göre yeniden
-    // hesapla — admin'in elle sabitlediği iller hariç. Böylece her
-    // etiket, küçük/girintili iller dahil, her zaman kendi ilinin
-    // gerçek iç alanına oturur.
-    recalcAutoCenters();
-
-    redrawPixelCanvas();
-    draw();
-    showPopup('Provinces rebuilt! '+curLabel+' regions detected.');
-  },50);
-}
-
-// ── Opsiyonel doğrulama yardımcısı (devtools konsolundan çalıştırılabilir) ──
-// Hiçbir mevcut akışı tetiklemez; sadece rebuildProvinces() sonrası
-// sağlık kontrolü için elle çağrılır: validateProvinces()
-function validateProvinces(){
-  const report=[];
-  PROV_IDS.forEach(pid=>{
-    const pixels=PROV_PIXELS[pid]||[];
-    const ctr=PROV_CENTERS[pid];
-    const ctrFlat=ctr?ctr[1]*IMG_W+ctr[0]:-1;
-    const ctrInsideOwn=ctr?FLAT_TO_PROV[ctrFlat]===PROV_IDS.indexOf(pid):false;
-    if(pixels.length===0||!ctrInsideOwn){
-      report.push({pid,pixelCount:pixels.length,centerInsideOwnProvince:ctrInsideOwn});
-    }
-  });
-  if(report.length){
-    console.warn('[validateProvinces] Şüpheli iller:',report);
-  }else{
-    console.log('[validateProvinces] Tüm iller OK görünüyor.');
-  }
-  return report;
-}
 
 // ═══════════════════════════════════════════════════════
 // XP / SEVİYE SİSTEMİ
@@ -4448,10 +3880,25 @@ async function renderChatMessages(){
       const {data,error}=await supabase.from('chat_messages').select('*').eq('channel','global').order('created_at',{ascending:true}).limit(50);
       if(data&&!error){
         log=data.map(r=>({user:r.username,text:r.message,t:new Date(r.created_at).getTime(),photo:'',frame:'none'}));
+        // DB'ye yazılamayıp localStorage'a düşmüş mesajlar varsa onları da ekle (kaybolmasınlar)
+        try{
+          const r=localStorage.getItem('pv_chat');
+          if(r){
+            const pending=JSON.parse(r);
+            const dbKeys=new Set(log.map(e=>e.user+'|'+e.text+'|'+Math.floor(e.t/1000)));
+            pending.forEach(p=>{
+              const k=p.user+'|'+p.text+'|'+Math.floor(p.t/1000);
+              if(!dbKeys.has(k)) log.push(p);
+            });
+            log.sort((a,b)=>a.t-b.t);
+          }
+        }catch(e){}
       } else {
+        if(error) console.error('[chat] Supabase select hatası, mesajlar DB\'den çekilemedi:', error);
         try{ const r=localStorage.getItem('pv_chat'); if(r) log=JSON.parse(r); }catch(e){}
       }
     }catch(e){
+      console.error('[chat] Supabase select exception:', e);
       try{ const r=localStorage.getItem('pv_chat'); if(r) log=JSON.parse(r); }catch(e2){}
     } finally {
       _chatRendering=false;
@@ -4535,7 +3982,8 @@ async function sendChatMsg(){
     supabase.from('chat_messages').insert({username:uname,message:msg,channel:'global'})
       .then(({error})=>{
         if(error){
-          // Hata olursa localStorage'a yedekle
+          // Hata olursa konsola yaz (RLS/izin sorunlarını teşhis etmek için) ve localStorage'a yedekle
+          console.error('[chat] Supabase insert hatası, mesaj DB\'ye yazılamadı:', error);
           try{
             const raw=localStorage.getItem('pv_chat');
             const log=raw?JSON.parse(raw):[];
@@ -4546,6 +3994,17 @@ async function sendChatMsg(){
         }
         // Cache'i temizle ki bir sonraki render yeniden çeksin
         if(_chatMsgCache) _chatMsgCache._globalKey='';
+      })
+      .catch(err=>{
+        // Network/exception durumunda da yedekle
+        console.error('[chat] Supabase insert exception:', err);
+        try{
+          const raw=localStorage.getItem('pv_chat');
+          const log=raw?JSON.parse(raw):[];
+          log.push(entry);
+          if(log.length>100) log.splice(0,log.length-100);
+          localStorage.setItem('pv_chat',JSON.stringify(log));
+        }catch(e2){}
       });
   }
   inp.focus();
@@ -4601,30 +4060,25 @@ const _origToggleAdmin=toggleAdmin;
 window.toggleAdmin=function(){
   _origToggleAdmin();
   const toolbar=document.getElementById('paint-toolbar');
-  if(adminMode){
-    toolbar.style.display='flex';
-    loadPaintEdits();
-  } else {
-    toolbar.style.display='none';
-  }
+  toolbar.style.display=adminMode?'flex':'none';
 };
 
-// Paint on mouse events
+// Paint on mouse events (oy pikseli silme)
 canvas.addEventListener('mousedown',e=>{
-  if(!adminMode||paintMode==='label') return;
+  if(!adminMode) return;
   if(e.button!==0) return;
   isPainting=true;
   const r=canvas.getBoundingClientRect();
   paintPixel(e.clientX-r.left,e.clientY-r.top);
 },true);
 canvas.addEventListener('mousemove',e=>{
-  if(!isPainting||!adminMode||paintMode==='label') return;
+  if(!isPainting||!adminMode) return;
   const r=canvas.getBoundingClientRect();
   paintPixel(e.clientX-r.left,e.clientY-r.top);
 },true);
 // Also allow pixel erase on right-click drag for convenience
 canvas.addEventListener('contextmenu',e=>{
-  if(!adminMode||paintMode!=='pixerase') return;
+  if(!adminMode) return;
   e.preventDefault();
 });
 canvas.addEventListener('mouseup',()=>{ isPainting=false; });
@@ -4843,29 +4297,9 @@ setInterval(()=>{
   }catch(e){}
 }, 800);
 
-// ── ÇEVRİMİÇİ OYUNCU SAYACI ──
-// user_levels.updated_at son 5 dk içinde güncellenenleri sayar
-// (syncXPToSupabase zaten her pixel hamlesinde bunu güncelliyor)
-async function updateOnlineCount(){
-  try{
-    const since=new Date(Date.now()-5*60*1000).toISOString();
-    const {count,error}=await supabase
-      .from('user_levels')
-      .select('username',{count:'exact',head:true})
-      .gte('updated_at',since);
-    if(!error && count!=null){
-      document.getElementById('online-count').textContent=count;
-    }
-  }catch(e){}
-}
-
-// Sayfa yüklenince ve her 30 sn'de bir güncelle
-updateOnlineCount();
-setInterval(updateOnlineCount, 30000);
-
-// Kullanıcı pixel koyduğunda anında kendi varlığını da güncelle
-// syncXPToSupabase zaten updated_at gönderiyor — ekstra iş yok.
-
+// Initialize on load
+loadPixelEventState();
+resizeRippleCanvas();
 </script>
 </body>
 </html>
