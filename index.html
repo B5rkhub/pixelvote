@@ -3877,7 +3877,9 @@ async function renderChatMessages(){
   if(currentChatTab==='global'){
     let log=[];
     try{
-      const {data,error}=await supabase.from('chat_messages').select('*').eq('channel','global').order('created_at',{ascending:true}).limit(50);
+      const {data,error}=await supabase.from('chat_messages').select('*').eq('channel','global').order('created_at',{ascending:false}).limit(50);
+      console.log('[chat] DB select sonucu:', data?data.length+' satır':'null', error?('HATA: '+JSON.stringify(error)):'hata yok');
+      if(data) data.reverse(); // en yeni 50'yi çektik, ekranda eskiden-yeniye göstermek için ters çeviriyoruz
       if(data&&!error){
         log=data.map(r=>({user:r.username,text:r.message,t:new Date(r.created_at).getTime(),photo:'',frame:'none'}));
         // DB'ye yazılamayıp localStorage'a düşmüş mesajlar varsa onları da ekle (kaybolmasınlar)
@@ -3979,11 +3981,11 @@ async function sendChatMsg(){
     const entry={user:uname, text:msg, t:Date.now(), photo:profileData&&profileData.photo||'', frame:profileData&&profileData.frame||'none'};
     addChatMsg(msg,'user');
     // Supabase'e kaydet (arka planda)
-    supabase.from('chat_messages').insert({username:uname,message:msg,channel:'global'})
-      .then(({error})=>{
-        if(error){
-          // Hata olursa konsola yaz (RLS/izin sorunlarını teşhis etmek için) ve localStorage'a yedekle
-          console.error('[chat] Supabase insert hatası, mesaj DB\'ye yazılamadı:', error);
+    supabase.from('chat_messages').insert({username:uname,message:msg,channel:'global'}).select()
+      .then(({data,error})=>{
+        if(error || !data || data.length===0){
+          // Hata olursa veya satır gerçekten eklenmediyse (RLS sessiz red) konsola yaz ve localStorage'a yedekle
+          console.error('[chat] Supabase insert başarısız (satır DB\'ye yazılmadı):', error||'data boş döndü, muhtemelen RLS engelledi');
           try{
             const raw=localStorage.getItem('pv_chat');
             const log=raw?JSON.parse(raw):[];
@@ -3991,6 +3993,8 @@ async function sendChatMsg(){
             if(log.length>100) log.splice(0,log.length-100);
             localStorage.setItem('pv_chat',JSON.stringify(log));
           }catch(e2){}
+        } else {
+          console.log('[chat] Mesaj DB\'ye başarıyla yazıldı:', data);
         }
         // Cache'i temizle ki bir sonraki render yeniden çeksin
         if(_chatMsgCache) _chatMsgCache._globalKey='';
