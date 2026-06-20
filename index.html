@@ -1680,6 +1680,33 @@ setInterval(() => {
 }, 30000);
 // ─────────────────────────────────────────────────────────────────────
 
+// ── GÜVENLİK: HTML escape yardımcı fonksiyonu ──────────────────────────
+// Kullanıcı adı, faction adı/tag'i, profil fotoğrafı URL'i gibi kullanıcı
+// tarafından girilen hiçbir alanda HTML/JS karakteri filtrelenmiyordu;
+// bunlar template literal'lar içinde doğrudan innerHTML'e gömülüyordu
+// (stored XSS). Bu fonksiyon, kullanıcı verisi HTML'e basılmadan önce
+// özel karakterleri kaçışlayarak tarayıcının onu kod olarak değil düz
+// metin olarak yorumlamasını sağlar. Her yerde kullanıcı kontrollü bir
+// değer bir template literal içine konacaksa bu fonksiyondan geçirilmeli.
+function _esc(str){
+  if(str===null || str===undefined) return '';
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+// Profil/üye fotoğrafı gibi kullanıcı tarafından sağlanan URL'leri <img src="">
+// içine basmadan önce doğrular — sadece http(s):// veya data:image/ ile başlayan
+// değerlere izin verir. javascript: gibi tehlikeli şemaları reddeder.
+function _safeImgSrc(url){
+  if(!url || typeof url!=='string') return '';
+  const u=url.trim();
+  if(/^https?:\/\//i.test(u) || /^data:image\//i.test(u)) return _esc(u);
+  return '';
+}
+
 let username='',selParty=0,cdEnd=0,cdTick=null;
 _setPixLeft(PIXEL_LIMIT); // pixLeft başlangıç değeri
 let pixData={},actLog=[];
@@ -1759,7 +1786,6 @@ function positionLabels(){
 function redrawPixelCanvas(){
   const pctx=pixelCanvas.getContext('2d');
   pctx.clearRect(0,0,IMG_W,IMG_H);
-  let _debugFound2336227 = false;
   PROV_IDS.forEach(pid=>{
     const votes=pixData[pid];
     if(!votes||!votes.length) return;
@@ -1767,17 +1793,10 @@ function redrawPixelCanvas(){
       // party her zaman integer olmalı — string geldiyse zorla dönüştür
       const p=parseInt(v.party,10);
       if(isNaN(p)||p<0||p>=PARTIES.length) return;
-      if(v.flat===2336227){
-        _debugFound2336227 = true;
-        console.log('[DEBUG redrawPixelCanvas] flat=2336227 çiziliyor, province:', pid, 'party:', p, 'renk:', PARTIES[p].color);
-      }
       pctx.fillStyle=PARTIES[p].color;
       pctx.fillRect(v.flat%IMG_W,Math.floor(v.flat/IMG_W),1,1);
     });
   });
-  if(!_debugFound2336227){
-    console.log('[DEBUG redrawPixelCanvas] flat=2336227 HİÇBİR province pixData listesinde BULUNAMADI (yani boyanmıyor/temiz kalmalı)');
-  }
 }
 
 // LOD canvas for fast rendering when zoomed out
@@ -1819,32 +1838,71 @@ function canvasToFlat(mx,my){
 }
 
 // ── FIRÇA MODU: Shift basılıyken sol tık sürükleyince kalem gibi pixel bas ──
+// Fırçayla sürüklerken geçilen her hücre bir KUYRUĞA ekleniyor ve bu kuyruk
+// SIRAYLA (bir önceki sunucu cevabı gelmeden bir sonraki başlamadan) işleniyor.
+// Böylece hem hiçbir piksel atlanmıyor (kuyruğa giren her şey eninde sonunda
+// işlenir) hem de sunucuya asla aynı anda onlarca paralel istek gitmiyor
+// (ki bu, cooldown hesaplamasını yanıltıp "fazladan piksel" hatasına yol açıyordu).
 let _brushActive = false; // shift+mousedown ile aktif olur
+let _brushLastFlat = -1; // fırçanın en son KUYRUĞA EKLEDİĞİ hücre — aynı hücreyi art arda kuyruğa eklemeyi önler
+let _brushQueue = []; // [{mx,my}, ...] — sırayla işlenecek bekleyen tıklamalar
+let _brushQueueRunning = false;
+
+function _brushEnqueue(mx,my){
+  _brushQueue.push({mx,my});
+  _runBrushQueue();
+}
+
+async function _runBrushQueue(){
+  if(_brushQueueRunning) return; // zaten bir kuyruk-tüketici çalışıyor
+  _brushQueueRunning = true;
+  try{
+    while(_brushQueue.length){
+      const next = _brushQueue.shift();
+      // handleClick kendi içinde await ile sunucu cevabını bekliyor;
+      // burada da onu bekleyerek bir sonraki kuyruk elemanına geçiyoruz.
+      await window.handleClick(next.mx, next.my);
+    }
+  } finally {
+    _brushQueueRunning = false;
+  }
+}
+
 canvas.addEventListener('mousedown',e=>{
   if(e.button===1||e.button===2){panning=true;panSt={x:e.clientX-ox,y:e.clientY-oy};canvas.style.cursor='grabbing';return;}
   const r=canvas.getBoundingClientRect();
   if(e.shiftKey){
     _brushActive = true;
     canvas.style.cursor = 'cell';
-    window.handleClick(e.clientX-r.left,e.clientY-r.top);
+    _brushLastFlat = canvasToFlat(e.clientX-r.left,e.clientY-r.top);
+    _brushEnqueue(e.clientX-r.left,e.clientY-r.top);
     return;
   }
   window.handleClick(e.clientX-r.left,e.clientY-r.top);
 });
 canvas.addEventListener('mouseup',()=>{
   _brushActive = false;
+  _brushLastFlat = -1;
   if(!panning) canvas.style.cursor='crosshair';
 });
-canvas.addEventListener('mouseleave',()=>{ _brushActive = false; });
+canvas.addEventListener('mouseleave',()=>{ _brushActive = false; _brushLastFlat = -1; });
 canvas.addEventListener('mousemove',e=>{
   if(panning){ox=e.clientX-panSt.x;oy=e.clientY-panSt.y;clampView();draw();return;}
   // Shift basılı + sol tuş sürükleme = fırça modu
   if(_brushActive && e.shiftKey && e.buttons===1){
     const r=canvas.getBoundingClientRect();
-    window.handleClick(e.clientX-r.left,e.clientY-r.top);
+    const mx=e.clientX-r.left, my=e.clientY-r.top;
+    const flat=canvasToFlat(mx,my);
+    // Mouse hâlâ aynı pikselin üzerindeyse kuyruğa tekrar ekleme —
+    // ufak titreşim hareketleri aynı hücreyi onlarca kez kuyruğa
+    // ekleyip gereksiz yere büyütmesin diye.
+    if(flat===_brushLastFlat) return;
+    _brushLastFlat = flat;
+    _brushEnqueue(mx,my);
     return;
   } else if(_brushActive && (!e.shiftKey || e.buttons!==1)){
     _brushActive = false;
+    _brushLastFlat = -1;
     canvas.style.cursor = 'crosshair';
   }
   // Shift tuşuna basılıyken cursor'u değiştir (sürüklemeden önce de ipucu ver)
@@ -1906,7 +1964,7 @@ canvas.addEventListener('mousemove',e=>{
     tip.style.opacity='0';
   }
 });
-canvas.addEventListener('mouseup',()=>{panning=false;_brushActive=false;canvas.style.cursor='crosshair';});
+canvas.addEventListener('mouseup',()=>{panning=false;_brushActive=false;_brushLastFlat=-1;canvas.style.cursor='crosshair';});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('wheel',e=>{
   e.preventDefault();
@@ -1979,6 +2037,14 @@ canvas.addEventListener('touchend',e=>{
   }
 });
 
+// ── FIRÇA/SPAM ÖNLEME: bir RPC isteği sunucudan cevap dönene kadar
+// yeni bir handleClick çağrısının sunucuya gitmesini engeller.
+// Fırça modunda mousemove saniyede onlarca kez tetiklendiği için
+// (await edilmeden çağrıldığından) bu kilit olmadan paralel onlarca
+// place_pixel isteği aynı anda sunucuya gidip kuyrukta gecikerek
+// cooldown hesaplamasını yanıltabiliyordu.
+let _placePixelInFlight = false;
+
 async function handleClick(mx,my){
   // Kayıt olmadan piksel basılamaz — kayıt ekranını göster
   if(!username){
@@ -1996,6 +2062,10 @@ async function handleClick(mx,my){
   // ── HİLE ÖNLEME: Yerel hızlı kontrol (tarayıcıya güvenmiyoruz, ama anında geri bildirim için bakıyoruz) ──
   const currentPix = _getPixLeft();
   if(currentPix <= 0){showPopup('⏳ Piksel hakkın bitti!');return;}
+
+  // Önceki istek hâlâ sunucudan cevap bekliyorsa bu çağrıyı sessizce
+  // yok say (fırça sürüklerken aynı anda onlarca RPC fırlatılmasını önler).
+  if(_placePixelInFlight) return;
 
   const pid=PROV_IDS[pi];
   if(!pixData[pid]) pixData[pid]=[];
@@ -2019,6 +2089,7 @@ async function handleClick(mx,my){
   draw();updateSidebar();
 
   // ── ASIL HAK KONTROLÜ VE KAYIT: sunucudaki place_pixel fonksiyonu üzerinden ──
+  _placePixelInFlight = true;
   try{
     const {data,error} = await supabase.rpc('place_pixel',{
       p_username: username,
@@ -2065,6 +2136,10 @@ async function handleClick(mx,my){
     }
     draw();updateSidebar();
     showPopup('⚠ Bağlantı hatası, tekrar dene.');
+  }finally{
+    // İstek ne şekilde sonuçlanırsa sonuçlansın (başarı/red/hata) kilidi aç,
+    // ki bir sonraki tıklama/fırça hareketi sunucuya gidebilsin.
+    _placePixelInFlight = false;
   }
 }
 
@@ -2188,43 +2263,15 @@ async function saveData(){
 async function loadData(){
   try{
     const {data,error}=await supabase.from('pixels').select('*');
-    console.log('[DEBUG loadData] error:', error);
-    console.log('[DEBUG loadData] toplam satır sayısı:', data ? data.length : 'null');
-    if(data){
-      const debugFlat = data.find(r => Number(r.flat) === 2336227);
-      console.log('[DEBUG loadData] flat=2336227 sunucudan gelen satır:', debugFlat);
-    }
     if(data&&!error){
-      // ÖNEMLİ: 'pixels' tablosunda flat üzerinde DB seviyesinde bir UNIQUE/PRIMARY KEY
-      // garantisi yoksa, aynı flat için zamanla BİRDEN FAZLA satır birikebilir (upsert
-      // bunu engellemiyor olabilir). Bu durumda sadece en son güncellenmiş (updated_at)
-      // satırı kullanıyoruz — yoksa rollback/oy gibi son yazılan değişiklikler, F5'te
-      // eski/duplike bir satır yüzünden ekranda eski haline "geri dönüyormuş" gibi görünür.
-      const latestByFlat = new Map(); // flat -> row (en güncel)
-      data.forEach(row=>{
-        const f = Number(row.flat);
-        const existing = latestByFlat.get(f);
-        if(!existing){
-          latestByFlat.set(f, row);
-          return;
-        }
-        // updated_at varsa ona göre kıyasla; yoksa son gelen satırı tut (DB sırası garanti değil
-        // ama en azından deterministik tek bir kayıt seçilmiş olur).
-        const tNew = row.updated_at ? new Date(row.updated_at).getTime() : 0;
-        const tOld = existing.updated_at ? new Date(existing.updated_at).getTime() : 0;
-        if(tNew >= tOld) latestByFlat.set(f, row);
-      });
-
       pixData={};
-      latestByFlat.forEach(row=>{
+      data.forEach(row=>{
         if(!pixData[row.province])pixData[row.province]=[];
         // party'yi her zaman integer'a zorla — Supabase bazen string döner
         const partyInt=parseInt(row.party,10);
         if(isNaN(partyInt)||partyInt<0||partyInt>=PARTIES.length) return;
         pixData[row.province].push({flat:Number(row.flat),party:partyInt});
       });
-      const debugCheck = (pixData['tekirdag']||[]).find(v=>v.flat===2336227);
-      console.log('[DEBUG loadData] pixData[tekirdag] içinde flat=2336227:', debugCheck);
     } else {
       // Hata varsa localStorage'dan yükle
       try{const d=localStorage.getItem('pv3_data');if(d)pixData=JSON.parse(d);}catch(e){}
@@ -2460,6 +2507,23 @@ async function _checkAndBindIP(ip, requestedName){
 async function startGame(){
   const v=document.getElementById('uname').value.trim();
   if(!v){document.getElementById('uname').style.borderColor='#e63946';return;}
+
+  // ── GÜVENLİK: kullanıcı adı validasyonu ──────────────────────────────
+  // Daha önce kullanıcı adına hiçbir karakter kısıtlaması yoktu; bu isim
+  // daha sonra faction üye listesi, liderlik tablosu, sohbet gibi pek çok
+  // yerde innerHTML ile diğer kullanıcıların ekranına basılıyordu. HTML/JS
+  // karakteri içeren bir isim (örn. <img src=x onerror=...>) o ismi gören
+  // herkesin tarayıcısında kod çalıştırabilirdi (stored XSS). Bu yüzden
+  // kayıt anında, sorunun kaynağında, sadece harf/rakam/boşluk/tire/alt
+  // çizgiye izin veriyoruz — HTML'e asla özel anlam taşıyan bir karakter
+  // (< > " ' & vb.) giremiyor.
+  const NAME_RE = /^[\p{L}\p{N} _\-]{2,20}$/u;
+  if(!NAME_RE.test(v)){
+    document.getElementById('login-err').textContent='⚠ Kullanıcı adı sadece harf, rakam, boşluk, "-" ve "_" içerebilir (2-20 karakter).';
+    document.getElementById('uname').style.borderColor='#e63946';
+    return;
+  }
+
   const btn=document.getElementById('login-btn');
   const errEl=document.getElementById('login-err');
   btn.disabled=true;
@@ -2922,12 +2986,16 @@ async function renderLevelLeaderboard(){
     el.innerHTML = data.map((row, i) => {
       const pos = i + 1;
       const posIcon = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
-      const initials = (row.username || '?').slice(0, 2).toUpperCase();
+      // GÜVENLİK: row.username Supabase'den geliyor ama yine de kullanıcı
+      // tarafından kayıt sırasında serbestçe belirlenmiş bir alan — herkesin
+      // gördüğü liderlik tablosuna gömülmeden önce kaçışlanmalı (stored XSS önleme).
+      const safeUsername = _esc(row.username || '?');
+      const initials = _esc((row.username || '?').slice(0, 2).toUpperCase());
       const isMe = row.username === username;
       return `<div class="lvl-rank-row" ${isMe ? 'style="background:rgba(124,106,255,.1);border-radius:8px;"' : ''}>
         <div class="lvl-rank-pos">${posIcon}</div>
         <div class="lvl-rank-av">${initials}</div>
-        <div class="lvl-rank-name">${row.username}${isMe ? ' <span style="font-size:.55rem;color:var(--accent)">(sen)</span>' : ''}</div>
+        <div class="lvl-rank-name">${safeUsername}${isMe ? ' <span style="font-size:.55rem;color:var(--accent)">(sen)</span>' : ''}</div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px">
           <div class="lvl-rank-lv">Lv ${row.level || 1}</div>
           <div class="lvl-rank-xp">${(row.xp || 0).toLocaleString('tr-TR')} XP</div>
@@ -2990,10 +3058,18 @@ function applyProfileToBtn(){
   if(avEl){
     avEl.style.cssText=`width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;border:2.5px solid ${borderCol};`;
     avEl.style.background=profileData.photo?'transparent':frame.style.replace(/background:/,'');
+    // GÜVENLİK: innerHTML yerine createElement kullanılıyor — profileData.photo
+    // ve kullanıcı adı (uname) doğrudan HTML olarak yorumlanmasın diye (XSS önleme).
+    avEl.textContent='';
     if(profileData.photo){
-      avEl.innerHTML=`<img src="${profileData.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+      const img=document.createElement('img');
+      img.src=profileData.photo;
+      img.style.cssText='width:100%;height:100%;object-fit:cover;border-radius:50%';
+      avEl.appendChild(img);
     } else {
-      avEl.innerHTML=`<span>${uname.slice(0,2).toUpperCase()}</span>`;
+      const span=document.createElement('span');
+      span.textContent=uname.slice(0,2).toUpperCase();
+      avEl.appendChild(span);
     }
   }
   document.getElementById('pb-name').textContent=uname;
@@ -3281,17 +3357,23 @@ function renderFactionCreate(body){
   function renderFactionList(list){
     if(!list.length) return `<div class="fc-empty" style="padding:.8rem"><strong>🔍</strong>Sonuç bulunamadı.</div>`;
     return list.map((f,idx)=>{
-      const logoEl = f.logo
-        ? `<img src="${f.logo}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;">`
+      // GÜVENLİK: faction adı, tag'i ve logo URL'i kullanıcı tarafından
+      // belirleniyor; bu liste herkesin göreceği bir tarama ekranı olduğu
+      // için HTML'e gömülmeden önce kaçışlanmalı (stored XSS önleme).
+      const safeName = _esc(f.name);
+      const safeTag = _esc(f.tag);
+      const safeLogo = _safeImgSrc(f.logo);
+      const logoEl = safeLogo
+        ? `<img src="${safeLogo}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;">`
         : `<div style="width:36px;height:36px;border-radius:8px;background:${f.color}33;color:${f.color};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">${f.emoji}</div>`;
       const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':'';
-      return `<div class="fc-browse-row" onclick="joinFactionByTag('${f.tag}')">
+      return `<div class="fc-browse-row" onclick="joinFactionByTag('${safeTag}')">
         ${logoEl}
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:.3rem;">
             ${medal?`<span style="font-size:.8rem">${medal}</span>`:`<span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);min-width:1.2rem">#${idx+1}</span>`}
-            <span style="font-size:.8rem;font-weight:800;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
-            <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:${f.color}">[${f.tag}]</span>
+            <span style="font-size:.8rem;font-weight:800;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${safeName}</span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:.58rem;color:${f.color}">[${safeTag}]</span>
           </div>
           <div style="display:flex;gap:.6rem;margin-top:2px;">
             <span style="font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted)">👥 ${f.members.length} üye</span>
@@ -3451,9 +3533,16 @@ function renderFactionHome(body){
   const allies = Object.entries(f.diplomacy||{}).filter(([,v])=>v==='ally').length;
   const wars   = Object.entries(f.diplomacy||{}).filter(([,v])=>v==='war').length;
 
+  // GÜVENLİK: faction adı, tag'i ve logo URL'i kullanıcı tarafından
+  // belirleniyor (faction oluşturma/düzenleme ekranında) — başka bir
+  // kullanıcının ekranına HTML olarak gömülmeden önce kaçışlanmalı.
+  const safeFactionName = _esc(f.name);
+  const safeFactionTag = _esc(f.tag);
+  const safeLogo = _safeImgSrc(f.logo);
+
   // Logo HTML
-  const logoHTML = f.logo
-    ? `<img src="${f.logo}" style="width:54px;height:54px;border-radius:12px;object-fit:cover;">`
+  const logoHTML = safeLogo
+    ? `<img src="${safeLogo}" style="width:54px;height:54px;border-radius:12px;object-fit:cover;">`
     : `<div class="fc-logo-inner" style="background:${f.color}33;color:${f.color};">${f.emoji}</div>`;
 
   body.innerHTML = `
@@ -3465,8 +3554,8 @@ function renderFactionHome(body){
       </div>
       <input type="file" id="fc-logo-input" accept="image/*" style="display:none" onchange="handleFactionLogo(event)"/>
       <div class="fc-banner-info">
-        <div class="fc-banner-name">${f.name}</div>
-        <div class="fc-banner-tag" style="color:${f.color}">[${f.tag}]  •  ${f.members.length} üye</div>
+        <div class="fc-banner-name">${safeFactionName}</div>
+        <div class="fc-banner-tag" style="color:${f.color}">[${safeFactionTag}]  •  ${f.members.length} üye</div>
         <div class="fc-banner-role" style="background:${roleBg};color:${roleColor}">${myRole}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:2px;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--muted);text-align:center;">
@@ -3517,16 +3606,21 @@ function renderFactionHome(body){
         // Get member photo from localStorage
         let memberProf = {};
         try{ memberProf = JSON.parse(localStorage.getItem('pv_profile_'+m.name)||'{}'); }catch(e){}
-        const memberAv = memberProf.photo
-          ? `<div class="fc-member-av" style="border-color:${f.color}55"><img src="${memberProf.photo}"></div>`
-          : `<div class="fc-member-av" style="background:${f.color};border-color:${f.color}55">${m.name.slice(0,2).toUpperCase()}</div>`;
+        // GÜVENLİK: kullanıcı adı (m.name) ve fotoğraf URL'i (memberProf.photo)
+        // başka bir kullanıcının cihazına HTML olarak gömülmeden önce
+        // kaçışlanıyor/doğrulanıyor (stored XSS önleme).
+        const safePhoto = _safeImgSrc(memberProf.photo);
+        const safeName = _esc(m.name);
+        const memberAv = safePhoto
+          ? `<div class="fc-member-av" style="border-color:${f.color}55"><img src="${safePhoto}"></div>`
+          : `<div class="fc-member-av" style="background:${f.color};border-color:${f.color}55">${_esc(m.name.slice(0,2).toUpperCase())}</div>`;
         return `<div class="fc-member">
           ${memberAv}
-          <div class="fc-member-name">${m.name}${isMe?' <span style="font-size:.55rem;color:var(--muted)">(sen)</span>':''}</div>
+          <div class="fc-member-name">${safeName}${isMe?' <span style="font-size:.55rem;color:var(--muted)">(sen)</span>':''}</div>
           <div class="fc-member-role" style="background:${mRoleBg};color:${mRoleCol}">${mRole}</div>
-          ${canPromote?`<button class="fc-member-kick" style="color:#8b5cf6" onclick="promoteMember('${m.name}')" title="Yönetici yap">▲</button>`:''}
-          ${canDemote?`<button class="fc-member-kick" style="color:#f59e0b" onclick="demoteMember('${m.name}')" title="Üye yap">▼</button>`:''}
-          ${canKick?`<button class="fc-member-kick" onclick="kickMember('${m.name}')" title="Çıkar">✕</button>`:''}
+          ${canPromote?`<button class="fc-member-kick" style="color:#8b5cf6" onclick="promoteMember('${safeName}')" title="Yönetici yap">▲</button>`:''}
+          ${canDemote?`<button class="fc-member-kick" style="color:#f59e0b" onclick="demoteMember('${safeName}')" title="Üye yap">▼</button>`:''}
+          ${canKick?`<button class="fc-member-kick" onclick="kickMember('${safeName}')" title="Çıkar">✕</button>`:''}
         </div>`;
       }).join('')}
     </div>
@@ -3697,16 +3791,21 @@ function loadFactionChat(){
     const isMe = entry.user === username;
     let memberProf = {};
     try{ memberProf = JSON.parse(localStorage.getItem('pv_profile_'+entry.user)||'{}'); }catch(e){}
-    const avHTML = memberProf.photo
-      ? `<div class="fc-cav" style="border-color:${factionData.color}55"><img src="${memberProf.photo}"></div>`
-      : `<div class="fc-cav" style="background:${factionData.color};border-color:${factionData.color}55">${(entry.user||'?').slice(0,2).toUpperCase()}</div>`;
+    // GÜVENLİK: faction sohbetindeki kullanıcı adı, fotoğraf URL'i ve mesaj
+    // metni — hepsi kullanıcı tarafından belirleniyor, başka bir üyenin
+    // ekranına HTML olarak gömülmeden önce kaçışlanmalı (stored XSS önleme).
+    const safeEntryUser = _esc(entry.user||'?');
+    const safePhoto = _safeImgSrc(memberProf.photo);
+    const avHTML = safePhoto
+      ? `<div class="fc-cav" style="border-color:${factionData.color}55"><img src="${safePhoto}"></div>`
+      : `<div class="fc-cav" style="background:${factionData.color};border-color:${factionData.color}55">${_esc((entry.user||'?').slice(0,2).toUpperCase())}</div>`;
     const el = document.createElement('div');
     el.className = 'fc-cmsg'+(isMe?' me':'');
     el.innerHTML = `
       ${avHTML}
       <div class="fc-cbubble">
-        ${!isMe?`<div class="fc-cname">${entry.user}</div>`:''}
-        <div class="fc-ctext">${entry.text.replace(/</g,'&lt;')}</div>
+        ${!isMe?`<div class="fc-cname">${safeEntryUser}</div>`:''}
+        <div class="fc-ctext">${_esc(entry.text)}</div>
       </div>`;
     box.appendChild(el);
   });
