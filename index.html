@@ -1759,6 +1759,7 @@ function positionLabels(){
 function redrawPixelCanvas(){
   const pctx=pixelCanvas.getContext('2d');
   pctx.clearRect(0,0,IMG_W,IMG_H);
+  let _debugFound2336227 = false;
   PROV_IDS.forEach(pid=>{
     const votes=pixData[pid];
     if(!votes||!votes.length) return;
@@ -1766,10 +1767,17 @@ function redrawPixelCanvas(){
       // party her zaman integer olmalı — string geldiyse zorla dönüştür
       const p=parseInt(v.party,10);
       if(isNaN(p)||p<0||p>=PARTIES.length) return;
+      if(v.flat===2336227){
+        _debugFound2336227 = true;
+        console.log('[DEBUG redrawPixelCanvas] flat=2336227 çiziliyor, province:', pid, 'party:', p, 'renk:', PARTIES[p].color);
+      }
       pctx.fillStyle=PARTIES[p].color;
       pctx.fillRect(v.flat%IMG_W,Math.floor(v.flat/IMG_W),1,1);
     });
   });
+  if(!_debugFound2336227){
+    console.log('[DEBUG redrawPixelCanvas] flat=2336227 HİÇBİR province pixData listesinde BULUNAMADI (yani boyanmıyor/temiz kalmalı)');
+  }
 }
 
 // LOD canvas for fast rendering when zoomed out
@@ -2215,6 +2223,8 @@ async function loadData(){
         if(isNaN(partyInt)||partyInt<0||partyInt>=PARTIES.length) return;
         pixData[row.province].push({flat:Number(row.flat),party:partyInt});
       });
+      const debugCheck = (pixData['tekirdag']||[]).find(v=>v.flat===2336227);
+      console.log('[DEBUG loadData] pixData[tekirdag] içinde flat=2336227:', debugCheck);
     } else {
       // Hata varsa localStorage'dan yükle
       try{const d=localStorage.getItem('pv3_data');if(d)pixData=JSON.parse(d);}catch(e){}
