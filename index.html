@@ -1134,9 +1134,20 @@ button, [onclick], .pc-frame {
   <div class="lbox">
     <h1 id="login-title">🗳 PixelVote</h1>
     <p id="login-desc">Türkiye'nin seçim haritasını şekillendir.<br>Her <b>3 dakikada</b> bir <b>7 piksel</b> hakkın var.<br>İlin içine tıkla — sınırlara tıklanamaz.</p>
-    <input id="uname" placeholder="Kullanıcı adı seç..." maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go"/>
+
+    <!-- Kayıt ol / Giriş yap sekmeleri -->
+    <div id="auth-tabs" style="display:flex;gap:.4rem;margin-bottom:.6rem;">
+      <button type="button" id="auth-tab-signup" class="auth-tab active" onclick="switchAuthTab('signup')" style="flex:1;padding:.5rem;border-radius:8px;border:1px solid #ffffff22;background:#ffffff14;color:#fff;font-size:.78rem;cursor:pointer;">Kayıt Ol</button>
+      <button type="button" id="auth-tab-signin" class="auth-tab" onclick="switchAuthTab('signin')" style="flex:1;padding:.5rem;border-radius:8px;border:1px solid #ffffff22;background:transparent;color:#aaa;font-size:.78rem;cursor:pointer;">Giriş Yap</button>
+    </div>
+
+    <!-- Sadece kayıt olurken görünen kullanıcı adı alanı -->
+    <input id="uname" placeholder="Kullanıcı adı seç..." maxlength="20" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next"/>
+    <input id="auth-email" type="email" placeholder="Email adresin..." autocomplete="email" enterkeyhint="next" style="margin-top:.5rem;"/>
+    <input id="auth-password" type="password" placeholder="Şifre (en az 6 karakter)..." autocomplete="current-password" enterkeyhint="go" style="margin-top:.5rem;"/>
+
     <div id="login-err" style="color:#ef4444;font-size:.78rem;font-family:'JetBrains Mono',monospace;min-height:1rem;line-height:1.5;"></div>
-    <button class="btn" id="login-btn" onclick="startGame()">Haritaya Gir →</button>
+    <button class="btn" id="login-btn" onclick="startGame()">Kayıt Ol ve Haritaya Gir →</button>
   </div>
 </div>
 
@@ -2453,9 +2464,8 @@ async function initMapData(){
 let _pendingClickMx=null, _pendingClickMy=null;
 function showRegisterPrompt(mx, my){
   _pendingClickMx=mx; _pendingClickMy=my;
-  document.getElementById('login-title').textContent='✏ Kullanıcı Adı Seç';
-  document.getElementById('login-desc').innerHTML='Piksel basmak için bir kullanıcı adı seç.<br>İstediğin zaman değiştirebilirsin.';
-  document.getElementById('login-btn').textContent='Devam Et →';
+  document.getElementById('login-title').textContent='✏ Hesabına Giriş Yap';
+  document.getElementById('login-desc').innerHTML='Piksel basmak için email ile kayıt ol veya giriş yap.';
   document.getElementById('login-err').textContent='';
   document.getElementById('login').style.display='flex';
   setTimeout(()=>document.getElementById('uname').focus(), 80);
@@ -2463,7 +2473,6 @@ function showRegisterPrompt(mx, my){
 
 function _activateUser(v){
   username=v;
-  try{ localStorage.setItem('pv_uname', v); }catch(e){}
   document.getElementById('login').style.display='none';
   document.getElementById('ubadge').textContent='👤 '+username;
   startRealtimeSync();
@@ -2472,104 +2481,125 @@ function _activateUser(v){
   loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); });
 }
 
-// IP adresini al (ipify - ücretsiz, CORS destekli)
-async function _getClientIP(){
-  try{
-    const r=await fetch('https://api.ipify.org?format=json',{cache:'force-cache'});
-    const d=await r.json();
-    return d.ip||null;
-  }catch(e){ return null; }
+// ── AUTH SEKME GEÇİŞİ (Kayıt Ol / Giriş Yap) ──────────────────────────
+let _authMode = 'signup'; // 'signup' | 'signin'
+function switchAuthTab(mode){
+  _authMode = mode;
+  const su = document.getElementById('auth-tab-signup');
+  const si = document.getElementById('auth-tab-signin');
+  const unameEl = document.getElementById('uname');
+  const btn = document.getElementById('login-btn');
+  document.getElementById('login-err').textContent = '';
+  if(mode === 'signup'){
+    su.classList.add('active'); su.style.background='#ffffff14'; su.style.color='#fff';
+    si.classList.remove('active'); si.style.background='transparent'; si.style.color='#aaa';
+    unameEl.style.display = '';
+    btn.textContent = 'Kayıt Ol ve Haritaya Gir →';
+  } else {
+    si.classList.add('active'); si.style.background='#ffffff14'; si.style.color='#fff';
+    su.classList.remove('active'); su.style.background='transparent'; su.style.color='#aaa';
+    unameEl.style.display = 'none';
+    btn.textContent = 'Giriş Yap →';
+  }
 }
 
-// IP → username bağlamasını Supabase'de kontrol et / kaydet
-async function _checkAndBindIP(ip, requestedName){
-  if(!ip) return {ok:true}; // IP alınamazsa geçir (engelleme yapma)
-  try{
-    // Bu IP daha önce kayıt olmuş mu?
-    const {data,error}=await supabase
-      .from('ip_users')
-      .select('username')
-      .eq('ip', ip)
-      .maybeSingle();
-    if(error) return {ok:true}; // Supabase hatası → geçir
-    if(data){
-      // IP kayıtlı — aynı isim mi?
-      if(data.username===requestedName) return {ok:true};
-      // Farklı isim → reddet
-      return {ok:false, bound: data.username};
-    }
-    // IP henüz kayıtlı değil → kaydet
-    await supabase.from('ip_users').insert({ip, username:requestedName});
-    return {ok:true};
-  }catch(e){ return {ok:true}; }
-}
+// ── GÜVENLİK NOTU: Eski IP-binding sistemi (bir IP'nin tek bir kullanıcı
+// adına bağlanması) tamamen kaldırıldı. Artık kimlik doğrulama gerçek bir
+// email+şifre hesabına (Supabase Auth) dayanıyor; bu hem daha güvenli hem
+// de VPN/farklı ağ ile sınırsız yeni "kullanıcı adı" açıp pixel limitini
+// sıfırlama açığını kapatıyor (bir email = bir hesap = bir pixel kotası).
 
 async function startGame(){
-  const v=document.getElementById('uname').value.trim();
-  if(!v){document.getElementById('uname').style.borderColor='#e63946';return;}
-
-  // ── GÜVENLİK: kullanıcı adı validasyonu ──────────────────────────────
-  // Daha önce kullanıcı adına hiçbir karakter kısıtlaması yoktu; bu isim
-  // daha sonra faction üye listesi, liderlik tablosu, sohbet gibi pek çok
-  // yerde innerHTML ile diğer kullanıcıların ekranına basılıyordu. HTML/JS
-  // karakteri içeren bir isim (örn. <img src=x onerror=...>) o ismi gören
-  // herkesin tarayıcısında kod çalıştırabilirdi (stored XSS). Bu yüzden
-  // kayıt anında, sorunun kaynağında, sadece harf/rakam/boşluk/tire/alt
-  // çizgiye izin veriyoruz — HTML'e asla özel anlam taşıyan bir karakter
-  // (< > " ' & vb.) giremiyor.
-  const NAME_RE = /^[\p{L}\p{N} _\-]{2,20}$/u;
-  if(!NAME_RE.test(v)){
-    document.getElementById('login-err').textContent='⚠ Kullanıcı adı sadece harf, rakam, boşluk, "-" ve "_" içerebilir (2-20 karakter).';
-    document.getElementById('uname').style.borderColor='#e63946';
-    return;
-  }
-
-  const btn=document.getElementById('login-btn');
   const errEl=document.getElementById('login-err');
-  btn.disabled=true;
-  btn.textContent='Kontrol ediliyor...';
+  const btn=document.getElementById('login-btn');
+  const email=document.getElementById('auth-email').value.trim();
+  const password=document.getElementById('auth-password').value;
   errEl.textContent='';
 
-  const ip=await _getClientIP();
-  const check=await _checkAndBindIP(ip, v);
-
-  if(!check.ok){
-    // Bu IP başka bir isimle kayıtlı
-    errEl.textContent='⛔ Bu cihaz zaten "'+check.bound+'" adıyla kayıtlı. Farklı bir isim kullanamazsın.';
-    document.getElementById('uname').value='';
-    document.getElementById('uname').style.borderColor='#e63946';
-    document.getElementById('uname').placeholder=check.bound;
-    btn.disabled=false;
-    btn.textContent='Devam Et →';
+  if(!email || !password){
+    errEl.textContent='⚠ Email ve şifre gerekli.';
+    return;
+  }
+  if(password.length < 6){
+    errEl.textContent='⚠ Şifre en az 6 karakter olmalı.';
     return;
   }
 
-  btn.disabled=false;
-  btn.textContent='Devam Et →';
-  _activateUser(v);
+  if(_authMode === 'signup'){
+    const v=document.getElementById('uname').value.trim();
+    if(!v){document.getElementById('uname').style.borderColor='#e63946';errEl.textContent='⚠ Kullanıcı adı gerekli.';return;}
+
+    // ── GÜVENLİK: kullanıcı adı validasyonu ──────────────────────────
+    // Daha sonra faction üye listesi, liderlik tablosu, sohbet gibi pek
+    // çok yerde diğer kullanıcıların ekranına basılan bu isim, HTML/JS
+    // karakteri içeremesin diye (stored XSS önleme) kısıtlanıyor.
+    const NAME_RE = /^[\p{L}\p{N} _\-]{2,20}$/u;
+    if(!NAME_RE.test(v)){
+      errEl.textContent='⚠ Kullanıcı adı sadece harf, rakam, boşluk, "-" ve "_" içerebilir (2-20 karakter).';
+      document.getElementById('uname').style.borderColor='#e63946';
+      return;
+    }
+
+    btn.disabled=true; btn.textContent='Kayıt olunuyor...';
+    const {data,error} = await supabase.auth.signUp({
+      email, password,
+      options:{ data:{ display_name: v } }
+    });
+    btn.disabled=false; btn.textContent='Kayıt Ol ve Haritaya Gir →';
+
+    if(error){
+      errEl.textContent='⚠ '+(error.message==='User already registered' ? 'Bu email zaten kayıtlı, "Giriş Yap" sekmesini kullan.' : error.message);
+      return;
+    }
+    if(!data.session){
+      errEl.textContent='✓ Kayıt başarılı! Email adresine gelen onay linkine tıkla, sonra giriş yap.';
+      return;
+    }
+    _activateUser(v);
+  } else {
+    btn.disabled=true; btn.textContent='Giriş yapılıyor...';
+    const {data,error} = await supabase.auth.signInWithPassword({ email, password });
+    btn.disabled=false; btn.textContent='Giriş Yap →';
+
+    if(error){
+      errEl.textContent='⚠ Email veya şifre hatalı.';
+      return;
+    }
+    const displayName = data.user?.user_metadata?.display_name || data.user?.email || 'Oyuncu';
+    _activateUser(displayName);
+  }
+
   if(_pendingClickMx!==null){
     setTimeout(()=>{ window.handleClick(_pendingClickMx,_pendingClickMy); _pendingClickMx=_pendingClickMy=null; },200);
   }
 }
 document.getElementById('uname').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+document.getElementById('auth-email').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+document.getElementById('auth-password').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
 // ── Shift tuşu: canvas üzerinde fırça modu ipucu ──
 document.addEventListener('keydown',e=>{if(e.key==='Shift'&&!panning&&!_brushActive)canvas.style.cursor='cell';});
 document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.style.cursor='crosshair';});
 
-// Haritayı hemen başlat — login gerekmez
-(function initMapWithoutLogin(){
+// Haritayı hemen başlat — login gerekmez (misafir olarak harita görünür,
+// pixel basmak için Supabase Auth oturumu gerekir)
+(async function initMapWithoutLogin(){
   document.getElementById('topbar').style.display='flex';
   document.getElementById('main').style.display='grid';
 
-  // Daha önce kaydedilmiş kullanıcı adı varsa otomatik giriş yap
-  let savedName='';
-  try{ savedName=localStorage.getItem('pv_uname')||''; }catch(e){}
+  // ── GÜVENLİK: Daha önce "kayıtlı kullanıcı adı" kontrolü localStorage'daki
+  // basit bir 'pv_uname' anahtarına bakıyordu — bu, herkesin konsoldan
+  // localStorage.setItem('pv_uname','BaşkasınınAdı') yazarak başka birinin
+  // kimliğine bürünebilmesi anlamına geliyordu. Artık gerçek oturum durumu
+  // Supabase Auth'tan (güvenli, sahteleştirilemeyen bir JWT token ile)
+  // soruluyor: supabase.auth.getSession().
+  const { data: { session } } = await supabase.auth.getSession();
 
-  if(savedName){
-    // Otomatik giriş — IP uyumu arka planda kontrol edilir
-    username=savedName;
+  if(session && session.user){
+    // Gerçek bir oturum var — otomatik giriş yap
+    const displayName = session.user.user_metadata?.display_name || session.user.email || 'Oyuncu';
+    username=displayName;
     document.getElementById('ubadge').textContent='👤 '+username;
-    document.getElementById('uname').value=savedName;
+    document.getElementById('uname').value=displayName;
     (async()=>{
       await loadData(); updateSidebar();
       await initMapData();
@@ -2581,8 +2611,6 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
         loadCD(); updateDots();
         loadProfile();
         loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); });
-        // IP bağlamasını sessizce güncelle (kayıt yoksa ekle)
-        _getClientIP().then(ip=>{ if(ip) _checkAndBindIP(ip, savedName); });
         // Otomatik girişte de startGame() ile aynı arayüz elemanlarını göster
         // (admin butonu, sohbet butonu, kenar panel butonu vb.) — normalde
         // bunlar sadece startGame() çağrıldığında görünür hale geliyordu,
@@ -2618,6 +2646,14 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
       else mapImg.onload=()=>{ buildOffscreens(); };
     })();
   }
+
+  // Oturum durumu değişirse (başka sekmede çıkış yapıldıysa vb.) arayüzü güncelle
+  supabase.auth.onAuthStateChange((event, newSession) => {
+    if(event === 'SIGNED_OUT'){
+      username = '';
+      document.getElementById('ubadge').textContent='👤 Misafir';
+    }
+  });
 })();
 let _resizeDebounce=null;
 window.addEventListener('resize',()=>{
@@ -3878,12 +3914,24 @@ function selectFrame(fid){
   setTimeout(openProfileModal,10);
   applyProfileToBtn();
 }
-function saveProfileName(){
+async function saveProfileName(){
   const val=document.getElementById('pc-name-input').value.trim();
   if(!val) return;
+  // ── GÜVENLİK: isim değişikliği de kayıt anındaki ile aynı kısıtlamadan
+  // geçmeli (HTML/JS karakteri içermesin) — aksi halde stored XSS açığı
+  // profil üzerinden isim değiştirilerek yeniden açılabilirdi.
+  const NAME_RE = /^[\p{L}\p{N} _\-]{2,20}$/u;
+  if(!NAME_RE.test(val)){
+    showPopup('⚠ İsim sadece harf, rakam, boşluk, "-" ve "_" içerebilir (2-20 karakter).');
+    return;
+  }
   profileData.name=val;
   username=val;
-  try{localStorage.setItem('pv_uname',val);}catch(e){}
+  // İsim artık Supabase Auth'taki gerçek hesabın metadata'sında tutuluyor
+  // (localStorage'da tutulan, kolayca sahteleştirilebilen eski yöntem yerine).
+  try{
+    await supabase.auth.updateUser({ data: { display_name: val } });
+  }catch(e){ console.error('İsim güncellenemedi:', e); }
   saveProfile();
   applyProfileToBtn();
   showPopup('✓ İsim güncellendi: '+val);
