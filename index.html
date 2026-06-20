@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="format-detection" content="telephone=no,date=no,address=no,email=no">
-<title>PixelVote — Türkiye</title>
+<title>PixelFront</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -1132,7 +1132,7 @@ button, [onclick], .pc-frame {
 
 <div id="login">
   <div class="lbox">
-    <h1 id="login-title">🗳 PixelVote</h1>
+    <h1 id="login-title">🗳 PixelFront</h1>
     <p id="login-desc">Türkiye'nin seçim haritasını şekillendir.<br>Her <b>3 dakikada</b> bir <b>7 piksel</b> hakkın var.<br>İlin içine tıkla — sınırlara tıklanamaz.</p>
 
     <!-- Kayıt ol / Giriş yap sekmeleri -->
@@ -1152,7 +1152,7 @@ button, [onclick], .pc-frame {
 </div>
 
 <div id="topbar">
-  <h1>🗳 PixelVote — Türkiye</h1>
+  <h1>🗳 PixelFront</h1>
 
   <div class="sep"></div>
   <div id="ubadge"></div>
@@ -1535,7 +1535,7 @@ try{
   // CDN engellenmiş/yavaş olsa bile aşağıdaki tüm const/let tanımları (username dahil)
   // çalışsın diye burada asla throw etmiyoruz — bunun yerine sahte (no-op) bir
   // supabase istemcisi kullanıyoruz, oyun çevrimdışı/yerel modda çalışmaya devam eder.
-  console.error('[PixelVote] Supabase başlatılamadı, çevrimdışı moda geçiliyor:', e);
+  console.error('[PixelFront] Supabase başlatılamadı, çevrimdışı moda geçiliyor:', e);
   _pvOfflineMode = true;
   const _pvStubBuilder = (()=>{
     const b = {};
