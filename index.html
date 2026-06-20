@@ -2180,6 +2180,12 @@ async function saveData(){
 async function loadData(){
   try{
     const {data,error}=await supabase.from('pixels').select('*');
+    console.log('[DEBUG loadData] error:', error);
+    console.log('[DEBUG loadData] toplam satır sayısı:', data ? data.length : 'null');
+    if(data){
+      const debugFlat = data.find(r => Number(r.flat) === 2336227);
+      console.log('[DEBUG loadData] flat=2336227 sunucudan gelen satır:', debugFlat);
+    }
     if(data&&!error){
       // ÖNEMLİ: 'pixels' tablosunda flat üzerinde DB seviyesinde bir UNIQUE/PRIMARY KEY
       // garantisi yoksa, aynı flat için zamanla BİRDEN FAZLA satır birikebilir (upsert
