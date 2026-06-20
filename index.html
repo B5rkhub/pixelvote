@@ -1139,6 +1139,7 @@ button, [onclick], .pc-frame {
   <div class="sep"></div>
   <div id="ubadge"></div>
   <button id="adminbtn" class="btn" style="font-size:.7rem;padding:.3rem .7rem;background:#dc2626;display:none" onclick="toggleAdmin()">⚙ Admin</button>
+  <button id="timelapse-btn" class="btn" style="font-size:.7rem;padding:.3rem .7rem;background:linear-gradient(135deg,#1e40af,#7c3aed);display:none" onclick="openTimelapseModal()" title="Timelapse Oluştur">🎬 Timelapse</button>
 </div>
 
 <!-- Sidebar toggle -->
@@ -1776,13 +1777,41 @@ function canvasToFlat(mx,my){
   return ix+iy*IMG_W;
 }
 
+// ── FIRÇA MODU: Shift basılıyken sol tık sürükleyince kalem gibi pixel bas ──
+let _brushActive = false; // shift+mousedown ile aktif olur
 canvas.addEventListener('mousedown',e=>{
   if(e.button===1||e.button===2){panning=true;panSt={x:e.clientX-ox,y:e.clientY-oy};canvas.style.cursor='grabbing';return;}
   const r=canvas.getBoundingClientRect();
+  if(e.shiftKey){
+    _brushActive = true;
+    canvas.style.cursor = 'cell';
+    window.handleClick(e.clientX-r.left,e.clientY-r.top);
+    return;
+  }
   window.handleClick(e.clientX-r.left,e.clientY-r.top);
 });
+canvas.addEventListener('mouseup',()=>{
+  _brushActive = false;
+  if(!panning) canvas.style.cursor='crosshair';
+});
+canvas.addEventListener('mouseleave',()=>{ _brushActive = false; });
 canvas.addEventListener('mousemove',e=>{
   if(panning){ox=e.clientX-panSt.x;oy=e.clientY-panSt.y;clampView();draw();return;}
+  // Shift basılı + sol tuş sürükleme = fırça modu
+  if(_brushActive && e.shiftKey && e.buttons===1){
+    const r=canvas.getBoundingClientRect();
+    window.handleClick(e.clientX-r.left,e.clientY-r.top);
+    return;
+  } else if(_brushActive && (!e.shiftKey || e.buttons!==1)){
+    _brushActive = false;
+    canvas.style.cursor = 'crosshair';
+  }
+  // Shift tuşuna basılıyken cursor'u değiştir (sürüklemeden önce de ipucu ver)
+  if(e.shiftKey && !panning){
+    canvas.style.cursor = 'cell';
+  } else if(!panning && !_brushActive){
+    canvas.style.cursor = 'crosshair';
+  }
   const r=canvas.getBoundingClientRect();
   const mx=e.clientX-r.left, my=e.clientY-r.top;
   const flat=canvasToFlat(mx,my);
@@ -1836,7 +1865,7 @@ canvas.addEventListener('mousemove',e=>{
     tip.style.opacity='0';
   }
 });
-canvas.addEventListener('mouseup',()=>{panning=false;canvas.style.cursor='crosshair';});
+canvas.addEventListener('mouseup',()=>{panning=false;_brushActive=false;canvas.style.cursor='crosshair';});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('wheel',e=>{
   e.preventDefault();
@@ -1921,12 +1950,7 @@ async function handleClick(mx,my){
   const pi=FLAT_TO_PROV[flat];
   if(pi<0){showPopup('Bir ilin içine tıkla!');return;}
 
-  // ── HİLE ÖNLEME: Rate limiting (min 800ms aralık) — sadece UX için, asıl kontrol sunucuda ──
   const now = Date.now();
-  if(now - _lastPixelTime < _MIN_PIXEL_INTERVAL_MS){
-    showPopup('⏳ Çok hızlı! Biraz bekle.');
-    return;
-  }
 
   // ── HİLE ÖNLEME: Yerel hızlı kontrol (tarayıcıya güvenmiyoruz, ama anında geri bildirim için bakıyoruz) ──
   const currentPix = _getPixLeft();
@@ -2372,6 +2396,9 @@ async function startGame(){
   }
 }
 document.getElementById('uname').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+// ── Shift tuşu: canvas üzerinde fırça modu ipucu ──
+document.addEventListener('keydown',e=>{if(e.key==='Shift'&&!panning&&!_brushActive)canvas.style.cursor='cell';});
+document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.style.cursor='crosshair';});
 
 // Haritayı hemen başlat — login gerekmez
 (function initMapWithoutLogin(){
@@ -2405,6 +2432,7 @@ document.getElementById('uname').addEventListener('keydown',e=>{if(e.key==='Ente
         // bunlar sadece startGame() çağrıldığında görünür hale geliyordu,
         // ama otomatik giriş akışı startGame()'i hiç çağırmıyordu.
         document.getElementById('adminbtn').style.display='';
+        document.getElementById('timelapse-btn').style.display='';
         document.getElementById('chat-btn').style.display='flex';
         document.getElementById('sidebar-toggle').style.display='flex';
         if(typeof initSidebarToggle==='function') initSidebarToggle();
@@ -2473,6 +2501,7 @@ const _osg=startGame;
 window.startGame=async function(){
   _osg();
   document.getElementById('adminbtn').style.display='';
+  document.getElementById('timelapse-btn').style.display='';
 };
 
 // ── PAINT MODE (sadece oy pikseli silme) ──
@@ -4304,6 +4333,329 @@ setInterval(()=>{
 // Initialize on load
 loadPixelEventState();
 resizeRippleCanvas();
+
+// ══════════════════════════════════════════════════════════
+// TİMELAPSE SİSTEMİ
+// ══════════════════════════════════════════════════════════
+
+const TL_DAILY_KEY = 'pv_timelapse_day';
+let tlSelectedHours = 1;
+let tlSelectedFPS = 2;
+let tlRecorder = null;
+let tlChunks = [];
+
+function openTimelapseModal() {
+  const modal = document.getElementById('timelapse-modal');
+  modal.style.display = 'flex';
+  checkTLDailyLimit();
+  updateTLPreviewInfo();
+}
+
+function closeTimelapseModal() {
+  document.getElementById('timelapse-modal').style.display = 'none';
+  if (tlRecorder && tlRecorder.state !== 'inactive') {
+    tlRecorder.stop();
+    tlRecorder = null;
+  }
+}
+
+function checkTLDailyLimit() {
+  const today = new Date().toISOString().slice(0, 10);
+  let stored = null;
+  try { stored = localStorage.getItem(TL_DAILY_KEY); } catch(e) {}
+  const infoEl = document.getElementById('tl-daily-info');
+  const startBtn = document.getElementById('tl-start-btn');
+  if (stored === today) {
+    infoEl.style.background = 'rgba(239,68,68,.1)';
+    infoEl.style.borderColor = 'rgba(239,68,68,.35)';
+    infoEl.innerHTML = '⛔ <b>Bugün zaten timelapse oluşturdun.</b> Yarın tekrar kullanabilirsin.<br><small style="color:var(--muted)">Bu özellik sunucuyu yoğun çalıştırdığı için günde 1 kez sınırlıdır.</small>';
+    startBtn.disabled = true;
+    startBtn.style.opacity = '0.4';
+    startBtn.style.cursor = 'not-allowed';
+  } else {
+    infoEl.style.background = 'linear-gradient(135deg,rgba(59,130,246,.12),rgba(139,92,246,.08))';
+    infoEl.style.borderColor = 'rgba(139,92,246,.3)';
+    infoEl.innerHTML = '📅 Timelapse oluşturmak <b>günde 1 kez</b> kullanılabilir — haritanın yoğun hesaplama gerektiren bir özelliğidir.';
+    startBtn.disabled = false;
+    startBtn.style.opacity = '1';
+    startBtn.style.cursor = 'pointer';
+  }
+}
+
+function selectTLRange(btn, hours) {
+  document.querySelectorAll('.tl-range-btn').forEach(b => b.classList.remove('tl-sel'));
+  btn.classList.add('tl-sel');
+  tlSelectedHours = hours;
+  updateTLPreviewInfo();
+}
+
+function selectTLSpeed(btn, fps) {
+  document.querySelectorAll('.tl-speed-btn').forEach(b => b.classList.remove('tl-ssel'));
+  btn.classList.add('tl-ssel');
+  tlSelectedFPS = fps;
+  updateTLPreviewInfo();
+}
+
+function updateTLPreviewInfo() {
+  const preview = document.getElementById('tl-preview-info');
+  if (!preview) return;
+  const hours = tlSelectedHours;
+  const fps = tlSelectedFPS;
+  const totalMinutes = hours * 60;
+  const frameCount = Math.min(totalMinutes, 300);
+  const estSec = Math.ceil(frameCount / fps);
+  const rangeLabels = {1:'Son 1 saat',6:'Son 6 saat',24:'Bugün (24s)',72:'Son 3 gün',168:'Son 7 gün'};
+  const speedLabels = {2:'Yavaş',5:'Normal',12:'Hızlı'};
+  preview.innerHTML = `⏱ Aralık: <b style="color:var(--txt)">${rangeLabels[hours]||hours+'s'}</b><br>🎞 Hız: <b style="color:var(--txt)">${speedLabels[fps]||fps} FPS</b><br>📐 Tahmini kare: ~${frameCount}<br>🎬 Tahmini süre: ~${estSec} saniye`;
+}
+
+async function startTimelapse() {
+  const today = new Date().toISOString().slice(0, 10);
+  let stored = null;
+  try { stored = localStorage.getItem(TL_DAILY_KEY); } catch(e) {}
+  if (stored === today) {
+    showPopup('⛔ Bugün zaten timelapse oluşturdun!');
+    return;
+  }
+  if (!window.MediaRecorder) {
+    showPopup('⚠ Tarayıcın video kaydını desteklemiyor. Chrome/Edge kullan.');
+    return;
+  }
+  try { localStorage.setItem(TL_DAILY_KEY, today); } catch(e) {}
+
+  document.getElementById('tl-form').style.display = 'none';
+  const prog = document.getElementById('tl-progress');
+  prog.style.display = 'flex';
+  document.getElementById('tl-download-wrap').style.display = 'none';
+
+  const statusEl = document.getElementById('tl-status-text');
+  const barEl = document.getElementById('tl-prog-bar');
+
+  try {
+    statusEl.textContent = 'Supabase\'den veriler çekiliyor...';
+    barEl.style.width = '5%';
+
+    const sinceMs = Date.now() - (tlSelectedHours * 3600 * 1000);
+    const sinceISO = new Date(sinceMs).toISOString();
+
+    const { data: pixelHistory, error } = await supabase
+      .from('pixels')
+      .select('flat, province, party, updated_at')
+      .gte('updated_at', sinceISO)
+      .order('updated_at', { ascending: true });
+
+    if (error) throw error;
+
+    if (!pixelHistory || pixelHistory.length === 0) {
+      statusEl.textContent = '⚠ Bu zaman aralığında hiç piksel bulunamadı.';
+      barEl.style.width = '100%';
+      barEl.style.background = '#ef4444';
+      try { localStorage.removeItem(TL_DAILY_KEY); } catch(e) {}
+      return;
+    }
+
+    statusEl.textContent = `${pixelHistory.length} piksel değişimi bulundu. Video hazırlanıyor...`;
+    barEl.style.width = '20%';
+
+    // Fetch base state (pixels before the selected range)
+    const { data: baseState } = await supabase
+      .from('pixels')
+      .select('flat, party')
+      .lt('updated_at', sinceISO);
+
+    barEl.style.width = '30%';
+
+    // Build flat→party map from base state
+    const flatMap = new Map();
+    if (baseState) {
+      for (const px of baseState) flatMap.set(px.flat, px.party);
+    }
+
+    // Group pixel events into time buckets → frames
+    const startTime = new Date(pixelHistory[0].updated_at).getTime();
+    const endTime = new Date(pixelHistory[pixelHistory.length - 1].updated_at).getTime();
+    const totalDuration = Math.max(endTime - startTime, 1000);
+    const MAX_FRAMES = 240;
+    const bucketMs = Math.ceil(totalDuration / MAX_FRAMES);
+
+    const buckets = [];
+    let currentBucket = [];
+    let currentBucketEnd = startTime + bucketMs;
+    for (const px of pixelHistory) {
+      const t = new Date(px.updated_at).getTime();
+      if (t > currentBucketEnd && currentBucket.length > 0) {
+        buckets.push([...currentBucket]);
+        currentBucket = [];
+        currentBucketEnd = t + bucketMs;
+      }
+      currentBucket.push(px);
+    }
+    if (currentBucket.length > 0) buckets.push(currentBucket);
+
+    // Setup canvas
+    const tlCanvas = document.getElementById('tl-canvas');
+    tlCanvas.width = IMG_W;
+    tlCanvas.height = IMG_H;
+    tlCanvas.style.display = 'block';
+    const tlCtx = tlCanvas.getContext('2d');
+    tlCtx.imageSmoothingEnabled = false;
+
+    function renderFrame() {
+      if (_origBaseImageData) {
+        tlCtx.putImageData(_origBaseImageData, 0, 0);
+      } else if (baseCanvas) {
+        tlCtx.drawImage(baseCanvas, 0, 0);
+      }
+      flatMap.forEach((party, flat) => {
+        if (party >= 0 && party < PARTIES.length) {
+          tlCtx.fillStyle = PARTIES[party].color;
+          tlCtx.fillRect(flat % IMG_W, Math.floor(flat / IMG_W), 1, 1);
+        }
+      });
+    }
+
+    // Setup MediaRecorder
+    let mimeType = 'video/webm;codecs=vp9';
+    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm;codecs=vp8';
+    if (!MediaRecorder.isTypeSupported(mimeType)) mimeType = 'video/webm';
+
+    const stream = tlCanvas.captureStream(tlSelectedFPS);
+    tlRecorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 5000000 });
+    tlChunks = [];
+    tlRecorder.ondataavailable = e => { if (e.data.size > 0) tlChunks.push(e.data); };
+    tlRecorder.start();
+
+    // Draw initial state
+    renderFrame();
+    await new Promise(r => setTimeout(r, Math.round(1000 / tlSelectedFPS)));
+
+    const totalBuckets = buckets.length;
+    const frameDelay = Math.round(1000 / tlSelectedFPS);
+
+    for (let i = 0; i < totalBuckets; i++) {
+      const bucket = buckets[i];
+      for (const px of bucket) flatMap.set(px.flat, px.party);
+      renderFrame();
+
+      // Timestamp overlay
+      const ts = new Date(bucket[bucket.length - 1].updated_at);
+      const label = ts.toLocaleString('tr-TR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const lw = tlCtx.measureText(label).width + 14;
+      tlCtx.fillStyle = 'rgba(6,6,15,0.7)';
+      tlCtx.fillRect(6, IMG_H - 20, lw, 16);
+      tlCtx.fillStyle = '#e8e8f4';
+      tlCtx.font = 'bold 10px monospace';
+      tlCtx.fillText(label, 13, IMG_H - 8);
+
+      // Progress strip
+      const progress = (i + 1) / totalBuckets;
+      tlCtx.fillStyle = 'rgba(0,0,0,0.5)';
+      tlCtx.fillRect(0, IMG_H - 4, IMG_W, 4);
+      tlCtx.fillStyle = '#7c6aff';
+      tlCtx.fillRect(0, IMG_H - 4, Math.floor(IMG_W * progress), 4);
+
+      barEl.style.width = (35 + Math.floor(progress * 55)) + '%';
+      statusEl.textContent = `Kare ${i + 1} / ${totalBuckets}`;
+
+      await new Promise(r => setTimeout(r, frameDelay));
+    }
+
+    // Stop recording
+    statusEl.textContent = 'Video dosyası oluşturuluyor...';
+    barEl.style.width = '96%';
+    tlRecorder.stop();
+    await new Promise(r => { tlRecorder.onstop = r; });
+
+    const blob = new Blob(tlChunks, { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const link = document.getElementById('tl-download-link');
+    link.href = url;
+    const dateStr = new Date().toISOString().slice(0, 10);
+    link.download = `pixelvote_timelapse_${dateStr}_${tlSelectedHours}s.webm`;
+
+    barEl.style.width = '100%';
+    statusEl.textContent = '✅ Video hazır, indirebilirsin!';
+    document.getElementById('tl-download-wrap').style.display = 'flex';
+
+  } catch(err) {
+    console.error('Timelapse hatası:', err);
+    statusEl.textContent = '⚠ Hata: ' + (err.message || 'Bilinmeyen hata');
+    barEl.style.background = '#ef4444';
+    try { localStorage.removeItem(TL_DAILY_KEY); } catch(e) {}
+  }
+}
+
+function resetTimelapse() {
+  document.getElementById('tl-form').style.display = 'flex';
+  document.getElementById('tl-progress').style.display = 'none';
+  document.getElementById('tl-prog-bar').style.width = '0%';
+  document.getElementById('tl-prog-bar').style.background = 'linear-gradient(90deg,#3b82f6,#8b5cf6)';
+  document.getElementById('tl-canvas').style.display = 'none';
+  checkTLDailyLimit();
+}
+
+// (timelapse button visibility is handled in afterLoad and startGame hooks above)
 </script>
-</body>
-</html>
+
+<!-- TIMELAPSE MODAL -->
+<div id="timelapse-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:20px;width:460px;max-width:95vw;padding:1.8rem;display:flex;flex-direction:column;gap:1.1rem;box-shadow:0 24px 64px rgba(0,0,0,.8);max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <h2 style="font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,#3b82f6,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">🎬 Timelapse Oluştur</h2>
+      <button onclick="closeTimelapseModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;">✕</button>
+    </div>
+
+    <div id="tl-daily-info" style="background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(139,92,246,.08));border:1px solid rgba(139,92,246,.3);border-radius:12px;padding:.85rem 1rem;font-size:.78rem;color:var(--txt);line-height:1.6;">
+      📅 Timelapse oluşturmak <b>günde 1 kez</b> kullanılabilir.
+    </div>
+
+    <div id="tl-form" style="display:flex;flex-direction:column;gap:.85rem;">
+      <div style="display:flex;flex-direction:column;gap:.35rem;">
+        <label style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Zaman Aralığı</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;">
+          <button class="tl-range-btn tl-sel" onclick="selectTLRange(this,1)">⚡ Son 1 Saat</button>
+          <button class="tl-range-btn" onclick="selectTLRange(this,6)">🕐 Son 6 Saat</button>
+          <button class="tl-range-btn" onclick="selectTLRange(this,24)">📅 Bugün (24s)</button>
+          <button class="tl-range-btn" onclick="selectTLRange(this,72)">📆 Son 3 Gün</button>
+          <button class="tl-range-btn" onclick="selectTLRange(this,168)" style="grid-column:span 2">🗓 Son 7 Gün</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.35rem;">
+        <label style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Video Hızı</label>
+        <div style="display:flex;gap:.5rem;">
+          <button class="tl-speed-btn tl-ssel" onclick="selectTLSpeed(this,2)">🐢 Yavaş</button>
+          <button class="tl-speed-btn" onclick="selectTLSpeed(this,5)">▶ Normal</button>
+          <button class="tl-speed-btn" onclick="selectTLSpeed(this,12)">⚡ Hızlı</button>
+        </div>
+      </div>
+      <div id="tl-preview-info" style="background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;padding:.7rem .9rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--muted);line-height:1.8;">
+        ⏱ Aralık: <b style="color:var(--txt)">Son 1 saat</b><br>🎞 Hız: <b style="color:var(--txt)">Yavaş (2 FPS)</b><br>📐 Tahmini kare: ~60<br>🎬 Tahmini süre: ~30 saniye
+      </div>
+      <button id="tl-start-btn" onclick="startTimelapse()" style="background:linear-gradient(135deg,#1e40af,#7c3aed);color:#fff;border:none;border-radius:10px;padding:.75rem 1rem;font-family:'Inter',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;">
+        🎬 Timelapse Başlat
+      </button>
+    </div>
+
+    <div id="tl-progress" style="display:none;flex-direction:column;gap:.8rem;">
+      <div id="tl-status-text" style="font-size:.78rem;color:var(--muted);text-align:center;">Veri yükleniyor...</div>
+      <div style="background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;height:10px;overflow:hidden;">
+        <div id="tl-prog-bar" style="height:100%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);border-radius:8px;width:0%;transition:width .3s ease;"></div>
+      </div>
+      <canvas id="tl-canvas" style="width:100%;border-radius:10px;border:1px solid var(--bdr);background:#06060f;display:none;image-rendering:pixelated;"></canvas>
+      <div id="tl-download-wrap" style="display:none;flex-direction:column;gap:.5rem;align-items:stretch;">
+        <div style="font-size:.75rem;color:#10b981;text-align:center;font-weight:700;">✅ Video hazır!</div>
+        <a id="tl-download-link" style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;border-radius:10px;padding:.7rem 1rem;font-family:'Inter',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;text-align:center;text-decoration:none;display:block;">⬇ Videoyu İndir (.webm)</a>
+      </div>
+      <button onclick="resetTimelapse()" style="background:var(--surf2);border:1px solid var(--bdr);color:var(--muted);border-radius:8px;padding:.5rem 1rem;font-size:.75rem;font-family:'Inter',sans-serif;cursor:pointer;">← Yeniden Ayarla</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.tl-range-btn{background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;color:var(--muted);font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;padding:.5rem .7rem;transition:all .15s;}
+.tl-range-btn:hover{border-color:#3b82f6;color:var(--txt);}
+.tl-range-btn.tl-sel{background:rgba(59,130,246,.15);border-color:#3b82f6;color:#60a5fa;}
+.tl-speed-btn{flex:1;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;color:var(--muted);font-family:'Inter',sans-serif;font-size:.75rem;font-weight:700;cursor:pointer;padding:.45rem .6rem;transition:all .15s;}
+.tl-speed-btn:hover{border-color:#8b5cf6;color:var(--txt);}
+.tl-speed-btn.tl-ssel{background:rgba(139,92,246,.15);border-color:#8b5cf6;color:#a78bfa;}
+</style>
