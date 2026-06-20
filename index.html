@@ -2181,8 +2181,28 @@ async function loadData(){
   try{
     const {data,error}=await supabase.from('pixels').select('*');
     if(data&&!error){
-      pixData={};
+      // ÖNEMLİ: 'pixels' tablosunda flat üzerinde DB seviyesinde bir UNIQUE/PRIMARY KEY
+      // garantisi yoksa, aynı flat için zamanla BİRDEN FAZLA satır birikebilir (upsert
+      // bunu engellemiyor olabilir). Bu durumda sadece en son güncellenmiş (updated_at)
+      // satırı kullanıyoruz — yoksa rollback/oy gibi son yazılan değişiklikler, F5'te
+      // eski/duplike bir satır yüzünden ekranda eski haline "geri dönüyormuş" gibi görünür.
+      const latestByFlat = new Map(); // flat -> row (en güncel)
       data.forEach(row=>{
+        const f = Number(row.flat);
+        const existing = latestByFlat.get(f);
+        if(!existing){
+          latestByFlat.set(f, row);
+          return;
+        }
+        // updated_at varsa ona göre kıyasla; yoksa son gelen satırı tut (DB sırası garanti değil
+        // ama en azından deterministik tek bir kayıt seçilmiş olur).
+        const tNew = row.updated_at ? new Date(row.updated_at).getTime() : 0;
+        const tOld = existing.updated_at ? new Date(existing.updated_at).getTime() : 0;
+        if(tNew >= tOld) latestByFlat.set(f, row);
+      });
+
+      pixData={};
+      latestByFlat.forEach(row=>{
         if(!pixData[row.province])pixData[row.province]=[];
         // party'yi her zaman integer'a zorla — Supabase bazen string döner
         const partyInt=parseInt(row.party,10);
