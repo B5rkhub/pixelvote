@@ -1206,6 +1206,42 @@ button, [onclick], .pc-frame {
   <button id="timelapse-btn" class="btn" style="font-size:.7rem;padding:.3rem .7rem;background:linear-gradient(135deg,#1e40af,#7c3aed);display:none" onclick="openTimelapseModal()" title="Timelapse Oluştur">🎬 Timelapse</button>
   <button id="history-btn" class="btn" style="font-size:.7rem;padding:.3rem .7rem;background:linear-gradient(135deg,#0f766e,#0369a1);display:none" onclick="openHistoryModal()" title="Geçmişe Bak">🕰 Geçmiş</button>
   <button id="adminbtn" class="btn" style="font-size:.7rem;padding:.3rem .7rem;background:#dc2626;display:none" onclick="toggleAdmin()">⚙ Admin</button>
+  <button id="ownerbtn" class="btn" style="font-size:.7rem;padding:.3rem .7rem;background:linear-gradient(135deg,#b45309,#d97706);display:none" onclick="openOwnerPanel()" title="Admin Yönetimi">👑 Owner</button>
+</div>
+
+<!-- OWNER PANEL MODAL (admin ata / kaldır) -->
+<div id="owner-modal" style="display:none;position:fixed;inset:0;z-index:950;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:var(--surf);border:1px solid var(--bdr2);border-radius:20px;width:440px;max-width:95vw;padding:1.8rem;display:flex;flex-direction:column;gap:1.1rem;box-shadow:0 24px 64px rgba(0,0,0,.8);max-height:85vh;overflow-y:auto;">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="display:flex;align-items:center;gap:.6rem;">
+        <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#b45309,#d97706);display:flex;align-items:center;justify-content:center;font-size:1rem;">👑</div>
+        <h2 style="font-size:1.05rem;font-weight:800;background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Admin Yönetimi</h2>
+      </div>
+      <button onclick="closeOwnerPanel()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;">✕</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:.5rem;">
+      <label style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Email ile Admin Ata</label>
+      <input id="owner-add-email" type="email" placeholder="kullanici@example.com" style="background:var(--bg);border:1px solid var(--bdr2);border-radius:10px;padding:.65rem .9rem;color:var(--txt);font-family:'Space Mono',monospace;font-size:.82rem;outline:none;width:100%;">
+      <div style="display:flex;gap:.5rem;">
+        <button onclick="ownerAssignRole('admin')" style="flex:1;background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;border:none;border-radius:10px;padding:.65rem 1rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;">Admin Yap</button>
+        <button onclick="ownerAssignRole('owner')" style="flex:1;background:linear-gradient(135deg,#b45309,#d97706);color:#fff;border:none;border-radius:10px;padding:.65rem 1rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;">Owner Yap</button>
+      </div>
+      <button onclick="ownerRevoke()" style="background:var(--surf2);border:1px solid rgba(220,38,38,.4);color:#f87171;border-radius:10px;padding:.6rem 1rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:.78rem;cursor:pointer;">Yetkiyi Kaldır</button>
+      <div id="owner-form-msg" style="font-size:.74rem;font-family:'Space Mono',monospace;min-height:1rem;"></div>
+    </div>
+
+    <div style="height:1px;background:var(--bdr2);"></div>
+
+    <div style="display:flex;flex-direction:column;gap:.5rem;">
+      <label style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Mevcut Yetkililer</label>
+      <div id="owner-admin-list" style="display:flex;flex-direction:column;gap:.4rem;max-height:220px;overflow-y:auto;">
+        <div style="font-size:.72rem;color:var(--muted);text-align:center;padding:.6rem 0;">Yükleniyor...</div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <!-- Sidebar toggle -->
@@ -2686,10 +2722,12 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
         loadProfile();
         loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); });
         // Otomatik girişte de startGame() ile aynı arayüz elemanlarını göster
-        // (admin butonu, sohbet butonu, kenar panel butonu vb.) — normalde
-        // bunlar sadece startGame() çağrıldığında görünür hale geliyordu,
-        // ama otomatik giriş akışı startGame()'i hiç çağırmıyordu.
-        document.getElementById('adminbtn').style.display='';
+        // (sohbet butonu, kenar panel butonu vb.) — normalde bunlar sadece
+        // startGame() çağrıldığında görünür hale geliyordu, ama otomatik
+        // giriş akışı startGame()'i hiç çağırmıyordu.
+        // GÜVENLİK: adminbtn/ownerbtn artık körlemesine gösterilmiyor —
+        // checkAdminStatus() sunucudan gerçek yetkiyi sorup ona göre gösteriyor.
+        checkAdminStatus();
         document.getElementById('timelapse-btn').style.display='';
         document.getElementById('history-btn').style.display='';
         document.getElementById('chat-btn').style.display='flex';
@@ -2726,6 +2764,10 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
     if(event === 'SIGNED_OUT'){
       username = '';
       document.getElementById('ubadge').textContent='👤 Misafir';
+      // GÜVENLİK: çıkış yapınca admin/owner durumunu ve butonlarını da sıfırla
+      _isAdmin = false; _isOwner = false; adminMode = false;
+      document.getElementById('adminbtn').style.display='none';
+      document.getElementById('ownerbtn').style.display='none';
     }
   });
 })();
@@ -2739,13 +2781,42 @@ setInterval(()=>{if(baseCanvas)updateSidebar();},5000);
 setInterval(()=>{ if(typeof username!=='undefined'&&username) renderLevelLeaderboard(); },60000);
 
 // ── ADMIN MODE (sadece oy pikseli silme aracı için) ──
-const ADMIN_PASS='admin123';
+// GÜVENLİK: Eski client-side şifre kontrolü (ADMIN_PASS='admin123') tamamen
+// kaldırıldı — şifre sayfa kaynağında düz metin olarak duruyordu ve gerçek
+// bir yetkilendirme sağlamıyordu (herkes view-source ile görebilir, ya da
+// konsoldan adminMode=true yazıp admin moduna "girebilirdi"; gerçek silme
+// işlemi zaten RLS tarafından engelleniyordu ama bu yine de yanıltıcıydı).
+// Artık admin/owner durumu SADECE sunucudaki admin_users tablosundan,
+// is_admin()/is_owner() RPC'leri üzerinden belirleniyor.
 let adminMode=false;
+let _isAdmin=false;
+let _isOwner=false;
+
+// Sayfa açılışında (oturum varsa) admin/owner durumunu sunucudan sor ve
+// butonların görünürlüğünü ona göre ayarla. Şifre sormaya gerek yok —
+// zaten admin/owner olan kişi giriş yapınca otomatik yetkili görünür.
+async function checkAdminStatus(){
+  if(!username) return;
+  try{
+    const [{data:isAdminData},{data:isOwnerData}] = await Promise.all([
+      supabase.rpc('is_admin'),
+      supabase.rpc('is_owner')
+    ]);
+    _isAdmin = isAdminData === true;
+    _isOwner = isOwnerData === true;
+    document.getElementById('adminbtn').style.display = _isAdmin ? '' : 'none';
+    document.getElementById('ownerbtn').style.display = _isOwner ? '' : 'none';
+  }catch(e){
+    console.error('checkAdminStatus hatası:', e);
+  }
+}
 
 function toggleAdmin(){
+  if(!_isAdmin){
+    showPopup('⚠ Bu özellik için admin yetkin yok.');
+    return;
+  }
   if(!adminMode){
-    const p=prompt('Admin şifresi:');
-    if(p!==ADMIN_PASS){alert('Yanlış şifre');return;}
     adminMode=true;
     document.getElementById('adminbtn').style.background='#16a34a';
     document.getElementById('adminbtn').textContent='⚙ Admin ON';
@@ -2757,25 +2828,128 @@ function toggleAdmin(){
     showPopup('Admin modu kapatıldı');
   }
 }
+
+// ── OWNER PANEL: admin ata / kaldır, mevcut yetkilileri listele ──
+async function openOwnerPanel(){
+  if(!_isOwner){
+    showPopup('⚠ Bu özellik için owner yetkin yok.');
+    return;
+  }
+  document.getElementById('owner-modal').style.display='flex';
+  document.getElementById('owner-form-msg').textContent='';
+  document.getElementById('owner-add-email').value='';
+  await refreshOwnerAdminList();
+}
+function closeOwnerPanel(){
+  document.getElementById('owner-modal').style.display='none';
+}
+async function refreshOwnerAdminList(){
+  const listEl = document.getElementById('owner-admin-list');
+  listEl.innerHTML = '<div style="font-size:.72rem;color:var(--muted);text-align:center;padding:.6rem 0;">Yükleniyor...</div>';
+  try{
+    const {data,error} = await supabase.rpc('list_admins');
+    if(error || !data){
+      listEl.innerHTML = '<div style="font-size:.72rem;color:var(--muted);text-align:center;padding:.6rem 0;">Yüklenemedi.</div>';
+      return;
+    }
+    if(data.length===0){
+      listEl.innerHTML = '<div style="font-size:.72rem;color:var(--muted);text-align:center;padding:.6rem 0;">Henüz kimse yok.</div>';
+      return;
+    }
+    listEl.innerHTML = data.map(row=>{
+      const safeName = _esc(row.display_name||'?');
+      const roleColor = row.role==='owner' ? '#f59e0b' : 'var(--accent)';
+      const roleLabel = row.role==='owner' ? '👑 Owner' : '🛡 Admin';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:.5rem .7rem;">
+        <span style="font-size:.78rem;font-weight:600;">${safeName}</span>
+        <span style="font-size:.62rem;font-weight:700;color:${roleColor};font-family:'Space Mono',monospace;">${roleLabel}</span>
+      </div>`;
+    }).join('');
+  }catch(e){
+    console.error('list_admins hatası:', e);
+    listEl.innerHTML = '<div style="font-size:.72rem;color:var(--muted);text-align:center;padding:.6rem 0;">Yüklenemedi.</div>';
+  }
+}
+async function ownerAssignRole(role){
+  const emailEl = document.getElementById('owner-add-email');
+  const msgEl = document.getElementById('owner-form-msg');
+  const email = emailEl.value.trim();
+  if(!email){ msgEl.style.color='#ef4444'; msgEl.textContent='⚠ Email gerekli.'; return; }
+  msgEl.style.color='var(--muted)'; msgEl.textContent='İşleniyor...';
+  try{
+    const {data,error} = await supabase.rpc('make_admin_by_email',{p_email:email,p_role:role});
+    if(error || !data || data.success!==true){
+      const errMsg = data && data.error==='user_not_found' ? 'Bu email ile kayıtlı kullanıcı bulunamadı.'
+        : data && data.error==='not_owner' ? 'Bu işlem için owner yetkisi gerekli.'
+        : 'İşlem başarısız.';
+      msgEl.style.color='#ef4444'; msgEl.textContent='⚠ '+errMsg;
+      return;
+    }
+    msgEl.style.color='#10b981'; msgEl.textContent='✓ Yetki verildi: '+(role==='owner'?'Owner':'Admin');
+    emailEl.value='';
+    await refreshOwnerAdminList();
+  }catch(e){
+    console.error('make_admin_by_email hatası:', e);
+    msgEl.style.color='#ef4444'; msgEl.textContent='⚠ Bağlantı hatası.';
+  }
+}
+async function ownerRevoke(){
+  const emailEl = document.getElementById('owner-add-email');
+  const msgEl = document.getElementById('owner-form-msg');
+  const email = emailEl.value.trim();
+  if(!email){ msgEl.style.color='#ef4444'; msgEl.textContent='⚠ Email gerekli.'; return; }
+  msgEl.style.color='var(--muted)'; msgEl.textContent='İşleniyor...';
+  try{
+    const {data,error} = await supabase.rpc('revoke_admin_by_email',{p_email:email});
+    if(error || !data || data.success!==true){
+      const errMsg = data && data.error==='cannot_revoke_self' ? 'Kendi owner yetkini kaldıramazsın.'
+        : data && data.error==='user_not_found' ? 'Bu email ile kayıtlı kullanıcı bulunamadı.'
+        : data && data.error==='not_owner' ? 'Bu işlem için owner yetkisi gerekli.'
+        : 'İşlem başarısız.';
+      msgEl.style.color='#ef4444'; msgEl.textContent='⚠ '+errMsg;
+      return;
+    }
+    msgEl.style.color='#10b981'; msgEl.textContent='✓ Yetki kaldırıldı.';
+    emailEl.value='';
+    await refreshOwnerAdminList();
+  }catch(e){
+    console.error('revoke_admin_by_email hatası:', e);
+    msgEl.style.color='#ef4444'; msgEl.textContent='⚠ Bağlantı hatası.';
+  }
+}
+
 // Admin modundayken normal oy tıklamasını engelle (piksel silme ayrı bir
 // mousedown dinleyicisiyle ele alınıyor — burada sadece oy verilmesini önlüyoruz).
 const _ohc=handleClick;
 window.handleClick=function(mx,my){
   if(!adminMode){_ohc(mx,my);return;}
 };
-// Show admin button after login
+// Giriş yapınca admin/owner durumunu sunucudan kontrol et (buton görünürlüğü buna bağlı)
 const _osg=startGame;
 window.startGame=async function(){
   _osg();
-  document.getElementById('adminbtn').style.display='';
   document.getElementById('timelapse-btn').style.display='';
   document.getElementById('history-btn').style.display='';
+  await checkAdminStatus();
 };
 
 // ── PAINT MODE (sadece oy pikseli silme) ──
 let isPainting=false;
 
+// GÜVENLİK + GERÇEK SİLME: Daha önce bu fonksiyon SADECE local pixData'dan
+// çıkarıp saveData() çağırıyordu; saveData() ise yalnızca KALAN satırları
+// upsert ediyordu, silineni sunucudan hiç DELETE etmiyordu. Üstelik pixels
+// tablosunda RLS açık olduğu ve client'tan doğrudan upsert/delete için
+// politika tanımlı olmadığı için bu yazma zaten sessizce reddediliyordu.
+// Artık gerçek silme, admin yetkisini sunucu tarafında is_admin() ile
+// doğrulayan admin_delete_pixels() RPC'si üzerinden yapılıyor. Sürükleyerek
+// hızlı silinen pikseller bir kuyrukta birikip kısa bir debounce sonunda
+// TEK istekte sunucuya gönderiliyor (her piksel için ayrı RPC atmamak için).
+let _pendingDeleteFlats = new Set();
+let _deleteDebounceTimer = null;
+
 function paintPixel(mx,my){
+  if(!_isAdmin){ showPopup('⚠ Bu özellik için admin yetkin yok.'); return; }
   const flat=canvasToFlat(mx,my);
   if(flat<0||flat>=IMG_W*IMG_H) return;
   const px=flat%IMG_W, py=Math.floor(flat/IMG_W);
@@ -2787,11 +2961,37 @@ function paintPixel(mx,my){
   const before=pixData[pid].length;
   pixData[pid]=pixData[pid].filter(v=>v.flat!==flat);
   if(pixData[pid].length!==before){
-    saveData();
-    // Clear just this pixel on the pixel canvas
+    // Optimistic: ekranda anında temizle, sunucuya gönderilecek kuyruğa ekle
+    _pendingDeleteFlats.add(flat);
+    scheduleServerDelete();
     const pctx=pixelCanvas.getContext('2d');
     pctx.clearRect(px,py,1,1);
     draw();
+  }
+}
+
+function scheduleServerDelete(){
+  clearTimeout(_deleteDebounceTimer);
+  _deleteDebounceTimer = setTimeout(flushServerDelete, 500);
+}
+
+async function flushServerDelete(){
+  if(_pendingDeleteFlats.size===0) return;
+  const flats = Array.from(_pendingDeleteFlats);
+  _pendingDeleteFlats.clear();
+  try{
+    const {data,error} = await supabase.rpc('admin_delete_pixels',{p_flats:flats});
+    if(error || !data || data.success!==true){
+      console.error('admin_delete_pixels hatası:', error || data);
+      showPopup('⚠ Piksel(ler) sunucudan silinemedi (yetki/bağlantı hatası).');
+      // Not: local canvas zaten temizlendi ama sunucu reddettiyse tutarsızlık
+      // oluşabilir — bir sonraki realtime/loadData senkronizasyonunda düzelir.
+      return;
+    }
+    showPopup(`🗑 ${data.deleted} piksel kalıcı olarak silindi.`);
+  }catch(e){
+    console.error('admin_delete_pixels exception:', e);
+    showPopup('⚠ Bağlantı hatası, piksel(ler) silinemedi.');
   }
 }
 
