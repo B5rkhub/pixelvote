@@ -736,6 +736,43 @@ body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;heigh
   display:inline-block;
 }
 
+/* ── GÜNLÜK SERİ (STREAK) BİLDİRİMİ ── */
+@keyframes streak-slide{
+  0%{opacity:0;transform:translateX(-50%) translateY(-40px) scale(.85);}
+  12%{opacity:1;transform:translateX(-50%) translateY(0) scale(1.06);}
+  18%{transform:translateX(-50%) translateY(0) scale(1);}
+  75%{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}
+  100%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(.9);}
+}
+#streak-notif{
+  position:fixed;top:72px;left:50%;transform:translateX(-50%);
+  z-index:9999;pointer-events:none;
+  background:linear-gradient(135deg,#f59e0b 0%,#ef4444 55%,#db2777 100%);
+  border-radius:18px;padding:1px;
+  display:none;
+  box-shadow:0 0 40px rgba(239,68,68,.6);
+}
+#streak-notif.show{
+  display:block;
+  animation:streak-slide 4s ease forwards;
+}
+#streak-inner{
+  background:#10101e;border-radius:17px;
+  padding:.9rem 1.5rem;display:flex;flex-direction:column;align-items:center;gap:.35rem;
+}
+#streak-label{font-size:.65rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#fbbf24;}
+#streak-days{font-size:2rem;font-weight:800;background:linear-gradient(135deg,#f59e0b,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;}
+#streak-sub{font-size:.78rem;color:var(--txt);font-weight:600;}
+#streak-reward{font-size:.68rem;color:#fbbf24;font-weight:700;}
+
+/* Profil butonunda mini streak rozeti */
+.pb-streak-badge{
+  font-family:'Space Mono',monospace;font-size:.55rem;font-weight:800;
+  background:linear-gradient(135deg,#f59e0b,#ef4444);
+  color:#fff;padding:.1rem .35rem;border-radius:4px;
+  display:inline-flex;align-items:center;gap:.15rem;
+}
+
 /* Profil seviye kartı */
 #pc-level-card{
   background:linear-gradient(135deg,rgba(124,106,255,.12),rgba(192,132,252,.08));
@@ -764,6 +801,33 @@ body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;heigh
 .pc-reward-icon{font-size:.9rem;}
 .pc-reward-name{font-size:.7rem;color:var(--txt);flex:1;}
 .pc-reward-check{font-size:.75rem;color:#10b981;}
+
+/* ── Profil modali: Günlük Seri kartı ── */
+#pc-streak-card{
+  background:linear-gradient(135deg,rgba(245,158,11,.12),rgba(239,68,68,.08));
+  border:1px solid rgba(245,158,11,.35);border-radius:14px;
+  padding:.9rem 1rem;display:flex;flex-direction:column;gap:.6rem;
+}
+.pc-streak-header{display:flex;align-items:center;justify-content:space-between;}
+.pc-streak-num{
+  font-size:1.8rem;font-weight:800;
+  background:linear-gradient(135deg,#f59e0b,#ef4444);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1;
+}
+.pc-streak-title{font-size:.68rem;color:var(--muted);font-weight:700;}
+.pc-streak-best{font-family:'Space Mono',monospace;font-size:.7rem;color:var(--txt);}
+.pc-streak-week{display:flex;gap:.3rem;justify-content:space-between;}
+.pc-streak-day{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:.25rem;
+  background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;
+  padding:.4rem .2rem;font-size:.62rem;
+}
+.pc-streak-day.done{border-color:rgba(245,158,11,.5);background:rgba(245,158,11,.1);}
+.pc-streak-day.today{border-color:#f59e0b;box-shadow:0 0 0 2px rgba(245,158,11,.25);}
+.pc-streak-day-icon{font-size:.85rem;}
+.pc-streak-day-label{color:var(--muted);font-weight:700;}
+.pc-streak-day.done .pc-streak-day-label{color:#fbbf24;}
+.pc-streak-note{font-size:.64rem;color:var(--muted);line-height:1.5;}
 
 /* En Yüksek Seviyeler sıralama */
 .lvl-rank-row{
@@ -1079,6 +1143,12 @@ button, [onclick], .pc-frame {
     width: calc(100vw - 2rem) !important;
   }
 
+  /* ── Seri (streak) bildirimi ── */
+  #streak-notif {
+    top: 56px !important;
+    width: calc(100vw - 2rem) !important;
+  }
+
   /* ── Pixel event banner ── */
   #pixel-event-banner {
     top: 8px !important;
@@ -1217,6 +1287,16 @@ button, [onclick], .pc-frame {
     <div id="levelup-lv">LV 5</div>
     <div id="levelup-title">Uzman Pikselci</div>
     <div id="levelup-reward"></div>
+  </div>
+</div>
+
+<!-- Günlük seri (streak) bildirimi -->
+<div id="streak-notif">
+  <div id="streak-inner">
+    <div id="streak-label">🔥 GÜNLÜK SERİ</div>
+    <div id="streak-days">3 Gün</div>
+    <div id="streak-sub">Üst üste giriş yaptın!</div>
+    <div id="streak-reward"></div>
   </div>
 </div>
 
@@ -1382,6 +1462,7 @@ button, [onclick], .pc-frame {
         <div style="display:flex;align-items:center;gap:.35rem;margin-top:1px;">
           <span class="pb-lv-badge" id="pb-level-badge">Lv 1</span>
           <div class="pb-xp-bar-wrap" style="flex:1"><div class="pb-xp-bar" id="pb-xp-bar" style="width:0%"></div></div>
+          <span class="pb-streak-badge" id="pb-streak-badge" style="display:none">🔥 0</span>
         </div>
         <div class="pb-faction" id="pb-faction">
           <div class="pb-faction-dot" id="pb-faction-dot" style="background:#7c6aff"></div>
@@ -1509,6 +1590,9 @@ button, [onclick], .pc-frame {
     <!-- PANEL: Seviye -->
     <div class="pc-panel" id="pcpanel-seviye">
       <div id="pc-level-card">
+        <!-- JS ile doldurulur -->
+      </div>
+      <div id="pc-streak-card" style="margin-top:.9rem">
         <!-- JS ile doldurulur -->
       </div>
     </div>
@@ -2617,7 +2701,7 @@ function _activateUser(v){
   startRealtimeSync();
   loadCD(); updateDots();
   loadProfile();
-  loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); });
+  loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); checkDailyStreak(); });
 }
 
 // ── AUTH SEKME GEÇİŞİ (Kayıt Ol / Giriş Yap) ──────────────────────────
@@ -2772,7 +2856,7 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
         startRealtimeSync();
         loadCD(); updateDots();
         loadProfile();
-        loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); });
+        loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); checkDailyStreak(); });
         // Otomatik girişte de startGame() ile aynı arayüz elemanlarını göster
         // (sohbet butonu, kenar panel butonu vb.) — normalde bunlar sadece
         // startGame() çağrıldığında görünür hale geliyordu, ama otomatik
@@ -3139,6 +3223,40 @@ const XP_LEVEL_TITLES = [
   'Altın', 'Gümüş', 'Platin', 'Elmas', 'Kahraman'
 ];
 
+// ═══════════════════════════════════════════════════════
+// 🔥 GÜNLÜK SERİ (STREAK) SİSTEMİ
+// Oyuncu üst üste her gün girdikçe seri sayacı artar; her gün
+// farklı ve gittikçe büyüyen bir ödül verilir (XP + bonus piksel,
+// 7. günde ekstra büyük ödül). Bir gün atlanırsa seri 1'e döner.
+// Ödül deposu (PIXEL_LIMIT=49) doluysa taşan piksel otomatik
+// XP'ye çevrilir, ödül asla "kaybolmaz".
+// ═══════════════════════════════════════════════════════
+
+// 7 günlük döngü — gün 7'den sonra tekrar 1'den başlar ama XP miktarları
+// kademeli artmaya devam eder (STREAK_XP_BASE + gün*artış formülüyle).
+const STREAK_REWARDS = {
+  1: { icon:'🔥', xp:5,  pixels:2,  label:'Seriye başladın!' },
+  2: { icon:'⚡', xp:8,  pixels:3,  label:'İkinci gün!' },
+  3: { icon:'✨', xp:12, pixels:4,  label:'Üç gün üst üste!' },
+  4: { icon:'💪', xp:16, pixels:5,  label:'Dört gün — harika gidiyorsun!' },
+  5: { icon:'🌟', xp:22, pixels:6,  label:'Beş gün! Az kaldı...' },
+  6: { icon:'🚀', xp:28, pixels:7,  label:'Altı gün — son düzlük!' },
+  7: { icon:'👑', xp:50, pixels:12, label:'7 GÜN TAM SERİ! Büyük ödül!' }
+};
+function getStreakReward(day){
+  const cyclePos = ((day - 1) % 7) + 1; // 1..7 döngüsü
+  const cycleNum = Math.floor((day - 1) / 7); // kaçıncı 7-gün turu (0,1,2...)
+  const base = STREAK_REWARDS[cyclePos];
+  // Her tam 7-gün turundan sonra ödüller %25 büyür (uzun vadeli oyuncular için motivasyon)
+  const mult = 1 + cycleNum * 0.25;
+  return {
+    icon: base.icon,
+    label: base.label,
+    xp: Math.round(base.xp * mult),
+    pixels: Math.round(base.pixels * mult)
+  };
+}
+
 const XP_REWARDS = {
   5:  { icon: '🖼️', name: 'Özel Avatar Çerçevesi (Altın Halkası)', frame: 'gold' },
   10: { icon: '🏅', name: 'Yeni Profil Rozeti (Piksel Madalyası)', badge: 'pixel_medal' },
@@ -3194,15 +3312,46 @@ async function syncXPToSupabase(){
   }catch(e){ /* sessiz hata */ }
 }
 
+// Seri verisini ayrı bir upsert ile gönderiyoruz — eğer user_levels tablosunda
+// streak/streak_best/last_login_date kolonları yoksa bu istek sessizce
+// başarısız olur ve ana XP senkronizasyonunu (syncXPToSupabase) ETKİLEMEZ.
+// Seri ilerleyişi her durumda localStorage'da (pv_streak_<kullanıcı>) güvende kalır.
+async function syncStreakToSupabase(){
+  try{
+    await supabase.from('user_levels').upsert({
+      username: username,
+      streak: profileData.streak || 0,
+      streak_best: profileData.streakBest || 0,
+      last_login_date: profileData.lastLoginDate || '',
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'username' });
+  }catch(e){ /* sessiz hata — tablo şemasında streak kolonları olmayabilir */ }
+}
+
+function saveStreakData(){
+  try{
+    localStorage.setItem('pv_streak_' + username, JSON.stringify({
+      streak: profileData.streak || 0,
+      streakBest: profileData.streakBest || 0,
+      lastLoginDate: profileData.lastLoginDate || ''
+    }));
+  }catch(e){}
+}
+
 async function loadXPFromSupabase(){
   try{
     const {data, error} = await supabase.from('user_levels')
-      .select('xp,level').eq('username', username).limit(1);
+      .select('xp,level,streak,streak_best,last_login_date').eq('username', username).limit(1);
     if(!error && data && data.length > 0){
       profileData.xp = data[0].xp || 0;
       profileData.level = data[0].level || 1;
+      // Sunucuda streak kolonları varsa kullan; yoksa (undefined) localStorage yedeğine düş
+      if(data[0].streak !== undefined && data[0].streak !== null) profileData.streak = data[0].streak;
+      if(data[0].streak_best !== undefined && data[0].streak_best !== null) profileData.streakBest = data[0].streak_best;
+      if(data[0].last_login_date !== undefined && data[0].last_login_date !== null) profileData.lastLoginDate = data[0].last_login_date;
       saveProfile();
       saveXPData();
+      saveStreakData();
       return;
     }
   }catch(e){}
@@ -3213,6 +3362,15 @@ async function loadXPFromSupabase(){
       const d = JSON.parse(raw);
       profileData.xp = d.xp || 0;
       profileData.level = d.level || 1;
+    }
+  }catch(e){}
+  try{
+    const rawS = localStorage.getItem('pv_streak_' + username);
+    if(rawS){
+      const ds = JSON.parse(rawS);
+      profileData.streak = ds.streak || 0;
+      profileData.streakBest = ds.streakBest || 0;
+      profileData.lastLoginDate = ds.lastLoginDate || '';
     }
   }catch(e){}
 }
@@ -3238,6 +3396,155 @@ function gainXP(amount){
 
   // UI güncelle
   updateXPUI();
+}
+
+// ═══════════════════════════════════════════════════════
+// 🔥 GÜNLÜK SERİ (STREAK) KONTROLÜ
+// Oturum açılışında (her gerçek girişte, sayfa yenilemede değil)
+// bir kez çağrılır. Kullanıcının yerel tarihine göre:
+//  - Bugün zaten sayıldıysa  → hiçbir şey yapma
+//  - Dün giriş yapılmışsa    → seri +1, ödül ver
+//  - Daha eski / hiç yoksa   → seri 1'e sıfırlanır (yeniden başlar), ödül ver
+// "Bugün" ve "dün" kullanıcının kendi saat dilimine göre hesaplanır
+// (UTC değil) ki gece yarısı sınırı oyuncu için doğal hissettirsin.
+// ═══════════════════════════════════════════════════════
+function _todayLocalStr(){
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+function _daysBetweenLocalStr(a, b){
+  // a, b: 'YYYY-MM-DD' — gün farkını hesaplar (b - a)
+  const da = new Date(a+'T00:00:00');
+  const db = new Date(b+'T00:00:00');
+  return Math.round((db - da) / 86400000);
+}
+
+function checkDailyStreak(){
+  if(!username) return;
+  const today = _todayLocalStr();
+  const last = profileData.lastLoginDate || '';
+
+  if(last === today){
+    // Bugün zaten sayıldı — sadece UI'ı güncel tut
+    updateStreakUI();
+    return;
+  }
+
+  let newStreak;
+  if(last && _daysBetweenLocalStr(last, today) === 1){
+    // Tam olarak dün giriş yapılmış → seri devam ediyor
+    newStreak = (profileData.streak || 0) + 1;
+  } else {
+    // Hiç giriş yok ya da bir gün atlanmış → seri yeniden başlar
+    newStreak = 1;
+  }
+
+  profileData.streak = newStreak;
+  profileData.streakBest = Math.max(profileData.streakBest || 0, newStreak);
+  profileData.lastLoginDate = today;
+
+  saveStreakData();
+  saveProfile();
+  syncStreakToSupabase();
+  updateStreakUI();
+
+  // ── Ödülü uygula ──
+  const reward = getStreakReward(newStreak);
+  // Bonus piksel: depo (PIXEL_LIMIT) doluysa taşan kısmı XP'ye çevir, kayıp olmasın
+  const room = PIXEL_LIMIT - _getPixLeft();
+  const grantedPixels = Math.max(0, Math.min(reward.pixels, room));
+  const overflowPixels = reward.pixels - grantedPixels;
+  if(grantedPixels > 0){
+    _setPixLeft(_getPixLeft() + grantedPixels);
+    try{ localStorage.setItem('pv_px_' + username, _getPixLeft()); }catch(e){}
+  }
+  const totalXP = reward.xp + overflowPixels; // taşan piksel başına 1 XP telafi
+  gainXP(totalXP);
+
+  showStreakNotification(newStreak, reward, grantedPixels, overflowPixels);
+}
+
+function updateStreakUI(){
+  const badge = document.getElementById('pb-streak-badge');
+  const streak = profileData.streak || 0;
+  if(badge){
+    if(streak > 0){
+      badge.style.display = 'inline-flex';
+      badge.textContent = '🔥 ' + streak;
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+}
+
+let _streakNotifQueue = [];
+let _streakNotifShowing = false;
+function showStreakNotification(day, reward, grantedPixels, overflowPixels){
+  _streakNotifQueue.push({day, reward, grantedPixels, overflowPixels});
+  if(!_streakNotifShowing) processStreakNotifQueue();
+}
+function processStreakNotifQueue(){
+  if(_streakNotifQueue.length === 0){ _streakNotifShowing = false; return; }
+  _streakNotifShowing = true;
+  const {day, reward, grantedPixels, overflowPixels} = _streakNotifQueue.shift();
+
+  const notif = document.getElementById('streak-notif');
+  const daysEl = document.getElementById('streak-days');
+  const subEl = document.getElementById('streak-sub');
+  const rewardEl = document.getElementById('streak-reward');
+
+  daysEl.textContent = day + ' Gün';
+  subEl.textContent = reward.label;
+  let rewardParts = [];
+  if(grantedPixels > 0) rewardParts.push('+' + grantedPixels + ' 🧱 piksel');
+  rewardParts.push('+' + reward.xp + (overflowPixels>0 ? '' : '') + ' XP');
+  rewardEl.textContent = reward.icon + ' ' + rewardParts.join('   ');
+
+  if(typeof SFX !== 'undefined') SFX.success();
+
+  notif.classList.remove('show');
+  void notif.offsetWidth; // reflow
+  notif.classList.add('show');
+
+  setTimeout(() => {
+    notif.classList.remove('show');
+    setTimeout(processStreakNotifQueue, 300);
+  }, 4000);
+}
+
+function renderStreakPanel(){
+  const streak = profileData.streak || 0;
+  const best = profileData.streakBest || 0;
+  const cyclePos = streak > 0 ? ((streak - 1) % 7) + 1 : 0;
+
+  const dayIcons = [1,2,3,4,5,6,7].map(d=>{
+    const r = STREAK_REWARDS[d];
+    const isDone = d <= cyclePos;
+    const isToday = d === cyclePos && streak > 0;
+    return `<div class="pc-streak-day${isDone?' done':''}${isToday?' today':''}">
+      <div class="pc-streak-day-icon">${r.icon}</div>
+      <div class="pc-streak-day-label">${d}.gün</div>
+    </div>`;
+  }).join('');
+
+  const nextReward = getStreakReward(streak + 1);
+
+  document.getElementById('pc-streak-card').innerHTML = `
+    <div class="pc-streak-header">
+      <div>
+        <div class="pc-streak-num">🔥 ${streak}</div>
+        <div class="pc-streak-title">Günlük Seri</div>
+      </div>
+      <div style="text-align:right">
+        <div class="pc-streak-best">En İyi: ${best} gün</div>
+      </div>
+    </div>
+    <div class="pc-streak-week">${dayIcons}</div>
+    <div class="pc-streak-note">Yarın giriş yaparsan: ${nextReward.icon} +${nextReward.pixels} piksel, +${nextReward.xp} XP. Bir gün atlarsan seri 1'e sıfırlanır.</div>
+  `;
 }
 
 let _lvlUpQueue = [];
@@ -3384,7 +3691,7 @@ const FRAME_BORDERS={
   none:'#7c6aff',gold:'#f59e0b',red:'#e50000',green:'#02be01',
   cyan:'#00d3dd',pink:'#ff54b2',dark:'#5a5a80',rainbow:'#e59500'
 };
-let profileData={name:'',photo:'',frame:'none',xp:0,level:1};
+let profileData={name:'',photo:'',frame:'none',xp:0,level:1,streak:0,streakBest:0,lastLoginDate:''};
 
 function loadProfile(){
   try{
@@ -3394,9 +3701,15 @@ function loadProfile(){
       // xp ve level alanlarını koru — eski kayıtta yoksa mevcut değerleri sıfırlama
       const savedXP = profileData.xp || 0;
       const savedLevel = profileData.level || 1;
+      const savedStreak = profileData.streak || 0;
+      const savedStreakBest = profileData.streakBest || 0;
+      const savedLastLogin = profileData.lastLoginDate || '';
       profileData = parsed;
       if(profileData.xp === undefined || profileData.xp === null) profileData.xp = savedXP;
       if(profileData.level === undefined || profileData.level === null) profileData.level = savedLevel;
+      if(profileData.streak === undefined || profileData.streak === null) profileData.streak = savedStreak;
+      if(profileData.streakBest === undefined || profileData.streakBest === null) profileData.streakBest = savedStreakBest;
+      if(profileData.lastLoginDate === undefined || profileData.lastLoginDate === null) profileData.lastLoginDate = savedLastLogin;
     }
   }catch(e){}
 }
@@ -3436,6 +3749,7 @@ function applyProfileToBtn(){
   }
   document.getElementById('pb-name').textContent=uname;
   document.getElementById('pb-pix').textContent=pix+'/'+PIXEL_LIMIT+' piksel';
+  updateStreakUI();
   // Faction göster
   const fDot=document.getElementById('pb-faction-dot');
   const fName=document.getElementById('pb-faction-name');
@@ -3462,7 +3776,7 @@ function switchProfileTab(tab){
   document.getElementById('pcpanel-'+tab).classList.add('active');
   if(tab==='stats') renderProfileStats();
   if(tab==='ayarlar') renderProfileSettings();
-  if(tab==='seviye') renderLevelPanel();
+  if(tab==='seviye'){ renderLevelPanel(); renderStreakPanel(); }
 }
 
 function renderProfileStats(){
