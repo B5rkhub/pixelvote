@@ -6522,7 +6522,7 @@ async function startTimelapse() {
     const link = document.getElementById('tl-download-link');
     link.href = url;
     const dateStr = new Date().toISOString().slice(0, 10);
-    link.download = `pixelvote_timelapse_${dateStr}_${tlSelectedHours}s.webm`;
+    link.download = `pixelfront_timelapse_${dateStr}_${tlSelectedHours}s.webm`;
 
     barEl.style.width = '100%';
     statusEl.textContent = '✅ Video hazır, indirebilirsin!';
