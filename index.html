@@ -1994,15 +1994,14 @@ const I18N = {
     'msg.confirm_yes': 'Evet',
     'msg.confirm_no': 'Hayır',
     'msg.you_voted': '✓ {{party}} → {{province}}',
-
-    // ── Faction modalı — yeni key'ler ──
+    // ── Faction modalı — ek key'ler ──
     'faction.create_section': 'YENİ FACTION OLUŞTUR',
     'faction.color_section': 'RENK',
     'faction.ranking_title': 'FACTION SIRALAMASI',
     'faction.join_code_section': 'DAVET KODUYLA KATIL',
-    'faction.no_faction_yet': 'Henüz bir faction\'a sahip değilsin',
+    'faction.no_faction_yet': "Henüz bir faction'a sahip değilsin",
     'faction.none_exist': 'Henüz hiç faction yok',
-    'faction.be_first': 'İlk faction\'ı sen kur!',
+    'faction.be_first': "İlk faction'ı sen kur!",
     'faction.emoji_pick_title': 'Emoji seç',
     'faction.invite_share_hint': 'Bu kodu arkadaşlarınla paylaş',
     'faction.member_count_label': 'Üye',
@@ -2014,39 +2013,73 @@ const I18N = {
     'faction.tabs_diplomacy': 'Diplomasi',
     'faction.tabs_stats': 'İstatistik',
     'faction.tabs_settings': 'Ayarlar',
-    'faction.chat_ph': 'Faction\'a mesaj yaz...',
+    'faction.chat_ph': "Faction'a mesaj yaz...",
     'faction.no_other_factions': 'Başka faction bulunamadı',
     'faction.new_invite_section': 'YENİ DAVET KODU',
     'faction.change_color_section': 'FACTION RENGİNİ DEĞİŞTİR',
     'faction.logo_upload_title': 'Logo yükle',
     'faction.you_suffix': 'sen',
-    'faction.disband_confirm': 'Bu faction\'ı kalıcı olarak dağıtmak istediğine emin misin?',
-
-    // ── Diplomasi ──
+    'faction.disband_confirm': "Bu faction'ı kalıcı olarak dağıtmak istediğine emin misin?",
     'diplomacy.ally': 'Müttefik',
     'diplomacy.war': 'Savaş',
     'diplomacy.neutral': 'Nötr',
-
-    // ── Leaderboard ──
     'leaderboard.level_short': 'Lv',
     'leaderboard.you': 'sen',
-
-    // ── Seviye ──
     'level.legendary_title': 'Efsane',
-
-    // ── XP ──
     'xp.unit': 'XP',
-
-    // ── Cooldown kısaltma ──
     'cd.max_short': 'maks',
-
-    // ── Ayarlar ──
     'settings.unknown': 'Bilinmiyor',
-
-    // ── İstatistik ──
     'stats.last_7_days': 'Son 7 Gün',
     'stats.pixel_unit_short': 'px',
     'stats.today': 'Bugün',
+
+    // ── Geçmiş modal ──
+    'hm.title': 'Geçmişe Bak',
+    'hm.desc': 'Haritanın geçmişteki bir anına git ve o zamanki halini gör.',
+     'hm.info': "📌 Seçtiğin tarihe ait harita görüntüsü yüklenir. <b>Salt okunur moddur</b> — piksel koyamazsın. Çıkmak için banner'daki ✕ tuşuna bas.",
+    'hm.date_label': 'Tarih & Saat Seç',
+    'hm.quick_label': 'Hızlı Seç',
+    'hm.q_1h': '1 saat önce',
+    'hm.q_6h': '6 saat önce',
+    'hm.q_12h': '12 saat önce',
+    'hm.q_1d': '1 gün önce',
+    'hm.q_3d': '3 gün önce',
+    'hm.q_7d': '7 gün önce',
+    'hm.go_btn': '🕰 O Zamana Git',
+    'hm.loading': '⏳ Yükleniyor...',
+    'hm.err_no_date': '⚠ Lütfen bir tarih seç.',
+    'hm.err_invalid': '⚠ Geçersiz tarih.',
+    'hm.err_future': '⚠ Gelecek bir tarih seçemezsin.',
+    'hm.err_no_data': '⚠ Bu tarihte hiç piksel verisi bulunamadı.',
+    'hm.err_generic': '⚠ Hata: ',
+
+    // ── Rollback modal ──
+    'rb.title': '🕰 Alanı Geri Al (Rollback)',
+     'rb.info': '📌 Sadece haritada <b>seçtiğin alan</b> belirlediğin saatteki haline döner. Diğer bölgelere dokunulmaz. Bu işlem <b>kalıcıdır</b> — sunucudaki gerçek veriyi değiştirir, tüm kullanıcılar görür ve sayfa yenilense (F5) de aynı kalır.',
+    'rb.time_label': 'Hangi Saate Dönülsün?',
+    'rb.quick_label': 'Hızlı Seç',
+    'rb.q_30m': '30 dk önce',
+    'rb.q_1h': '1 saat önce',
+    'rb.q_6h': '6 saat önce',
+    'rb.q_1d': '1 gün önce',
+    'rb.q_3d': '3 gün önce',
+    'rb.q_7d': '7 gün önce',
+    'rb.go_btn': '🕰 Rollback At',
+    'rb.calculating': '⏳ Hesaplanıyor...',
+    'rb.applying': '⏳ Uygulanıyor...',
+     'rb.undo_btn': "↩ Önceki Rollback'i Geri Al",
+    'rb.undo_short': '↩ Geri Al',
+    'rb.cancel': '✕ Vazgeç',
+    'rb.confirm_yes': '✅ Onayla ve Uygula',
+     'rb.confirm_msg': "⚠️ <b>{{label}}</b> anına dönülecek.<br><b>{{changed}}</b> piksel gerçekten değişecek (seçili alan {{total}} piksel).<br><br>Bu işlem <b>KALICIDIR</b> — tüm kullanıcılar bu değişikliği görecek ve sayfa yenilense (F5) de aynı kalacak.<br><br>Bu rollback'i onaylıyor musun?",
+    'rb.banner_label': '🕰 Seçili alan: {{label}}',
+    'rb.banner_applied': '🕰 Seçili alan geçmişe döndürüldü',
+    'rb.err_no_date': '⚠ Lütfen bir tarih ve saat seç.',
+    'rb.err_invalid': '⚠ Geçersiz tarih.',
+    'rb.err_future': '⚠ Gelecek bir tarih seçemezsin.',
+    'rb.err_no_pixels': '⚠ Bu alanda hiç piksel yok (deniz/sınır olabilir).',
+    'rb.err_write': '⚠ Sunucuya yazılamadı: ',
+    'rb.err_generic': '⚠ Hata: ',
   },
   en: {
     // ── Login screen ──
@@ -2336,8 +2369,7 @@ const I18N = {
     'msg.confirm_yes': 'Yes',
     'msg.confirm_no': 'No',
     'msg.you_voted': '✓ {{party}} → {{province}}',
-
-    // ── Faction modal — new keys ──
+    // ── Faction modal — extra keys ──
     'faction.create_section': 'CREATE A NEW FACTION',
     'faction.color_section': 'COLOR',
     'faction.ranking_title': 'FACTION RANKING',
@@ -2363,32 +2395,66 @@ const I18N = {
     'faction.logo_upload_title': 'Upload logo',
     'faction.you_suffix': 'you',
     'faction.disband_confirm': 'Are you sure you want to permanently disband this faction?',
-
-    // ── Diplomacy ──
     'diplomacy.ally': 'Ally',
     'diplomacy.war': 'War',
     'diplomacy.neutral': 'Neutral',
-
-    // ── Leaderboard ──
     'leaderboard.level_short': 'Lv',
     'leaderboard.you': 'you',
-
-    // ── Level ──
     'level.legendary_title': 'Legendary',
-
-    // ── XP ──
     'xp.unit': 'XP',
-
-    // ── Cooldown short ──
     'cd.max_short': 'max',
-
-    // ── Settings ──
     'settings.unknown': 'Unknown',
-
-    // ── Stats ──
     'stats.last_7_days': 'Last 7 Days',
     'stats.pixel_unit_short': 'px',
     'stats.today': 'Today',
+
+    // ── History modal ──
+    'hm.title': 'Look Back in History',
+    'hm.desc': "Travel to a moment in the map's past and see how it looked.",
+    'hm.info': '📌 The map snapshot for your selected date will be loaded. <b>Read-only mode</b> — you cannot place pixels. Press ✕ in the banner to exit.',
+    'hm.date_label': 'Select Date & Time',
+    'hm.quick_label': 'Quick Select',
+    'hm.q_1h': '1 hour ago',
+    'hm.q_6h': '6 hours ago',
+    'hm.q_12h': '12 hours ago',
+    'hm.q_1d': '1 day ago',
+    'hm.q_3d': '3 days ago',
+    'hm.q_7d': '7 days ago',
+    'hm.go_btn': '🕰 Go to That Moment',
+    'hm.loading': '⏳ Loading...',
+    'hm.err_no_date': '⚠ Please select a date.',
+    'hm.err_invalid': '⚠ Invalid date.',
+    'hm.err_future': '⚠ You cannot select a future date.',
+    'hm.err_no_data': '⚠ No pixel data found for this date.',
+    'hm.err_generic': '⚠ Error: ',
+
+    // ── Rollback modal ──
+    'rb.title': '🕰 Area Rollback',
+    'rb.info': '📌 Only the <b>selected area</b> will be reverted to the state at the chosen time. Other regions are untouched. This action is <b>permanent</b> — it changes the real server data, visible to all users even after a page refresh (F5).',
+    'rb.time_label': 'Roll Back to When?',
+    'rb.quick_label': 'Quick Select',
+    'rb.q_30m': '30 min ago',
+    'rb.q_1h': '1 hour ago',
+    'rb.q_6h': '6 hours ago',
+    'rb.q_1d': '1 day ago',
+    'rb.q_3d': '3 days ago',
+    'rb.q_7d': '7 days ago',
+    'rb.go_btn': '🕰 Run Rollback',
+    'rb.calculating': '⏳ Calculating...',
+    'rb.applying': '⏳ Applying...',
+     'rb.undo_btn': '↩ Undo Previous Rollback',
+    'rb.undo_short': '↩ Undo',
+    'rb.cancel': '✕ Cancel',
+    'rb.confirm_yes': '✅ Confirm & Apply',
+    'rb.confirm_msg': '⚠️ The area will be reverted to <b>{{label}}</b>.<br><b>{{changed}}</b> pixels will actually change (selected area: {{total}} pixels).<br><br>This action is <b>PERMANENT</b> — all users will see the change and it will persist after a page refresh (F5).<br><br>Are you sure you want to apply this rollback?',
+    'rb.banner_label': '🕰 Selected area: {{label}}',
+    'rb.banner_applied': '🕰 Selected area reverted to history',
+    'rb.err_no_date': '⚠ Please select a date and time.',
+    'rb.err_invalid': '⚠ Invalid date.',
+    'rb.err_future': '⚠ You cannot select a future date.',
+    'rb.err_no_pixels': '⚠ No pixels in this area (may be sea/border).',
+    'rb.err_write': '⚠ Could not write to server: ',
+    'rb.err_generic': '⚠ Error: ',
   }
 };
 
@@ -2418,6 +2484,9 @@ function t(key, params){
 // Sayfadaki tüm data-i18n / data-i18n-placeholder / data-i18n-title elementlerini günceller
 function applyI18n(){
   document.documentElement.lang = _currentLang;
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{
+    el.innerHTML = t(el.getAttribute('data-i18n-html'));
+  });
   document.querySelectorAll('[data-i18n]').forEach(el=>{
     const key = el.getAttribute('data-i18n');
     // innerHTML kullanıyoruz çünkü bazı metinlerde <b> gibi basit etiketler var
@@ -2452,14 +2521,12 @@ function setLanguage(lang){
 
 // Ayarlar panelindeki TR/EN dil seçici butonlarının aktif durumunu günceller
 function updateLangSettingUI(){
-  // Ayarlar paneli
   const trBtn = document.getElementById('pca-lang-tr');
   const enBtn = document.getElementById('pca-lang-en');
   if(trBtn && enBtn){
     trBtn.classList.toggle('active', _currentLang==='tr');
     enBtn.classList.toggle('active', _currentLang==='en');
   }
-  // Login ekranı
   const loginTrBtn = document.getElementById('login-lang-tr');
   const loginEnBtn = document.getElementById('login-lang-en');
   if(loginTrBtn && loginEnBtn){
@@ -6507,7 +6574,7 @@ function openHistoryModal() {
   const btn = document.getElementById('history-go-btn');
   btn.disabled = false;
   btn.style.opacity = '1';
-  btn.textContent = '🕰 O Zamana Git';
+  btn.textContent = t('hm.go_btn');
 
   // Scrub adım seçiciyi varsayılana al
   const stepSel = document.getElementById('hist-scrub-step');
@@ -6529,14 +6596,14 @@ async function loadHistoryView() {
   const btn = document.getElementById('history-go-btn');
 
   if (!dtVal) {
-    errEl.textContent = '⚠ Lütfen bir tarih seç.';
+    errEl.textContent = t('hm.err_no_date');
     errEl.style.display = 'block';
     return;
   }
 
   const targetDate = new Date(dtVal);
   if (isNaN(targetDate.getTime())) {
-    errEl.textContent = '⚠ Geçersiz tarih.';
+    errEl.textContent = t('hm.err_invalid');
     errEl.style.display = 'block';
     return;
   }
@@ -6549,7 +6616,7 @@ async function loadHistoryView() {
   errEl.style.display = 'none';
   btn.disabled = true;
   btn.style.opacity = '0.6';
-  btn.textContent = '⏳ Yükleniyor...';
+  btn.textContent = t('hm.loading');
 
   try {
     const isoStr = targetDate.toISOString();
@@ -6565,11 +6632,11 @@ async function loadHistoryView() {
     if (e2) throw e2;
 
     if (!dataSorted || dataSorted.length === 0) {
-      errEl.textContent = '⚠ Bu tarihte hiç piksel verisi bulunamadı.';
+      errEl.textContent = t('hm.err_no_data');
       errEl.style.display = 'block';
       btn.disabled = false;
       btn.style.opacity = '1';
-      btn.textContent = '🕰 O Zamana Git';
+      btn.textContent = t('hm.go_btn');
       return;
     }
 
@@ -6622,7 +6689,7 @@ async function loadHistoryView() {
     // Modali kapat
     closeHistoryModal();
 
-    const label = targetDate.toLocaleString('tr-TR', {
+    const label = targetDate.toLocaleString(_currentLang==='tr'?'tr-TR':'en-US', {
       day: '2-digit', month: 'long', year: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });
@@ -6634,7 +6701,7 @@ async function loadHistoryView() {
     errEl.style.display = 'block';
     btn.disabled = false;
     btn.style.opacity = '1';
-    btn.textContent = '🕰 O Zamana Git';
+    btn.textContent = t('hm.go_btn');
   }
 }
 
@@ -6945,7 +7012,7 @@ function openRollbackModal(){
   const btn = document.getElementById('rollback-go-btn');
   btn.disabled = false;
   btn.style.opacity = '1';
-  btn.textContent = '🕰 Rollback At';
+  btn.textContent = t('rb.go_btn');
 
   // Her açılışta önizleme/onay adımını sıfırla, kurulum adımına dön
   rbPendingPlan = null;
@@ -6995,18 +7062,18 @@ async function runRollback(){
   const btn = document.getElementById('rollback-go-btn');
 
   if(!dtVal){
-    errEl.textContent = '⚠ Lütfen bir tarih ve saat seç.';
+    errEl.textContent = t('rb.err_no_date');
     errEl.style.display = 'block';
     return;
   }
   const targetDate = new Date(dtVal);
   if(isNaN(targetDate.getTime())){
-    errEl.textContent = '⚠ Geçersiz tarih.';
+    errEl.textContent = t('rb.err_invalid');
     errEl.style.display = 'block';
     return;
   }
   if(targetDate > new Date()){
-    errEl.textContent = '⚠ Gelecek bir tarih seçemezsin.';
+    errEl.textContent = t('rb.err_future');
     errEl.style.display = 'block';
     return;
   }
@@ -7014,16 +7081,16 @@ async function runRollback(){
   errEl.style.display = 'none';
   btn.disabled = true;
   btn.style.opacity = '0.6';
-  btn.textContent = '⏳ Hesaplanıyor...';
+  btn.textContent = t('rb.calculating');
 
   try{
     const isoStr = targetDate.toISOString();
     const flats = getFlatsInRect(rbSelectedRect);
 
     if(flats.length === 0){
-      errEl.textContent = '⚠ Bu alanda hiç piksel yok (deniz/sınır olabilir).';
+      errEl.textContent = t('rb.err_no_pixels');
       errEl.style.display = 'block';
-      btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '🕰 Rollback At';
+      btn.disabled = false; btn.style.opacity = '1'; btn.textContent = t('rb.go_btn');
       return;
     }
 
@@ -7069,17 +7136,17 @@ async function runRollback(){
       if(curParty !== targetParty) willChange++;
     });
 
-    const label = targetDate.toLocaleString('tr-TR', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    const label = targetDate.toLocaleString(_currentLang==='tr'?'tr-TR':'en-US', {day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
     rbPendingPlan = { flats, stateAtTime, targetDate, label };
 
-    btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '🕰 Rollback At';
+    btn.disabled = false; btn.style.opacity = '1'; btn.textContent = t('rb.go_btn');
     showRollbackConfirmStep(willChange, flats.length, label);
 
   } catch(err){
     console.error('Rollback hesaplama hatası:', err);
     errEl.textContent = '⚠ Hata: ' + (err.message || 'Bilinmeyen hata');
     errEl.style.display = 'block';
-    btn.disabled = false; btn.style.opacity = '1'; btn.textContent = '🕰 Rollback At';
+    btn.disabled = false; btn.style.opacity = '1'; btn.textContent = t('rb.go_btn');
   }
 }
 
@@ -7088,16 +7155,16 @@ function showRollbackConfirmStep(willChange, totalFlats, label){
   document.getElementById('rb-setup-step').style.display = 'none';
   const step = document.getElementById('rb-confirm-step');
   step.style.display = 'flex';
-  document.getElementById('rb-confirm-text').innerHTML =
-    `⚠️ <b>${label}</b> anına dönülecek.<br>`+
-    `<b>${willChange.toLocaleString('tr-TR')}</b> piksel gerçekten değişecek `+
-    `(seçili alan ${totalFlats.toLocaleString('tr-TR')} piksel).<br><br>`+
-    `Bu işlem <b>KALICIDIR</b> — tüm kullanıcılar bu değişikliği görecek ve sayfa yenilense (F5) de aynı kalacak.<br><br>`+
-    `Bu rollback'i onaylıyor musun?`;
+  const _loc = _currentLang==='tr'?'tr-TR':'en-US';
+  document.getElementById('rb-confirm-text').innerHTML = t('rb.confirm_msg', {
+    label: label,
+    changed: willChange.toLocaleString(_loc),
+    total: totalFlats.toLocaleString(_loc)
+  });
   const yesBtn = document.getElementById('rb-confirm-yes-btn');
   yesBtn.disabled = false;
   yesBtn.style.opacity = '1';
-  yesBtn.textContent = '✅ Onayla ve Uygula';
+  yesBtn.textContent = t('rb.confirm_yes');
 }
 
 // "Vazgeç" — onay adımından kurulum adımına geri döner, hiçbir şey uygulanmaz.
@@ -7182,7 +7249,7 @@ async function confirmRollbackApply(){
   errEl.style.display = 'none';
   yesBtn.disabled = true;
   yesBtn.style.opacity = '0.6';
-  yesBtn.textContent = '⏳ Uygulanıyor...';
+  yesBtn.textContent = t('rb.applying');
 
   try{
     // 1) Sunucuya kalıcı olarak yaz
@@ -7231,15 +7298,15 @@ async function confirmRollbackApply(){
     closeRollbackModal();
     rollbackToolActive = false;
     const tbtn = document.getElementById('pt-rollback-toggle');
-    tbtn.textContent = '🕰 Rollback Aracı: OFF';
+    tbtn.textContent = t('rb.toggle_off');
     tbtn.classList.remove('event-on');
     rbCanvas.classList.remove('active');
 
   } catch(err){
     console.error('Rollback uygulama hatası:', err);
-    errEl.textContent = '⚠ Sunucuya yazılamadı: ' + (err.message || 'Bilinmeyen hata');
+    errEl.textContent = t('rb.err_write') + (err.message || t('msg.unknown_error'));
     errEl.style.display = 'block';
-    yesBtn.disabled = false; yesBtn.style.opacity = '1'; yesBtn.textContent = '✅ Onayla ve Uygula';
+    yesBtn.disabled = false; yesBtn.style.opacity = '1'; yesBtn.textContent = t('rb.confirm_yes');
   }
 }
 
@@ -7305,7 +7372,7 @@ function showRollbackBanner(label){
   let banner = document.getElementById('rollback-banner');
   if(!banner) return;
   banner.style.display = 'flex';
-  document.getElementById('rollback-banner-label').textContent = `🕰 Seçili alan: ${label}`;
+  document.getElementById('rollback-banner-label').textContent = t('rb.banner_label', {label: label});
 }
 function hideRollbackBanner(){
   const banner = document.getElementById('rollback-banner');
@@ -7324,7 +7391,7 @@ window.toggleAdmin = function(){
     rbStartCanvasXY = null; rbCurCanvasXY = null;
     if(rbCanvas) rbCanvas.classList.remove('active');
     const btn = document.getElementById('pt-rollback-toggle');
-    if(btn){ btn.textContent = '🕰 Rollback Aracı: OFF'; btn.classList.remove('event-on'); }
+    if(btn){ btn.textContent = t('rb.toggle_off'); btn.classList.remove('event-on'); }
   }
 };
 </script>
@@ -7335,12 +7402,12 @@ window.toggleAdmin = function(){
 <div id="rollback-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
   <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:20px;width:440px;max-width:95vw;padding:1.8rem;display:flex;flex-direction:column;gap:1.1rem;box-shadow:0 24px 64px rgba(0,0,0,.8);">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h2 style="font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,#14b8a6,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">🕰 Alanı Geri Al (Rollback)</h2>
+      <h2 id="rb-modal-title" style="font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,#14b8a6,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;" data-i18n="rb.title">🕰 Alanı Geri Al (Rollback)</h2>
       <button onclick="closeRollbackModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;" onmouseover="this.style.color='var(--txt)'" onmouseout="this.style.color='var(--muted)'">✕</button>
     </div>
 
     <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:.8rem 1rem;font-size:.78rem;color:var(--txt);line-height:1.65;">
-      📌 Sadece haritada <b>seçtiğin alan</b> belirlediğin saatteki haline döner. Diğer bölgelere dokunulmaz. Bu işlem <b>kalıcıdır</b> — sunucudaki gerçek veriyi değiştirir, tüm kullanıcılar görür ve sayfa yenilense (F5) de aynı kalır.
+      <span id="rb-info-text" data-i18n-html="rb.info">📌 Sadece haritada <b>seçtiğin alan</b> belirlediğin saatteki haline döner. Diğer bölgelere dokunulmaz. Bu işlem <b>kalıcıdır</b> — sunucudaki gerçek veriyi değiştirir, tüm kullanıcılar görür ve sayfa yenilense (F5) de aynı kalır.</span>
     </div>
 
     <div id="rb-area-info" style="background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;padding:.6rem .8rem;font-family:'Space Mono',monospace;font-size:.72rem;color:var(--muted);"></div>
@@ -7348,7 +7415,7 @@ window.toggleAdmin = function(){
     <!-- ── ADIM 1: Tarih seçimi ── -->
     <div id="rb-setup-step" style="display:flex;flex-direction:column;gap:1.1rem;">
       <div style="display:flex;flex-direction:column;gap:.45rem;">
-        <label style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Hangi Saate Dönülsün?</label>
+        <label id="rb-time-label" style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);" data-i18n="rb.time_label">Hangi Saate Dönülsün?</label>
         <input type="datetime-local" id="rollback-datetime"
           style="background:var(--surf2);border:1px solid var(--bdr);border-radius:9px;padding:.7rem .9rem;color:var(--txt);font-family:'Space Mono',monospace;font-size:.85rem;outline:none;width:100%;transition:border-color .2s;cursor:pointer;"
           onfocus="this.style.borderColor='#14b8a6'" onblur="this.style.borderColor='var(--bdr)'"
@@ -7356,18 +7423,18 @@ window.toggleAdmin = function(){
       </div>
 
       <div style="display:flex;flex-direction:column;gap:.35rem;">
-        <label style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Hızlı Seç</label>
+        <label id="rb-quick-label" style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);" data-i18n="rb.quick_label">Hızlı Seç</label>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;">
-          <button class="hist-quick-btn" onclick="rollbackQuick(0.5)">30 dk önce</button>
-          <button class="hist-quick-btn" onclick="rollbackQuick(1)">1 saat önce</button>
-          <button class="hist-quick-btn" onclick="rollbackQuick(6)">6 saat önce</button>
-          <button class="hist-quick-btn" onclick="rollbackQuick(24)">1 gün önce</button>
-          <button class="hist-quick-btn" onclick="rollbackQuick(72)">3 gün önce</button>
-          <button class="hist-quick-btn" onclick="rollbackQuick(168)">7 gün önce</button>
+          <button class="hist-quick-btn" onclick="rollbackQuick(0.5)" data-i18n="rb.q_30m">30 dk önce</button>
+          <button class="hist-quick-btn" onclick="rollbackQuick(1)" data-i18n="rb.q_1h">1 saat önce</button>
+          <button class="hist-quick-btn" onclick="rollbackQuick(6)" data-i18n="rb.q_6h">6 saat önce</button>
+          <button class="hist-quick-btn" onclick="rollbackQuick(24)" data-i18n="rb.q_1d">1 gün önce</button>
+          <button class="hist-quick-btn" onclick="rollbackQuick(72)" data-i18n="rb.q_3d">3 gün önce</button>
+          <button class="hist-quick-btn" onclick="rollbackQuick(168)" data-i18n="rb.q_7d">7 gün önce</button>
         </div>
       </div>
 
-      <button id="rollback-go-btn" onclick="runRollback()" style="background:linear-gradient(135deg,#b91c1c,#0f766e);color:#fff;border:none;border-radius:10px;padding:.75rem 1rem;font-family:'Outfit',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;">
+      <button id="rollback-go-btn" onclick="runRollback()" style="background:linear-gradient(135deg,#b91c1c,#0f766e);color:#fff;border:none;border-radius:10px;padding:.75rem 1rem;font-family:'Outfit',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;" data-i18n="rb.go_btn">
         🕰 Rollback At
       </button>
     </div>
@@ -7376,10 +7443,10 @@ window.toggleAdmin = function(){
     <div id="rb-confirm-step" style="display:none;flex-direction:column;gap:1rem;">
       <div id="rb-confirm-text" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.35);border-radius:12px;padding:.9rem 1rem;font-size:.83rem;color:var(--txt);line-height:1.7;"></div>
       <div style="display:flex;gap:.6rem;">
-        <button onclick="cancelRollbackConfirm()" style="flex:1;background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);border-radius:10px;padding:.7rem 1rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--bdr)'">
+        <button onclick="cancelRollbackConfirm()" style="flex:1;background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);border-radius:10px;padding:.7rem 1rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .15s;" onmouseover="this.style.borderColor='var(--muted)'" onmouseout="this.style.borderColor='var(--bdr)'" data-i18n="rb.cancel">
           ✕ Vazgeç
         </button>
-        <button id="rb-confirm-yes-btn" onclick="confirmRollbackApply()" style="flex:1.4;background:linear-gradient(135deg,#b91c1c,#0f766e);color:#fff;border:none;border-radius:10px;padding:.75rem 1rem;font-family:'Outfit',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;">
+        <button id="rb-confirm-yes-btn" onclick="confirmRollbackApply()" style="flex:1.4;background:linear-gradient(135deg,#b91c1c,#0f766e);color:#fff;border:none;border-radius:10px;padding:.75rem 1rem;font-family:'Outfit',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;" data-i18n="rb.confirm_yes">
           ✅ Onayla ve Uygula
         </button>
       </div>
@@ -7387,7 +7454,7 @@ window.toggleAdmin = function(){
 
     <div id="rollback-modal-err" style="display:none;font-size:.75rem;color:#ef4444;font-family:'Space Mono',monospace;"></div>
 
-    <button id="rollback-undo-btn" onclick="undoRollback()" style="display:none;background:var(--surf2);border:1px solid rgba(220,38,38,.4);color:#f87171;border-radius:10px;padding:.6rem 1rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .15s;align-items:center;justify-content:center;gap:.45rem;" onmouseover="this.style.background='rgba(220,38,38,.1)'" onmouseout="this.style.background='var(--surf2)'">
+    <button id="rollback-undo-btn" onclick="undoRollback()" style="display:none;background:var(--surf2);border:1px solid rgba(220,38,38,.4);color:#f87171;border-radius:10px;padding:.6rem 1rem;font-family:'Outfit',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .15s;align-items:center;justify-content:center;gap:.45rem;" onmouseover="this.style.background='rgba(220,38,38,.1)'" onmouseout="this.style.background='var(--surf2)'" data-i18n="rb.undo_btn">
       ↩ Önceki Rollback'i Geri Al
     </button>
   </div>
@@ -7395,8 +7462,8 @@ window.toggleAdmin = function(){
 
 <!-- Rollback aktif görünüm banner'ı (haritanın üstünde küçük bilgi notu) -->
 <div id="rollback-banner" style="display:none;position:fixed;top:64px;left:50%;transform:translateX(-50%);z-index:50;background:rgba(127,29,29,0.92);backdrop-filter:blur(6px);border:1px solid #ef4444;border-radius:12px;padding:.5rem .6rem .5rem 1rem;align-items:center;gap:.6rem;font-size:.8rem;color:#fff;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.5);">
-  <span id="rollback-banner-label">🕰 Seçili alan geçmişe döndürüldü</span>
-  <button onclick="undoRollback()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.72rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;padding:.2rem .6rem;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">↩ Geri Al</button>
+  <span id="rollback-banner-label" data-i18n="rb.banner_applied">🕰 Seçili alan geçmişe döndürüldü</span>
+  <button onclick="undoRollback()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.72rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;padding:.2rem .6rem;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'" data-i18n="rb.undo_short">↩ Geri Al</button>
 </div>
 
 <!-- ═══════════════════════════════════════════
@@ -7405,38 +7472,37 @@ window.toggleAdmin = function(){
 <div id="history-modal" style="display:none;position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);align-items:center;justify-content:center;">
   <div style="background:var(--surf);border:1px solid var(--bdr);border-radius:20px;width:440px;max-width:95vw;padding:1.8rem;display:flex;flex-direction:column;gap:1.1rem;box-shadow:0 24px 64px rgba(0,0,0,.8);">
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <h2 style="font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,#14b8a6,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">🕰 Geçmişe Bak</h2>
+      <h2 id="hm-modal-title" style="font-size:1.1rem;font-weight:800;background:linear-gradient(135deg,#14b8a6,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;" data-i18n="hm.title">🕰 Geçmişe Bak</h2>
       <button onclick="closeHistoryModal()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;" onmouseover="this.style.color='var(--txt)'" onmouseout="this.style.color='var(--muted)'">✕</button>
     </div>
 
-    <div style="background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.25);border-radius:12px;padding:.8rem 1rem;font-size:.78rem;color:var(--txt);line-height:1.65;">
+    <div id="hm-info-box" style="background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.25);border-radius:12px;padding:.8rem 1rem;font-size:.78rem;color:var(--txt);line-height:1.65;" data-i18n-html="hm.info">
       📌 Seçtiğin tarihe ait harita görüntüsü yüklenir. <b>Salt okunur moddur</b> — piksel koyamazsın. Çıkmak için banner'daki ✕ tuşuna bas.
     </div>
 
     <div style="display:flex;flex-direction:column;gap:.45rem;">
-      <label style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Tarih & Saat Seç</label>
+      <label id="hm-date-label" style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);" data-i18n="hm.date_label">Tarih & Saat Seç</label>
       <input type="datetime-local" id="history-datetime"
         style="background:var(--surf2);border:1px solid var(--bdr);border-radius:9px;padding:.7rem .9rem;color:var(--txt);font-family:'Space Mono',monospace;font-size:.85rem;outline:none;width:100%;transition:border-color .2s;cursor:pointer;"
         onfocus="this.style.borderColor='#14b8a6'" onblur="this.style.borderColor='var(--bdr)'"
       />
     </div>
 
-    <!-- Hızlı seçim kısayolları -->
     <div style="display:flex;flex-direction:column;gap:.35rem;">
-      <label style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Hızlı Seç</label>
+      <label id="hm-quick-label" style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);" data-i18n="hm.quick_label">Hızlı Seç</label>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem;">
-        <button class="hist-quick-btn" onclick="historyQuick(1)">1 saat önce</button>
-        <button class="hist-quick-btn" onclick="historyQuick(6)">6 saat önce</button>
-        <button class="hist-quick-btn" onclick="historyQuick(12)">12 saat önce</button>
-        <button class="hist-quick-btn" onclick="historyQuick(24)">1 gün önce</button>
-        <button class="hist-quick-btn" onclick="historyQuick(72)">3 gün önce</button>
-        <button class="hist-quick-btn" onclick="historyQuick(168)">7 gün önce</button>
+        <button class="hist-quick-btn" onclick="historyQuick(1)" data-i18n="hm.q_1h">1 saat önce</button>
+        <button class="hist-quick-btn" onclick="historyQuick(6)" data-i18n="hm.q_6h">6 saat önce</button>
+        <button class="hist-quick-btn" onclick="historyQuick(12)" data-i18n="hm.q_12h">12 saat önce</button>
+        <button class="hist-quick-btn" onclick="historyQuick(24)" data-i18n="hm.q_1d">1 gün önce</button>
+        <button class="hist-quick-btn" onclick="historyQuick(72)" data-i18n="hm.q_3d">3 gün önce</button>
+        <button class="hist-quick-btn" onclick="historyQuick(168)" data-i18n="hm.q_7d">7 gün önce</button>
       </div>
     </div>
 
     <div id="history-modal-err" style="display:none;font-size:.75rem;color:#ef4444;font-family:'Space Mono',monospace;"></div>
 
-    <button id="history-go-btn" onclick="loadHistoryView()" style="background:linear-gradient(135deg,#0f766e,#0369a1);color:#fff;border:none;border-radius:10px;padding:.75rem 1rem;font-family:'Outfit',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;">
+    <button id="history-go-btn" onclick="loadHistoryView()" style="background:linear-gradient(135deg,#0f766e,#0369a1);color:#fff;border:none;border-radius:10px;padding:.75rem 1rem;font-family:'Outfit',sans-serif;font-weight:800;font-size:.9rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;" data-i18n="hm.go_btn">
       🕰 O Zamana Git
     </button>
   </div>
