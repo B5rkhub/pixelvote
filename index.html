@@ -2150,7 +2150,6 @@ async function handleClick(mx,my){
   _placePixelInFlight = true;
   try{
     const {data,error} = await supabase.rpc('place_pixel',{
-      p_username: username,
       p_flat: flat,
       p_party: selParty,
       p_province: pid
@@ -2168,8 +2167,13 @@ async function handleClick(mx,my){
       if(data && data.error==='no_pixels_left'){
         _setPixLeft(0);
         showPopup('⏳ Piksel hakkın bitti!');
+      } else if(data && data.error==='not_authenticated'){
+        showPopup('⚠ Oturumun sona ermiş, lütfen tekrar giriş yap.');
+        username='';
+        document.getElementById('ubadge').textContent='👤 Misafir';
       } else {
         showPopup('⚠ İşlem başarısız, tekrar dene.');
+        if(error) console.error('place_pixel RPC hatası:', error);
       }
       return;
     }
@@ -2254,7 +2258,7 @@ function tickCD(){
 async function loadCD(){
   // Önce sunucudan gerçek hakkı çek (asıl doğru kaynak burası)
   try{
-    const {data,error} = await supabase.rpc('get_pix_left',{p_username:username});
+    const {data,error} = await supabase.rpc('get_pix_left');
     if(!error && data && typeof data.pix_left === 'number'){
       _setPixLeft(data.pix_left);
       try{localStorage.setItem('pv_px_'+username,_getPixLeft());}catch(e){}
