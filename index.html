@@ -2342,22 +2342,10 @@ function updateDots(){
   }
   document.getElementById('pnum').textContent=currentPix;
 }
-async function saveData(){
-  // localStorage yedek
-  try{localStorage.setItem('pv3_data',JSON.stringify(pixData));localStorage.setItem('pv3_act',JSON.stringify(actLog.slice(0,40)));}catch(e){}
-  // Supabase'e kaydet
-  try{
-    const rows=[];
-    Object.entries(pixData).forEach(([pid,votes])=>{
-      votes.forEach(v=>{
-        rows.push({flat:v.flat,province:pid,party:v.party,username:username});
-      });
-    });
-    if(rows.length>0){
-      await supabase.from('pixels').upsert(rows,{onConflict:'flat'});
-    }
-  }catch(e){console.error('Supabase saveData error:',e);}
-}
+// NOT: Eski saveData() fonksiyonu (tüm pixData'yı supabase.from('pixels').upsert
+// ile toplu kaydeden) kaldırıldı — artık hiçbir yerden çağrılmıyordu (paintPixel
+// artık admin_delete_pixels RPC'sini kullanıyor) ve zaten RLS tarafından
+// reddediliyordu. localStorage yedeği loadData() içinde ayrıca korunuyor.
 async function loadData(){
   try{
     const {data,error}=await supabase.from('pixels').select('*');
@@ -5890,9 +5878,17 @@ async function runInChunks(items, size, fn){
   }
 }
 
-// Seçili flat'leri ve hedef durumlarını Supabase 'pixels' tablosuna KALICI
-// olarak yazar (target!==null → upsert, target===null → delete). pixels'a
-// her yazıldığında pixel_log trigger'ı bunu otomatik olarak da loglar.
+// Seçili flat'leri ve hedef durumlarını sunucuya KALICI olarak yazar
+// (target!==null → upsert, target===null → delete). pixels'a her
+// yazıldığında pixel_log trigger'ı bunu otomatik olarak da loglar.
+//
+// GÜVENLİK: Daha önce bu fonksiyon supabase.from('pixels').upsert()/.delete()
+// ile DOĞRUDAN tabloya yazıyordu. pixels tablosunda RLS açık olduğu ve
+// INSERT/UPDATE/DELETE için hiçbir politika tanımlı olmadığı için bu yazma
+// sessizce reddediliyordu — rollback aracı "uygulandı" diyordu ama sunucuda
+// hiçbir şey değişmiyordu. Artık admin_set_pixel_states() RPC'si üzerinden
+// yazılıyor; bu fonksiyon sunucu tarafında is_admin() ile yetkiyi doğruluyor
+// ve RLS'i SECURITY DEFINER ile güvenli şekilde bypass ediyor.
 //
 // ÖNEMLİ: Sadece GERÇEKTEN DEĞİŞECEK flat'ler sunucuya gönderilir — seçili
 // alanın tamamı değil. Önizleme adımında "X piksel değişecek" diye hesaplanan
@@ -5900,8 +5896,7 @@ async function runInChunks(items, size, fn){
 // küçük tutar (büyük seçimlerde "Failed to fetch" hatasını önler) hem de
 // pixel_log'a gereksiz / değişmeyen satırlar eklenmesini engeller.
 async function persistPixelStatesToServer(flats, stateAtTime, actingUsername){
-  const upsertRows = [];
-  const deleteFlats = [];
+  const fFlats=[], fProvinces=[], fParties=[];
 
   flats.forEach(f=>{
     const pi = FLAT_TO_PROV[f];
@@ -5915,27 +5910,26 @@ async function persistPixelStatesToServer(flats, stateAtTime, actingUsername){
     const targetParty = target ? target.party : null;
     if(curParty === targetParty) return; // değişiklik yok, atla
 
-    if(target === null){
-      deleteFlats.push(f);
-    } else {
-      upsertRows.push({flat:f, province:pid, party:target.party, username: actingUsername});
-    }
+    fFlats.push(f);
+    fProvinces.push(pid);
+    fParties.push(target===null ? null : target.party); // null → RPC tarafında silinecek
   });
 
-  const CHUNK_SIZE = 500; // tek istekte gönderilecek azami satır sayısı
+  if(fFlats.length===0) return;
 
-  if(upsertRows.length>0){
-    await runInChunks(upsertRows, CHUNK_SIZE, async (chunk)=>{
-      const { error: upErr } = await supabase.from('pixels').upsert(chunk, {onConflict:'flat'});
-      if(upErr) throw upErr;
+  const CHUNK_SIZE = 500; // tek istekte gönderilecek azami satır sayısı
+  await runInChunks(fFlats.map((f,i)=>i), CHUNK_SIZE, async (idxChunk)=>{
+    const { data, error } = await supabase.rpc('admin_set_pixel_states', {
+      p_flats: idxChunk.map(i=>fFlats[i]),
+      p_provinces: idxChunk.map(i=>fProvinces[i]),
+      p_parties: idxChunk.map(i=>fParties[i]),
+      p_username: actingUsername
     });
-  }
-  if(deleteFlats.length>0){
-    await runInChunks(deleteFlats, CHUNK_SIZE, async (chunk)=>{
-      const { error: delErr } = await supabase.from('pixels').delete().in('flat', chunk);
-      if(delErr) throw delErr;
-    });
-  }
+    if(error) throw error;
+    if(!data || data.success!==true){
+      throw new Error((data && data.error) || 'admin_set_pixel_states başarısız');
+    }
+  });
 }
 
 // ADIM 3: Onay verildikten SONRA gerçekten uygulanır — hem sunucuya
@@ -6016,30 +6010,31 @@ async function confirmRollbackApply(){
 async function undoRollback(){
   if(!rbAppliedPrevState){ closeRollbackModal(); return; }
 
-  const upsertRows = [];
-  const deleteFlats = [];
+  // GÜVENLİK: Daha önce burada da doğrudan supabase.from('pixels').upsert()/
+  // .delete() çağrıları vardı — RLS tarafından sessizce reddediliyordu.
+  // Artık aynı admin_set_pixel_states() RPC'si kullanılıyor (is_admin()
+  // doğrulamalı, SECURITY DEFINER).
+  const uFlats=[], uProvinces=[], uParties=[];
   rbAppliedPrevState.forEach((prev, f)=>{
-    if(prev.party === null){
-      deleteFlats.push(f);
-    } else {
-      upsertRows.push({flat:f, province:prev.pid, party:prev.party, username:(typeof username!=='undefined' && username) ? username : 'admin-rollback-undo'});
-    }
+    uFlats.push(f);
+    uProvinces.push(prev.pid);
+    uParties.push(prev.party); // null ise RPC tarafında silinecek
   });
 
   try{
     const CHUNK_SIZE = 500;
-    if(upsertRows.length>0){
-      await runInChunks(upsertRows, CHUNK_SIZE, async (chunk)=>{
-        const { error: upErr } = await supabase.from('pixels').upsert(chunk, {onConflict:'flat'});
-        if(upErr) throw upErr;
+    await runInChunks(uFlats.map((f,i)=>i), CHUNK_SIZE, async (idxChunk)=>{
+      const { data, error } = await supabase.rpc('admin_set_pixel_states', {
+        p_flats: idxChunk.map(i=>uFlats[i]),
+        p_provinces: idxChunk.map(i=>uProvinces[i]),
+        p_parties: idxChunk.map(i=>uParties[i]),
+        p_username: (typeof username!=='undefined' && username) ? username : 'admin-rollback-undo'
       });
-    }
-    if(deleteFlats.length>0){
-      await runInChunks(deleteFlats, CHUNK_SIZE, async (chunk)=>{
-        const { error: delErr } = await supabase.from('pixels').delete().in('flat', chunk);
-        if(delErr) throw delErr;
-      });
-    }
+      if(error) throw error;
+      if(!data || data.success!==true){
+        throw new Error((data && data.error) || 'admin_set_pixel_states başarısız');
+      }
+    });
   } catch(err){
     console.error('Rollback geri alma (sunucu) hatası:', err);
     showPopup('⚠ Sunucuya geri alma yazılamadı: ' + (err.message || 'bilinmeyen hata'));
