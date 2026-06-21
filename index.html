@@ -6025,22 +6025,35 @@ function renderFactionHome(body){
         ? `<div class="fc-empty"><strong>🤝</strong>${t('faction.no_other_factions')}</div>`
         : Object.entries(allFactions).filter(([tg])=>tg!==f.tag).map(([tag,of])=>{
           const status = (f.diplomacy||{})[tag] || 'neutral';
-          const statusLabel = status==='ally'?t('diplomacy.ally'):status==='war'?t('diplomacy.war'):t('diplomacy.neutral');
-          return `<div class="fc-diplo-item">
-            <div class="fc-diplo-icon">${of.logo?`<img src="${of.logo}" style="width:32px;height:32px;border-radius:8px;object-fit:cover">`:of.emoji||'⚑'}</div>
-            <div style="flex:1">
-              <div class="fc-diplo-name">${of.name}</div>
-              <div style="font-size:.58rem;color:${of.color};font-family:'Space Mono',monospace">[${of.tag}] • ${of.members.length}${t('faction.members_unit')}</div>
+          const statusLabel = status==='ally'?'🤝 İttifak':status==='war'?'⚔️ Savaş':'☮️ Nötr';
+          const statusGlow = status==='war'
+            ? 'box-shadow:0 0 0 2px rgba(239,68,68,.5),0 0 12px rgba(239,68,68,.25);border-color:rgba(239,68,68,.4);'
+            : status==='ally'
+            ? 'box-shadow:0 0 0 2px rgba(16,185,129,.4),0 0 12px rgba(16,185,129,.18);border-color:rgba(16,185,129,.35);'
+            : '';
+          const cardBg = status==='war'
+            ? 'background:linear-gradient(135deg,rgba(239,68,68,.07),rgba(185,28,28,.04));'
+            : status==='ally'
+            ? 'background:linear-gradient(135deg,rgba(16,185,129,.07),rgba(5,150,105,.04));'
+            : '';
+          return `<div class="fc-diplo-item" style="${cardBg}${statusGlow}transition:all .2s;">
+            <div class="fc-diplo-icon" style="width:36px;height:36px;border-radius:10px;background:${of.color}22;border:1px solid ${of.color}44;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">
+              ${of.logo?`<img src="${of.logo}" style="width:28px;height:28px;border-radius:6px;object-fit:cover">`:of.emoji||'⚑'}
             </div>
-            <div class="fc-diplo-status ${status}">${statusLabel}</div>
-            ${isLeader?`<div class="fc-diplo-actions">
-              <button class="fc-diplo-btn ally-btn" onclick="setDiplomacy('${tag}','ally')" title="${t('diplomacy.ally')}">🤝</button>
-              <button class="fc-diplo-btn" onclick="setDiplomacy('${tag}','neutral')" title="${t('diplomacy.neutral')}">🤝❌</button>
-              <button class="fc-diplo-btn war-btn" onclick="setDiplomacy('${tag}','war')" title="${t('diplomacy.war')}">⚔️</button>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:.78rem;font-weight:800;color:${of.color};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_esc(of.name)}</div>
+              <div style="font-size:.58rem;color:var(--muted);font-family:'Space Mono',monospace;">[${_esc(of.tag)}] · ${of.members.length} üye</div>
+            </div>
+            <div class="fc-diplo-status ${status}" style="white-space:nowrap;">${statusLabel}</div>
+            ${isLeader?`<div class="fc-diplo-actions" style="display:flex;gap:.25rem;flex-shrink:0;">
+              <button class="fc-diplo-btn ally-btn" onclick="setDiplomacy('${tag}','ally')" title="İttifak Kur" style="${status==='ally'?'border-color:#10b981;color:#10b981;':''}">🤝</button>
+              <button class="fc-diplo-btn" onclick="setDiplomacy('${tag}','neutral')" title="Nötr" style="${status==='neutral'?'border-color:var(--accent);color:var(--accent);':''}">☮️</button>
+              <button class="fc-diplo-btn war-btn" onclick="setDiplomacy('${tag}','war')" title="Savaş İlan Et" style="${status==='war'?'border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.12);':''}">⚔️</button>
             </div>`:''}
           </div>`;
         }).join('')
       }
+      ${!isLeader?`<div style="text-align:center;font-size:.65rem;color:var(--muted);padding:.5rem;border-top:1px solid var(--bdr);margin-top:.3rem;">Diplomasi değişikliği yapmak için lider olman gerekiyor.</div>`:''}
     </div>
 
     <!-- STATS PANEL -->
@@ -6122,11 +6135,43 @@ function demoteMember(memberName){
 function setDiplomacy(targetTag, status){
   if(!factionData) return;
   if(!factionData.diplomacy) factionData.diplomacy={};
+  const prevStatus = factionData.diplomacy[targetTag] || 'neutral';
   factionData.diplomacy[targetTag] = status;
   allFactions[factionData.tag] = factionData;
   saveFactions();
   const label = status==='ally'?t('diplomacy.ally'):status==='war'?t('diplomacy.war'):t('diplomacy.neutral');
   showPopup(t('msg.relation_set', {tag: targetTag, label: label}));
+
+  const targetFaction = allFactions[targetTag];
+  const targetName = targetFaction ? targetFaction.name : targetTag;
+  const targetColor = targetFaction ? targetFaction.color : '#ef4444';
+  const targetEmoji = targetFaction ? (targetFaction.emoji || '⚑') : '⚑';
+
+  if(status === 'war'){
+    // Savaş sesi
+    if(typeof SFX !== 'undefined') SFX.war();
+    // Savaş bildirimi banner'ı
+    showWarBanner({
+      attackerName: factionData.name,
+      attackerColor: factionData.color,
+      attackerEmoji: factionData.emoji || '⚑',
+      defenderName: targetName,
+      defenderColor: targetColor,
+      defenderEmoji: targetEmoji
+    });
+    // Supabase broadcast ile TÜM oyunculara ilet
+    broadcastWarDeclaration(factionData, targetFaction || {name:targetTag, color:targetColor, emoji:targetEmoji, tag:targetTag});
+  } else if(status === 'ally'){
+    if(typeof SFX !== 'undefined') SFX.ally();
+    showAllyBanner({
+      f1Name: factionData.name, f1Color: factionData.color, f1Emoji: factionData.emoji || '⚑',
+      f2Name: targetName, f2Color: targetColor, f2Emoji: targetEmoji
+    });
+    broadcastAllyDeclaration(factionData, targetFaction || {name:targetTag, color:targetColor, emoji:targetEmoji, tag:targetTag});
+  } else {
+    if(typeof SFX !== 'undefined') SFX.peace();
+  }
+
   renderFactionModal();
 }
 
@@ -9312,6 +9357,78 @@ const SFX = (()=>{
         {freq:1318, start:0.12, dur:0.22, type:'sine', gain:0.22}
       ]);
     },
+    // ⚔️ SAVAŞ İLANI — Derin, sert, adrenalin yükseltici fanfar
+    war(){
+      if(muted) return;
+      const c = ensureRunning();
+      if(!c) return;
+      const now = c.currentTime;
+      function drum(startT, vol){
+        const buf = c.createBuffer(1, c.sampleRate * 0.18, c.sampleRate);
+        const data = buf.getChannelData(0);
+        for(let i=0;i<data.length;i++) data[i] = (Math.random()*2-1) * Math.pow(1-(i/data.length),2.5);
+        const src = c.createBufferSource();
+        src.buffer = buf;
+        const g = c.createGain();
+        g.gain.setValueAtTime(vol, now+startT);
+        g.gain.exponentialRampToValueAtTime(0.0001, now+startT+0.18);
+        src.connect(g); g.connect(c.destination);
+        src.start(now+startT);
+      }
+      function brass(freq, startT, dur, vol, slide){
+        const osc = c.createOscillator();
+        const g = c.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq * (slide||1), now+startT);
+        osc.frequency.linearRampToValueAtTime(freq, now+startT+0.06);
+        g.gain.setValueAtTime(0.0001, now+startT);
+        g.gain.linearRampToValueAtTime(vol, now+startT+0.04);
+        g.gain.setValueAtTime(vol, now+startT+dur-0.06);
+        g.gain.exponentialRampToValueAtTime(0.0001, now+startT+dur);
+        osc.connect(g); g.connect(c.destination);
+        osc.start(now+startT); osc.stop(now+startT+dur+0.05);
+      }
+      function alarm(freq, startT, dur, vol){
+        const osc = c.createOscillator();
+        const g = c.createGain();
+        osc.type = 'square';
+        osc.frequency.value = freq;
+        g.gain.setValueAtTime(0.0001, now+startT);
+        g.gain.linearRampToValueAtTime(vol, now+startT+0.02);
+        g.gain.setValueAtTime(vol, now+startT+dur-0.04);
+        g.gain.exponentialRampToValueAtTime(0.0001, now+startT+dur);
+        osc.connect(g); g.connect(c.destination);
+        osc.start(now+startT); osc.stop(now+startT+dur+0.03);
+      }
+      drum(0,    0.55); drum(0.18, 0.40); drum(0.32, 0.60);
+      brass(130, 0,    0.22, 0.28, 0.7);
+      brass(196, 0.20, 0.18, 0.32, 0.8);
+      brass(261, 0.35, 0.25, 0.36, 0.85);
+      brass(329, 0.55, 0.20, 0.38, 0.9);
+      brass(392, 0.72, 0.30, 0.42, 0.85);
+      alarm(440, 0.85, 0.14, 0.18); alarm(880, 0.97, 0.10, 0.14);
+      alarm(440, 1.05, 0.10, 0.16); alarm(880, 1.13, 0.10, 0.13);
+      drum(0.90, 0.50); drum(1.00, 0.55); drum(1.08, 0.65);
+      brass(523, 1.10, 0.45, 0.40, 0.9);
+      brass(392, 1.50, 0.55, 0.30, 1.0);
+      alarm(220, 1.55, 0.40, 0.12);
+    },
+    // 🤝 İTTİFAK sesi — sıcak, zafer notalı
+    ally(){
+      tone([
+        {freq:392, start:0,    dur:0.12, type:'sine', gain:0.18},
+        {freq:523, start:0.10, dur:0.14, type:'sine', gain:0.20},
+        {freq:659, start:0.22, dur:0.20, type:'sine', gain:0.22},
+        {freq:784, start:0.38, dur:0.28, type:'sine', gain:0.20}
+      ]);
+    },
+    // ☮️ BARIŞ / nötr sesi
+    peace(){
+      tone([
+        {freq:523, start:0,    dur:0.14, type:'sine', gain:0.14},
+        {freq:392, start:0.12, dur:0.18, type:'sine', gain:0.12}
+      ]);
+    },
     setMuted(v){ muted = !!v; try{ localStorage.setItem('pv_sfx_muted', muted?'1':'0'); }catch(e){} },
     isMuted(){ return muted; },
     unlock(){
@@ -9536,6 +9653,386 @@ function syncTbSheetAdminState(){
 
 /* ESC ile kapat */
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeTbMenu(); });
+</script>
+<!-- ═══════════════════════════════════════════════════════
+     ⚔️ SAVAŞ & İTTİFAK BİLDİRİM SİSTEMİ
+════════════════════════════════════════════════════════ -->
+<style>
+/* ── Savaş İlan Banner'ı ── */
+#war-banner{
+  position:fixed;top:0;left:0;right:0;z-index:950;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;
+  /* tam overlay — arka plan kararır */
+}
+#war-banner-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0);
+  backdrop-filter:blur(0px);
+  transition:background .4s, backdrop-filter .4s;
+  pointer-events:none;z-index:949;
+}
+#war-banner-overlay.show{
+  background:rgba(0,0,0,.55);
+  backdrop-filter:blur(3px);
+}
+#war-banner-card{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0.7);
+  opacity:0;
+  transition:transform .45s cubic-bezier(.34,1.56,.64,1), opacity .35s ease;
+  z-index:951;
+  width:min(560px, 96vw);
+  background:linear-gradient(165deg,#0d0a1a 0%,#1a0d14 50%,#0d0a1a 100%);
+  border:2px solid rgba(239,68,68,.6);
+  border-radius:22px;
+  padding:1.8rem 1.6rem 1.6rem;
+  box-shadow:
+    0 0 0 1px rgba(239,68,68,.2),
+    0 0 40px rgba(239,68,68,.3),
+    0 0 80px rgba(239,68,68,.15),
+    0 32px 80px rgba(0,0,0,.8);
+  display:flex;flex-direction:column;align-items:center;gap:1.1rem;
+  pointer-events:auto;
+}
+#war-banner-card.show{
+  transform:translate(-50%,-50%) scale(1);
+  opacity:1;
+}
+
+/* Kırmızı pırıltı efekti */
+#war-banner-card::before{
+  content:'';position:absolute;inset:-2px;border-radius:24px;
+  background:linear-gradient(135deg,#ef444400,#ef444460,#ef444400,#b91c1c60,#ef444400);
+  background-size:300% 300%;
+  animation:war-border-anim 2s linear infinite;
+  z-index:-1;
+}
+@keyframes war-border-anim{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+.war-title{
+  font-size:.65rem;font-weight:900;letter-spacing:.22em;
+  text-transform:uppercase;
+  background:linear-gradient(90deg,#ef4444,#f97316,#ef4444);
+  background-size:200%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  animation:war-title-anim 1.5s linear infinite;
+}
+@keyframes war-title-anim{
+  0%{background-position:0%}100%{background-position:200%}
+}
+
+.war-vs-row{
+  display:flex;align-items:center;gap:1rem;width:100%;justify-content:center;
+}
+.war-faction-card{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:.45rem;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:.9rem .7rem;
+}
+.war-faction-emoji{font-size:2rem;line-height:1;}
+.war-faction-name{
+  font-size:.82rem;font-weight:800;text-align:center;
+  line-height:1.2;color:#fff;
+}
+.war-faction-tag{
+  font-size:.58rem;font-family:'Space Mono',monospace;
+  color:rgba(255,255,255,.4);
+}
+.war-vs-text{
+  font-size:1.8rem;font-weight:900;
+  color:#ef4444;
+  text-shadow:0 0 20px rgba(239,68,68,.8), 0 0 40px rgba(239,68,68,.4);
+  animation:vs-pulse 0.8s ease-in-out infinite alternate;
+  flex-shrink:0;
+}
+@keyframes vs-pulse{
+  from{transform:scale(1);text-shadow:0 0 20px rgba(239,68,68,.8);}
+  to{transform:scale(1.15);text-shadow:0 0 30px rgba(239,68,68,1),0 0 60px rgba(239,68,68,.5);}
+}
+
+.war-desc{
+  font-size:.75rem;color:rgba(255,255,255,.6);text-align:center;line-height:1.6;
+}
+.war-desc b{color:#fca5a5;}
+
+.war-close-btn{
+  background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);
+  border-radius:10px;color:#fca5a5;
+  font-family:'Outfit',sans-serif;font-size:.8rem;font-weight:800;
+  padding:.6rem 2rem;cursor:pointer;
+  transition:all .15s;-webkit-tap-highlight-color:transparent;
+}
+.war-close-btn:hover{background:rgba(239,68,68,.28);border-color:#ef4444;}
+
+/* Savaş kıvılcımları (parçacık efekti) */
+.war-spark{
+  position:fixed;width:4px;height:4px;border-radius:50%;
+  pointer-events:none;z-index:952;
+  animation:spark-fly var(--dur,1.2s) ease-out forwards;
+}
+@keyframes spark-fly{
+  0%{opacity:1;transform:translate(0,0) scale(1);}
+  100%{opacity:0;transform:translate(var(--tx,0),var(--ty,0)) scale(0);}
+}
+
+/* ── İttifak Banner'ı ── */
+#ally-banner-card{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) scale(0.75);
+  opacity:0;
+  transition:transform .4s cubic-bezier(.34,1.5,.64,1), opacity .3s ease;
+  z-index:951;
+  width:min(500px,96vw);
+  background:linear-gradient(160deg,#0a1a12 0%,#0d2018 50%,#0a1a12 100%);
+  border:2px solid rgba(16,185,129,.5);
+  border-radius:20px;
+  padding:1.6rem 1.4rem 1.4rem;
+  box-shadow:0 0 40px rgba(16,185,129,.25), 0 32px 80px rgba(0,0,0,.7);
+  display:flex;flex-direction:column;align-items:center;gap:1rem;
+  pointer-events:auto;
+}
+#ally-banner-card.show{
+  transform:translate(-50%,-50%) scale(1);
+  opacity:1;
+}
+.ally-title{
+  font-size:.6rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;
+  color:#34d399;
+}
+.ally-handshake{
+  font-size:2.8rem;
+  animation:handshake-bounce .6s ease-in-out 3;
+}
+@keyframes handshake-bounce{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-8px);}
+}
+.ally-names{
+  font-size:.88rem;font-weight:800;color:#fff;text-align:center;line-height:1.7;
+}
+.ally-close-btn{
+  background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.35);
+  border-radius:10px;color:#34d399;
+  font-family:'Outfit',sans-serif;font-size:.78rem;font-weight:800;
+  padding:.55rem 1.8rem;cursor:pointer;transition:all .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.ally-close-btn:hover{background:rgba(16,185,129,.22);border-color:#10b981;}
+
+/* Savaş ekranı titremesi */
+@keyframes war-screen-shake{
+  0%,100%{transform:translate(0,0);}
+  10%{transform:translate(-4px,2px);}
+  20%{transform:translate(4px,-3px);}
+  30%{transform:translate(-3px,4px);}
+  40%{transform:translate(3px,-2px);}
+  50%{transform:translate(-2px,3px);}
+  60%{transform:translate(4px,2px);}
+  70%{transform:translate(-3px,-3px);}
+  80%{transform:translate(2px,4px);}
+  90%{transform:translate(-4px,-2px);}
+}
+body.war-shake{animation:war-screen-shake .5s ease-in-out;}
+
+/* Mobil uyum */
+@media (max-width:768px){
+  #war-banner-card, #ally-banner-card{
+    padding:1.3rem 1rem 1.1rem;gap:.85rem;
+    border-radius:18px 18px 0 0;
+    top:auto;bottom:0;left:0;right:0;
+    transform:translateY(100%);
+    width:100%;max-width:100%;
+  }
+  #war-banner-card.show, #ally-banner-card.show{
+    transform:translateY(0);
+  }
+  .war-vs-text{font-size:1.4rem;}
+  .war-faction-emoji{font-size:1.6rem;}
+  .war-faction-name{font-size:.76rem;}
+  .war-title{font-size:.58rem;}
+  .ally-handshake{font-size:2.2rem;}
+  .ally-names{font-size:.8rem;}
+}
+</style>
+
+<!-- Savaş Banner Overlay -->
+<div id="war-banner-overlay"></div>
+
+<!-- Savaş İlan Kartı -->
+<div id="war-banner-card">
+  <div class="war-title">⚔️ — SAVAŞ İLAN EDİLDİ — ⚔️</div>
+  <div class="war-vs-row">
+    <div class="war-faction-card" id="wb-attacker">
+      <div class="war-faction-emoji" id="wb-att-emoji">⚑</div>
+      <div class="war-faction-name" id="wb-att-name">—</div>
+      <div class="war-faction-tag" id="wb-att-tag"></div>
+    </div>
+    <div class="war-vs-text">VS</div>
+    <div class="war-faction-card" id="wb-defender">
+      <div class="war-faction-emoji" id="wb-def-emoji">⚑</div>
+      <div class="war-faction-name" id="wb-def-name">—</div>
+      <div class="war-faction-tag" id="wb-def-tag"></div>
+    </div>
+  </div>
+  <div class="war-desc" id="wb-desc">Harita artık daha tehlikeli bir yer.</div>
+  <button class="war-close-btn" onclick="closeWarBanner()">Tamam, Savaşa Hazırım ⚔️</button>
+</div>
+
+<!-- İttifak Kartı -->
+<div id="ally-banner-card">
+  <div class="ally-title">🤝 — İTTİFAK KURULDU — 🤝</div>
+  <div class="ally-handshake">🤝</div>
+  <div class="ally-names" id="ab-names">—</div>
+  <button class="ally-close-btn" onclick="closeAllyBanner()">Harika! Birlikte Güçlüyüz</button>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// ⚔️ SAVAŞ & İTTİFAK BİLDİRİM SİSTEMİ
+// setDiplomacy'den tetiklenir; Supabase broadcast ile tüm
+// oyunculara iletilir. Ekran titrer, kıvılcımlar uçar,
+// savaş müziği çalar.
+// ══════════════════════════════════════════════════════════
+
+/* ── Kıvılcım efekti ── */
+function spawnWarSparks(count){
+  const colors = ['#ef4444','#f97316','#fbbf24','#fff'];
+  for(let i=0; i<(count||20); i++){
+    const spark = document.createElement('div');
+    spark.className = 'war-spark';
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 80 + Math.random() * 200;
+    const tx = Math.cos(angle) * dist;
+    const ty = Math.sin(angle) * dist;
+    const dur = 0.7 + Math.random() * 0.8;
+    spark.style.cssText = `
+      left:${30+Math.random()*40}vw;
+      top:${20+Math.random()*60}vh;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      --tx:${tx}px;--ty:${ty}px;--dur:${dur}s;
+      box-shadow:0 0 4px currentColor;
+    `;
+    document.body.appendChild(spark);
+    setTimeout(() => spark.remove(), dur * 1000 + 50);
+  }
+}
+
+/* ── Savaş banner'ını göster ── */
+function showWarBanner({attackerName, attackerColor, attackerEmoji, defenderName, defenderColor, defenderEmoji}){
+  const card = document.getElementById('war-banner-card');
+  const overlay = document.getElementById('war-banner-overlay');
+
+  document.getElementById('wb-att-emoji').textContent = attackerEmoji;
+  document.getElementById('wb-att-name').textContent = attackerName;
+  document.getElementById('wb-att-name').style.color = attackerColor;
+  document.getElementById('wb-att-tag').textContent = '';
+  document.getElementById('wb-def-emoji').textContent = defenderEmoji;
+  document.getElementById('wb-def-name').textContent = defenderName;
+  document.getElementById('wb-def-name').style.color = defenderColor;
+  document.getElementById('wb-def-tag').textContent = '';
+  document.getElementById('wb-attacker').style.borderColor = attackerColor + '55';
+  document.getElementById('wb-defender').style.borderColor = defenderColor + '55';
+  document.getElementById('wb-desc').innerHTML =
+    `<b>${_esc(attackerName)}</b> fraksiyonu <b>${_esc(defenderName)}</b> fraksiyonuna savaş ilan etti!<br>Harita artık çok daha tehlikeli bir yer.`;
+
+  overlay.classList.add('show');
+  card.classList.add('show');
+
+  // Ekran titremesi
+  document.body.classList.add('war-shake');
+  setTimeout(() => document.body.classList.remove('war-shake'), 520);
+
+  // Kıvılcımlar — üç dalga
+  spawnWarSparks(18);
+  setTimeout(() => spawnWarSparks(14), 400);
+  setTimeout(() => spawnWarSparks(12), 900);
+}
+
+function closeWarBanner(){
+  document.getElementById('war-banner-card').classList.remove('show');
+  document.getElementById('war-banner-overlay').classList.remove('show');
+}
+
+/* ── İttifak banner'ını göster ── */
+function showAllyBanner({f1Name, f1Color, f2Name, f2Color}){
+  const card = document.getElementById('ally-banner-card');
+  const overlay = document.getElementById('war-banner-overlay');
+  document.getElementById('ab-names').innerHTML =
+    `<span style="color:${f1Color}">${_esc(f1Name)}</span> &amp; <span style="color:${f2Color}">${_esc(f2Name)}</span><br><span style="font-size:.72rem;color:rgba(255,255,255,.5);font-weight:600;">Artık aynı taraftalar!</span>`;
+  overlay.classList.add('show');
+  card.classList.add('show');
+}
+
+function closeAllyBanner(){
+  document.getElementById('ally-banner-card').classList.remove('show');
+  document.getElementById('war-banner-overlay').classList.remove('show');
+}
+
+/* ── Supabase Broadcast — diğer oyunculara ilet ── */
+let _warChannel = null;
+function getWarChannel(){
+  if(_warChannel) return _warChannel;
+  _warChannel = supabase.channel('war-declarations', { config:{ broadcast:{ self:false } } });
+  _warChannel.on('broadcast', { event:'war' }, (payload)=>{
+    const p = payload && payload.payload;
+    if(!p) return;
+    if(typeof SFX !== 'undefined') SFX.war();
+    showWarBanner({
+      attackerName: p.attackerName || '?',
+      attackerColor: p.attackerColor || '#ef4444',
+      attackerEmoji: p.attackerEmoji || '⚑',
+      defenderName: p.defenderName || '?',
+      defenderColor: p.defenderColor || '#6366f1',
+      defenderEmoji: p.defenderEmoji || '⚑'
+    });
+  });
+  _warChannel.on('broadcast', { event:'ally' }, (payload)=>{
+    const p = payload && payload.payload;
+    if(!p) return;
+    if(typeof SFX !== 'undefined') SFX.ally();
+    showAllyBanner({
+      f1Name: p.f1Name||'?', f1Color: p.f1Color||'#10b981',
+      f2Name: p.f2Name||'?', f2Color: p.f2Color||'#6366f1'
+    });
+  });
+  _warChannel.subscribe();
+  return _warChannel;
+}
+// Sayfa açılır açılmaz dinle
+getWarChannel();
+
+function broadcastWarDeclaration(attacker, defender){
+  try{
+    getWarChannel().send({ type:'broadcast', event:'war', payload:{
+      attackerName: attacker.name, attackerColor: attacker.color, attackerEmoji: attacker.emoji||'⚑',
+      defenderName: defender.name, defenderColor: defender.color, defenderEmoji: defender.emoji||'⚑'
+    }});
+  }catch(e){}
+}
+
+function broadcastAllyDeclaration(f1, f2){
+  try{
+    getWarChannel().send({ type:'broadcast', event:'ally', payload:{
+      f1Name: f1.name, f1Color: f1.color,
+      f2Name: f2.name, f2Color: f2.color
+    }});
+  }catch(e){}
+}
+
+/* ESC ile kapat */
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape'){
+    closeWarBanner();
+    closeAllyBanner();
+  }
+});
 </script>
 </body>
 </html>
