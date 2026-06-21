@@ -3256,8 +3256,24 @@ function updateLangSettingUI(){
 // İlk yüklemede de senkronize et
 updateLangSettingUI();
 
+// ── Gerçek dokunmatik girdi tespiti ──────────────────────────────────────
+// SADECE pencere genişliğine bakmak yanıltıcı: masaüstünde tarayıcı penceresi
+// 768px altına düşerse (yarım ekran, küçük laptop, zoomlu tarayıcı) mouse
+// kullanan kullanıcı yanlışlıkla "mobil" sayılıp mobil drawer/overlay
+// arayüzüne düşüyordu. Bu fonksiyon genişliğe EK OLARAK cihazın gerçekten
+// kaba/dokunmatik (coarse) bir işaretçiye sahip olup olmadığını da kontrol
+// eder. Gerçek telefon/tablet için davranış birebir aynı kalır (onlar zaten
+// hem dar hem dokunmatik); sadece "dar ama mouse" masaüstü artık mobil
+// sayılmıyor.
+function _isTouchCapableDevice(){
+  try{
+    if(window.matchMedia && window.matchMedia('(pointer: coarse)').matches) return true;
+  }catch(e){}
+  return ('ontouchstart' in window) || (navigator.maxTouchPoints>0);
+}
+
 (function(){
-  const isMob = ()=> window.innerWidth <= 768;
+  const isMob = ()=> window.innerWidth <= 768 && _isTouchCapableDevice();
 
   // 1. iOS Safari: chat input açıkken ekranın kaymasını önle
   //    input focus olunca scroll pozisyonunu kilitle
@@ -3675,6 +3691,19 @@ let _brushLastFlat = -1; // fırçanın en son KUYRUĞA EKLEDİĞİ hücre — a
 let _brushQueue = []; // [{mx,my}, ...] — sırayla işlenecek bekleyen tıklamalar
 let _brushQueueRunning = false;
 
+// ── Mouse/Touch çakışma koruması ─────────────────────────────────────────
+// Dokunmatik masaüstü/laptoplarda (Surface, 2-in-1, dokunmatik monitör) bir
+// dokunuş hem touchstart/touchmove hem de (tarayıcıya/cihaza bağlı olarak)
+// "hayalet" mouse event'leri üretebiliyordu. touch* handler'lar zaten
+// preventDefault() çağırıyor, ama bu garanti değil; bazı tarayıcı/cihaz
+// kombinasyonlarında mouse event'leri yine sıraya giriyor ve aynı jesti
+// ikinci kez işleyip ox/oy/scale'i bozuyordu (harita zıplaması, yanlış
+// piksel basımı vb). Aşağıdaki bayrak SADECE bunu önlüyor; mobil dokunma
+// akışının kendisine hiç dokunulmuyor.
+let _lastTouchTS = 0;
+const _TOUCH_GUARD_MS = 500;
+function _recentTouch(){ return (Date.now() - _lastTouchTS) < _TOUCH_GUARD_MS; }
+
 function _brushEnqueue(mx,my){
   _brushQueue.push({mx,my});
   _runBrushQueue();
@@ -3696,6 +3725,7 @@ async function _runBrushQueue(){
 }
 
 canvas.addEventListener('mousedown',e=>{
+  if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
   if(e.button===1||e.button===2){panning=true;panSt={x:e.clientX-ox,y:e.clientY-oy};canvas.style.cursor='grabbing';return;}
   const r=canvas.getBoundingClientRect();
   if(e.shiftKey){
@@ -3707,13 +3737,9 @@ canvas.addEventListener('mousedown',e=>{
   }
   window.handleClick(e.clientX-r.left,e.clientY-r.top);
 });
-canvas.addEventListener('mouseup',()=>{
-  _brushActive = false;
-  _brushLastFlat = -1;
-  if(!panning) canvas.style.cursor='crosshair';
-});
 canvas.addEventListener('mouseleave',()=>{ _brushActive = false; _brushLastFlat = -1; });
 canvas.addEventListener('mousemove',e=>{
+  if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
   if(panning){ox=e.clientX-panSt.x;oy=e.clientY-panSt.y;clampView();draw();return;}
   // Shift basılı + sol tuş sürükleme = fırça modu
   if(_brushActive && e.shiftKey && e.buttons===1){
@@ -3791,7 +3817,7 @@ canvas.addEventListener('mousemove',e=>{
     tip.style.opacity='0';
   }
 });
-canvas.addEventListener('mouseup',()=>{panning=false;_brushActive=false;_brushLastFlat=-1;canvas.style.cursor='crosshair';});
+canvas.addEventListener('mouseup',()=>{ if(_recentTouch()) return; panning=false;_brushActive=false;_brushLastFlat=-1;canvas.style.cursor='crosshair';});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('wheel',e=>{
   e.preventDefault();
@@ -3820,6 +3846,7 @@ function _touchMid(t0,t1,r){
 // e.targetTouches sadece BU canvas üzerinde başlayan dokunuşları sayar,
 // böylece başka elemanlardaki dokunuşlar haritayı asla etkilemez.
 canvas.addEventListener('touchstart',e=>{
+  _lastTouchTS = Date.now();
   const tt=e.targetTouches;
   if(tt.length===1){
     e.preventDefault(); // sentetik mouse/click olaylarının ikinci kez piksel basmasını da önler
@@ -3839,6 +3866,7 @@ canvas.addEventListener('touchstart',e=>{
   }
 },{passive:false});
 canvas.addEventListener('touchmove',e=>{
+  _lastTouchTS = Date.now();
   e.preventDefault();
   const tt=e.targetTouches;
   if(tt.length>=2&&pinchStartDist){
@@ -3870,6 +3898,7 @@ canvas.addEventListener('touchmove',e=>{
   }
 },{passive:false});
 canvas.addEventListener('touchend',e=>{
+  _lastTouchTS = Date.now();
   e.preventDefault(); // tap sonrası tarayıcının ürettiği sentetik click/mousedown'ı bastırır (çift piksel basma riskini sıfırlar)
   const tt=e.targetTouches; // bu canvas'ı hâlâ "hedefleyen", kalkmamış dokunuşlar
   if(tt.length===0){
@@ -6359,7 +6388,7 @@ function getSidebarW(){
   const n = parseFloat(v);
   return Number.isFinite(n) ? n : 290;
 }
-function isMobile(){ return window.innerWidth<=768; }
+function isMobile(){ return window.innerWidth<=768 && _isTouchCapableDevice(); }
 
 function toggleSidebar(){
   const sidebar=document.getElementById('sidebar');
@@ -6740,8 +6769,8 @@ window.toggleAdmin=function(){
 
 // Paint on mouse events (oy pikseli silme)
 canvas.addEventListener('mousedown',e=>{
-  console.log('[DEBUG paint-mousedown]', {adminMode, button:e.button});
   if(!adminMode) return;
+  if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
   if(e.button!==0) return;
   isPainting=true;
   const r=canvas.getBoundingClientRect();
@@ -6749,6 +6778,7 @@ canvas.addEventListener('mousedown',e=>{
 },true);
 canvas.addEventListener('mousemove',e=>{
   if(!isPainting||!adminMode) return;
+  if(_recentTouch()) return;
   const r=canvas.getBoundingClientRect();
   paintPixel(e.clientX-r.left,e.clientY-r.top);
 },true);
@@ -6765,6 +6795,7 @@ canvas.addEventListener('mouseup',()=>{ isPainting=false; });
 // e.targetTouches kullanılıyor (e.touches değil) — sadece bu canvas'ta
 // başlayan dokunuşları sayar, başka bir butona basılan ikinci el bunu etkilemez.
 canvas.addEventListener('touchstart',e=>{
+  _lastTouchTS = Date.now();
   if(!adminMode) return;
   if(e.targetTouches.length!==1) return;
   isPainting=true;
@@ -6773,6 +6804,7 @@ canvas.addEventListener('touchstart',e=>{
   paintPixel(t.clientX-r.left,t.clientY-r.top);
 },{capture:true,passive:true});
 canvas.addEventListener('touchmove',e=>{
+  _lastTouchTS = Date.now();
   if(!isPainting||!adminMode) return;
   if(e.targetTouches.length!==1) return;
   const r=canvas.getBoundingClientRect();
@@ -7767,8 +7799,8 @@ function toggleRollbackTool(){
 // Seçim sürükleme — admin modunda paint mousedown'ından önce yakalanır.
 // capture:true ile mevcut admin paint dinleyicilerinden önce devreye girer.
 canvas.addEventListener('mousedown', e => {
-  console.log('[DEBUG mousedown]', {adminMode, rollbackToolActive, button:e.button});
   if(!adminMode || !rollbackToolActive) return;
+  if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
   if(e.button !== 0) return;
   e.stopPropagation();
   e.preventDefault();
@@ -7776,12 +7808,12 @@ canvas.addEventListener('mousedown', e => {
   rbSelecting = true;
   rbStartCanvasXY = {x: e.clientX - r.left, y: e.clientY - r.top};
   rbCurCanvasXY = {...rbStartCanvasXY};
-  console.log('[DEBUG mousedown set]', rbStartCanvasXY);
   drawRollbackOverlay();
 }, true);
 
 canvas.addEventListener('mousemove', e => {
   if(!adminMode || !rollbackToolActive || !rbSelecting) return;
+  if(_recentTouch()) return;
   e.stopPropagation();
   const r = canvas.getBoundingClientRect();
   rbCurCanvasXY = {x: e.clientX - r.left, y: e.clientY - r.top};
@@ -7789,11 +7821,9 @@ canvas.addEventListener('mousemove', e => {
 }, true);
 
 canvas.addEventListener('mouseup', e => {
-  console.log('[DEBUG mouseup]', {adminMode, rollbackToolActive, rbSelecting, rbStartCanvasXY, rbCurCanvasXY});
   if(!adminMode || !rollbackToolActive || !rbSelecting) return;
   e.stopPropagation();
   rbSelecting = false;
-  console.log('[DEBUG calling finalizeRollbackSelection]');
   finalizeRollbackSelection();
 }, true);
 
@@ -7801,6 +7831,7 @@ canvas.addEventListener('mouseup', e => {
 // capture:true + stopPropagation ile aynı önceliği korur; mouse mantığıyla bire bir aynı.
 // e.targetTouches kullanılıyor — başka bir elemana basılan ikinci dokunuş seçimi bozmaz.
 canvas.addEventListener('touchstart', e => {
+  _lastTouchTS = Date.now();
   if(!adminMode || !rollbackToolActive) return;
   if(e.targetTouches.length !== 1) return;
   e.stopPropagation();
@@ -7814,6 +7845,7 @@ canvas.addEventListener('touchstart', e => {
 }, {capture:true, passive:false});
 
 canvas.addEventListener('touchmove', e => {
+  _lastTouchTS = Date.now();
   if(!adminMode || !rollbackToolActive || !rbSelecting) return;
   if(e.targetTouches.length < 1) return;
   e.stopPropagation();
