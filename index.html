@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#06060f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -65,7 +65,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;heigh
 .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 3px var(--accent);transition:all .3s;flex-shrink:0;}
 .pdot.used{background:#252538;box-shadow:none;}
 #main{flex:1;display:none;grid-template-columns:1fr;overflow:hidden;}
-#cwrap{position:relative;overflow:hidden;background:#06060f;}
+#cwrap{position:relative;overflow:hidden;background:#06060f;touch-action:none;}
 #c{display:block;cursor:crosshair;image-rendering:pixelated;image-rendering:crisp-edges;}
 #label-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
 #label-overlay span{
