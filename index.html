@@ -3741,6 +3741,14 @@ async function _runBrushQueue(){
   }
 }
 
+/* ════════════════════════════════════════════════════════════════
+   MASAÜSTÜ (MOUSE) KONTROL BLOĞU — BAŞLANGIÇ
+   Bu blok sadece fare olaylarını dinler (mousedown/mousemove/mouseup/
+   wheel/contextmenu). Her handler en üstte _recentTouch() kontrolü
+   yapar; bir dokunma jesti az önce işlendiyse bu handler'lar sessizce
+   çıkar (return) — böylece dokunmatik ekranlı laptop/tabletlerde aynı
+   jest iki kez işlenmez. Mobilde bu blok fiilen devre dışı kalır.
+════════════════════════════════════════════════════════════════ */
 canvas.addEventListener('mousedown',e=>{
   if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
   if(e.button===1||e.button===2){
@@ -3846,6 +3854,18 @@ canvas.addEventListener('wheel',e=>{
   const ns=Math.min(20,Math.max(0.5,scale*(e.deltaY<0?1.15:0.87)));
   ox=mx-(mx-ox)*(ns/scale);oy=my-(my-oy)*(ns/scale);scale=ns;clampView();draw();
 },{passive:false});
+/* ════════════════════════════════════════════════════════════════
+   MASAÜSTÜ (MOUSE) KONTROL BLOĞU — SON
+════════════════════════════════════════════════════════════════ */
+
+/* ════════════════════════════════════════════════════════════════
+   MOBİL (TOUCH) KONTROL BLOĞU — BAŞLANGIÇ
+   Tek parmak = pan + tap-to-place, iki parmak = pinch-zoom.
+   ox/oy/scale değişkenleri masaüstü bloğuyla PAYLAŞILIR (aynı harita
+   state'i) — bu kasıtlı: mobil ve masaüstü aynı görünümü kontrol
+   etmeli. Bu bloktaki her şey _lastTouchTS'i güncelleyerek yukarıdaki
+   mouse handler'larını bir süreliğine devre dışı bırakır.
+════════════════════════════════════════════════════════════════ */
 let lastT=null;
 let touchMoved=false;
 let pinchStartDist=null;
@@ -3909,7 +3929,25 @@ canvas.addEventListener('touchmove',e=>{
     ox=mid.x-(pinchMid.x-pinchStartOx)*ratio;
     oy=mid.y-(pinchMid.y-pinchStartOy)*ratio;
     scale=ns;
-    clampView();draw();
+    // ── BUG FIX: harita zıplaması düzeltmesi ──
+    // clampView() ox/oy'u sınırlara göre kırpabilir. Kırpma olduğunda
+    // pinch referans noktaları (pinchStartOx/Oy, pinchMid, pinchStartDist/Scale)
+    // hâlâ kırpılmamış pozisyona göre hesaplanmış durumda kalıyordu; bir
+    // sonraki touchmove karesi bu eski referanstan devam edince harita
+    // aniden (kırpılan kadar) zıplıyordu. Çözüm: kırpma gerçekleştiyse,
+    // referansı o anki (kırpılmış) duruma göre SESSİZCE yeniden temellendir
+    // — touchend'de parmak sayısı değiştiğinde yapılan yeniden temellendirmeyle
+    // aynı mantık, sadece burada her karede kontrol ediliyor.
+    const _preClampOx=ox, _preClampOy=oy;
+    clampView();
+    if(ox!==_preClampOx || oy!==_preClampOy){
+      pinchStartDist=dist;
+      pinchStartScale=scale;
+      pinchMid=mid;
+      pinchStartOx=ox;
+      pinchStartOy=oy;
+    }
+    draw();
   } else if(tt.length===1&&lastT){
     const dx=tt[0].clientX-lastT.x, dy=tt[0].clientY-lastT.y;
     if(Math.abs(dx)>4||Math.abs(dy)>4) touchMoved=true;
@@ -3961,6 +3999,9 @@ canvas.addEventListener('touchcancel',()=>{
   pinchStartOy=null;
   touchMoved=false;
 },{passive:true});
+/* ════════════════════════════════════════════════════════════════
+   MOBİL (TOUCH) KONTROL BLOĞU — SON
+════════════════════════════════════════════════════════════════ */
 
 // ── FIRÇA/SPAM ÖNLEME: bir RPC isteği sunucudan cevap dönene kadar
 // yeni bir handleClick çağrısının sunucuya gitmesini engeller.
