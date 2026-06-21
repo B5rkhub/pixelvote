@@ -893,8 +893,8 @@ button, [onclick], .pc-frame {
   user-select: none;
 }
 
-/* ── Tüm mobil (≤768px) ── */
-@media (max-width: 768px) {
+/* ── Tüm mobil (≤768px) + yatay moddaki dokunmatik cihazlar (örn. iPhone yan çevrilmiş, genişlik 768px'i aşsa bile) ── */
+@media (max-width: 768px), (max-height: 600px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
 
   /* ── Login ── */
   #login { padding: 1rem; align-items: flex-start; padding-top: 8vh; }
@@ -1253,6 +1253,36 @@ button, [onclick], .pc-frame {
 
   /* ── cwrap — dinamik viewport yüksekliği (adres çubuğu telafisi) ── */
   #cwrap { height: calc(100dvh - 48px); }
+
+  /* ── Kalan tüm metin girişleri (datetime, admin e-posta, duyuru metni vb.)
+     için de iOS otomatik yakınlaştırmasını önle — tek tek class eklemek yerine
+     genel bir güvenlik ağı: checkbox/radio/file/range dışındaki tüm input'lar
+     ve textarea'lar mobilde en az 16px olsun. ── */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="color"]),
+  textarea {
+    font-size: 16px !important;
+  }
+
+  /* ── Admin modalları — max-height eksikti, küçük ekranda/açık klavyede
+     içerik kesilmesin diye kaydırılabilir hale getir ── */
+  #rollback-modal > div,
+  #history-modal > div,
+  #pixel-event-modal > div,
+  #announce-modal > div {
+    max-height: 88vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  #owner-modal > div,
+  #timelapse-modal > div {
+    max-height: 88vh !important;
+  }
+
+  /* ── Ayarlar açma/kapama anahtarları — dokunma hedefini büyüt ── */
+  .pca-toggle { width: 44px; height: 26px; }
+  .pca-toggle-slider:before { width: 20px; height: 20px; left: 3px; bottom: 3px; }
+  .pca-toggle input:checked + .pca-toggle-slider:before { transform: translateX(18px); }
+  .pca-row { min-height: 44px; align-items: center; }
 }
 
 /* ── Küçük ekranlar (≤480px) ── */
@@ -1268,20 +1298,55 @@ button, [onclick], .pc-frame {
   .psw { width: 26px !important; height: 26px !important; }
 }
 
-/* ── iPhone Safe Area desteği ── */
+/* ── iPhone Safe Area desteği (çentik / Dynamic Island / ev ekranına eklenmiş PWA) ── */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
-  @media (max-width: 768px) {
+  @media (max-width: 768px), (max-height: 600px) and (orientation: landscape) and (hover: none) and (pointer: coarse) {
     #ptoolbar {
       bottom: calc(24px + env(safe-area-inset-bottom)) !important;
+      left: calc(8px + env(safe-area-inset-left)) !important;
+      right: calc(8px + env(safe-area-inset-right)) !important;
     }
     #sidebar-toggle {
       bottom: env(safe-area-inset-bottom, 0px) !important;
     }
     #zbtn {
       bottom: calc(32px + env(safe-area-inset-bottom)) !important;
+      right: calc(8px + env(safe-area-inset-right)) !important;
     }
     #chat-btn {
       bottom: calc(70px + env(safe-area-inset-bottom)) !important;
+      left: calc(8px + env(safe-area-inset-left)) !important;
+    }
+    #chat-panel {
+      left: calc(0px + env(safe-area-inset-left)) !important;
+      right: calc(0px + env(safe-area-inset-right)) !important;
+    }
+    #sidebar {
+      padding-left: calc(.75rem + env(safe-area-inset-left)) !important;
+      padding-right: calc(.75rem + env(safe-area-inset-right)) !important;
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+    }
+    #paint-toolbar {
+      right: calc(8px + env(safe-area-inset-right)) !important;
+    }
+    #faction-btn {
+      left: calc(8px + env(safe-area-inset-left)) !important;
+    }
+    /* Ekrana eklenmiş PWA olarak (apple-mobile-web-app-capable) tam ekran açıldığında
+       durum çubuğu/çentik üst bardaki başlığın üstüne binmesin */
+    #topbar {
+      padding-top: env(safe-area-inset-top, 0px) !important;
+      height: calc(48px + env(safe-area-inset-top, 0px)) !important;
+      padding-left: calc(.75rem + env(safe-area-inset-left)) !important;
+      padding-right: calc(.75rem + env(safe-area-inset-right)) !important;
+    }
+    #cwrap {
+      height: calc(100dvh - 48px - env(safe-area-inset-top, 0px)) !important;
+    }
+    /* levelup/streak bildirimleri viewport'a sabit (fixed), topbar'ın yeni
+       boyuna göre konumlarını da kaydır ki üst üste binmesin */
+    #levelup-notif, #streak-notif {
+      top: calc(56px + env(safe-area-inset-top, 0px)) !important;
     }
   }
 }
@@ -5925,6 +5990,27 @@ canvas.addEventListener('contextmenu',e=>{
   e.preventDefault();
 });
 canvas.addEventListener('mouseup',()=>{ isPainting=false; });
+// ── Dokunmatik (mobil/tablet) eşdeğerleri — admin silme fırçası ──
+// Not: rollback aracı açıkken bu dokunuş, aşağıdaki rollback dokunuş
+// dinleyicisi (capture aşamasında daha sonra eklenmiş ve stopPropagation
+// kullanan) tarafından engellenir; masaüstü mouse davranışıyla bire bir aynı.
+canvas.addEventListener('touchstart',e=>{
+  if(!adminMode) return;
+  if(e.touches.length!==1) return;
+  isPainting=true;
+  const r=canvas.getBoundingClientRect();
+  const t=e.touches[0];
+  paintPixel(t.clientX-r.left,t.clientY-r.top);
+},{capture:true,passive:true});
+canvas.addEventListener('touchmove',e=>{
+  if(!isPainting||!adminMode) return;
+  if(e.touches.length!==1) return;
+  const r=canvas.getBoundingClientRect();
+  const t=e.touches[0];
+  paintPixel(t.clientX-r.left,t.clientY-r.top);
+},{capture:true,passive:true});
+canvas.addEventListener('touchend',()=>{ isPainting=false; },true);
+canvas.addEventListener('touchcancel',()=>{ isPainting=false; },true);
 canvas.addEventListener('mouseleave',()=>{
   isPainting=false;
   const preview=document.getElementById('hover-preview');
@@ -6938,6 +7024,38 @@ canvas.addEventListener('mouseup', e => {
   e.stopPropagation();
   rbSelecting = false;
   console.log('[DEBUG calling finalizeRollbackSelection]');
+  finalizeRollbackSelection();
+}, true);
+
+// ── Dokunmatik (mobil/tablet) eşdeğerleri — rollback alan seçimi ──
+// capture:true + stopPropagation ile aynı önceliği korur; mouse mantığıyla bire bir aynı.
+canvas.addEventListener('touchstart', e => {
+  if(!adminMode || !rollbackToolActive) return;
+  if(e.touches.length !== 1) return;
+  e.stopPropagation();
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches[0];
+  rbSelecting = true;
+  rbStartCanvasXY = {x: t.clientX - r.left, y: t.clientY - r.top};
+  rbCurCanvasXY = {...rbStartCanvasXY};
+  drawRollbackOverlay();
+}, {capture:true, passive:false});
+
+canvas.addEventListener('touchmove', e => {
+  if(!adminMode || !rollbackToolActive || !rbSelecting) return;
+  e.stopPropagation();
+  e.preventDefault();
+  const r = canvas.getBoundingClientRect();
+  const t = e.touches[0];
+  rbCurCanvasXY = {x: t.clientX - r.left, y: t.clientY - r.top};
+  drawRollbackOverlay();
+}, {capture:true, passive:false});
+
+canvas.addEventListener('touchend', e => {
+  if(!adminMode || !rollbackToolActive || !rbSelecting) return;
+  e.stopPropagation();
+  rbSelecting = false;
   finalizeRollbackSelection();
 }, true);
 
