@@ -3704,6 +3704,23 @@ let _lastTouchTS = 0;
 const _TOUCH_GUARD_MS = 500;
 function _recentTouch(){ return (Date.now() - _lastTouchTS) < _TOUCH_GUARD_MS; }
 
+// ── Sağ/orta tık ile pan sırasında context menüsünü engelleme ──────────────
+// canvas.addEventListener('contextmenu', preventDefault) SADECE fare hâlâ
+// canvas üzerindeyken işe yarar. Sürükleyerek pan yaparken fare çok kolay
+// canvas'ın dışına (sidebar/topbar/boş alan) çıkabiliyor; sağ tuş orada
+// bırakılırsa contextmenu olayı canvas'ta değil o elementte tetiklenir ve
+// canvas'a bağlı engelleme hiç devreye girmez. Bu yüzden engellemeyi ayrıca
+// document seviyesinde, bu bayrak true olduğu sürece tekrarlıyoruz.
+let _suppressContextMenu = false;
+document.addEventListener('contextmenu', e=>{
+  if(_suppressContextMenu){ e.preventDefault(); _suppressContextMenu=false; }
+});
+// Güvenlik ağı: contextmenu hiç tetiklenmezse (örn. orta tıkla pan) veya
+// sağ tuş canvas dışında bırakılırsa bayrak sonsuza kadar takılı kalmasın.
+// setTimeout(0) ile, henüz sıraya girmiş olabilecek contextmenu olayının
+// önce işlenmesine izin veriyoruz.
+window.addEventListener('mouseup', ()=>{ setTimeout(()=>{ _suppressContextMenu=false; },0); }, true);
+
 function _brushEnqueue(mx,my){
   _brushQueue.push({mx,my});
   _runBrushQueue();
@@ -3726,7 +3743,11 @@ async function _runBrushQueue(){
 
 canvas.addEventListener('mousedown',e=>{
   if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
-  if(e.button===1||e.button===2){panning=true;panSt={x:e.clientX-ox,y:e.clientY-oy};canvas.style.cursor='grabbing';return;}
+  if(e.button===1||e.button===2){
+    panning=true;panSt={x:e.clientX-ox,y:e.clientY-oy};canvas.style.cursor='grabbing';
+    _suppressContextMenu=true; // sürükleme bitene kadar — fare canvas dışına çıksa bile menüyü engelle
+    return;
+  }
   const r=canvas.getBoundingClientRect();
   if(e.shiftKey){
     _brushActive = true;
