@@ -143,6 +143,68 @@ body{background:var(--bg);color:var(--txt);font-family:'Outfit',sans-serif;heigh
 #adminbtn{flex-shrink:0;}
 #adminbtn.admin-on{ box-shadow:0 0 0 1px #16a34a, 0 0 8px rgba(22,163,74,.4); }
 
+/* ── Posta Kutusu ── */
+#mailbox-btn{
+  position:relative;
+  background:linear-gradient(135deg,#312e81,#4c1d95);
+  flex-shrink:0;
+}
+#mailbox-badge{
+  display:none;
+  position:absolute;
+  top:-5px;right:-5px;
+  background:#ef4444;
+  color:#fff;
+  font-size:.48rem;
+  font-weight:800;
+  border-radius:50%;
+  min-width:15px;
+  height:15px;
+  align-items:center;
+  justify-content:center;
+  line-height:1;
+  font-family:'Space Mono',monospace;
+  padding:0 2px;
+}
+#mailbox-modal{
+  position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;z-index:800;
+}
+#mailbox-modal.open{display:flex;}
+.mailbox-box{
+  background:linear-gradient(160deg,var(--surf) 0%,var(--surf2) 100%);
+  border:1px solid var(--bdr2);
+  border-radius:18px;
+  padding:1.4rem;
+  width:min(420px,94vw);
+  max-height:70vh;
+  display:flex;flex-direction:column;gap:.75rem;
+  box-shadow:0 0 0 1px rgba(108,92,231,.1),0 24px 60px rgba(0,0,0,.6);
+}
+.mailbox-hdr{display:flex;align-items:center;justify-content:space-between;}
+.mailbox-title{font-size:.95rem;font-weight:900;color:var(--txt);}
+.mailbox-close{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;line-height:1;}
+.mailbox-list{overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;flex:1;}
+.mail-item{
+  background:var(--surf2);border:1px solid var(--bdr);border-radius:10px;
+  padding:.7rem .85rem;display:flex;flex-direction:column;gap:.35rem;
+}
+.mail-item.unread{border-color:var(--accent);background:rgba(108,92,231,.08);}
+.mail-item-top{display:flex;align-items:center;gap:.5rem;font-size:.72rem;font-weight:700;color:var(--txt);}
+.mail-item-body{font-size:.65rem;color:var(--muted);line-height:1.5;}
+.mail-item-actions{display:flex;gap:.4rem;margin-top:.1rem;}
+.mail-accept-btn{
+  background:rgba(16,185,129,.15);border:1px solid #10b981;color:#10b981;
+  border-radius:6px;padding:.28rem .65rem;font-size:.62rem;font-weight:700;cursor:pointer;
+  font-family:'Outfit',sans-serif;
+}
+.mail-reject-btn{
+  background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.4);color:#f87171;
+  border-radius:6px;padding:.28rem .65rem;font-size:.62rem;font-weight:700;cursor:pointer;
+  font-family:'Outfit',sans-serif;
+}
+.mail-empty{text-align:center;color:var(--muted);font-size:.72rem;padding:1.5rem 0;}
+
 /* ── Hamburger (mobil) ── */
 #tb-hamburger{
   display:none;
@@ -1999,6 +2061,10 @@ button, [onclick], .pc-frame, .psw, .zb {
     </button>
     <button id="history-btn" class="tb-btn" style="background:linear-gradient(135deg,#0f766e,#0369a1);display:none" onclick="openHistoryModal()" title="Geçmişe Bak" data-i18n-title="hm.title">
       <span class="tb-icon">🕰</span><span class="tb-label" data-i18n="topbar.history">Geçmiş</span>
+    </button>
+    <button id="mailbox-btn" class="tb-btn" style="display:none;" onclick="openMailbox()" title="Posta Kutusu">
+      <span class="tb-icon">📬</span><span class="tb-label">Posta</span>
+      <span id="mailbox-badge"></span>
     </button>
     <button id="adminbtn" class="tb-btn" style="background:#dc2626;display:none" onclick="toggleAdmin()" data-i18n="topbar.admin">
       <span class="tb-icon">⚙</span><span class="tb-label" data-i18n="topbar.admin">Admin</span>
@@ -4611,6 +4677,7 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
         checkAdminStatus();
         document.getElementById('timelapse-btn').style.display='';
         document.getElementById('history-btn').style.display='';
+        document.getElementById('mailbox-btn').style.display='';
         document.getElementById('chat-btn').style.display='flex';
         document.getElementById('sidebar-toggle').style.display='flex';
         if(typeof initSidebarToggle==='function') initSidebarToggle();
@@ -4811,6 +4878,7 @@ window.startGame=async function(){
   _osg();
   document.getElementById('timelapse-btn').style.display='';
   document.getElementById('history-btn').style.display='';
+  document.getElementById('mailbox-btn').style.display='';
   await checkAdminStatus();
 };
 
@@ -6147,6 +6215,8 @@ function renderFactionHome(body){
             : status==='ally'
             ? 'background:linear-gradient(135deg,rgba(16,185,129,.07),rgba(5,150,105,.04));'
             : '';
+          // Bekleyen davet var mı?
+          const pendingInvite = hasPendingAllyInvite(f.tag, tag);
           return `<div class="fc-diplo-item" style="${cardBg}${statusGlow}transition:all .2s;">
             <div class="fc-diplo-icon" style="width:36px;height:36px;border-radius:10px;background:${of.color}22;border:1px solid ${of.color}44;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">
               ${of.logo?`<img src="${of.logo}" style="width:28px;height:28px;border-radius:6px;object-fit:cover">`:of.emoji||'⚑'}
@@ -6157,9 +6227,14 @@ function renderFactionHome(body){
             </div>
             <div class="fc-diplo-status ${status}" style="white-space:nowrap;">${statusLabel}</div>
             ${isLeader?`<div class="fc-diplo-actions" style="display:flex;gap:.25rem;flex-shrink:0;">
-              <button class="fc-diplo-btn ally-btn" onclick="setDiplomacy('${tag}','ally')" title="İttifak Kur" style="${status==='ally'?'border-color:#10b981;color:#10b981;':''}">🤝</button>
+              ${status==='ally'
+                ? `<button class="fc-diplo-btn" onclick="setDiplomacy('${tag}','neutral')" title="İttifakı Boz" style="border-color:var(--muted);color:var(--muted);">☮️</button>`
+                : pendingInvite
+                ? `<button class="fc-diplo-btn" disabled title="Davet gönderildi" style="opacity:.5;cursor:not-allowed;">⏳</button>`
+                : `<button class="fc-diplo-btn ally-btn" onclick="sendAllyInvite('${tag}')" title="İttifak Daveti Gönder">🤝</button>`
+              }
               <button class="fc-diplo-btn" onclick="setDiplomacy('${tag}','neutral')" title="Nötr" style="${status==='neutral'?'border-color:var(--accent);color:var(--accent);':''}">☮️</button>
-              <button class="fc-diplo-btn war-btn" onclick="setDiplomacy('${tag}','war')" title="Savaş İlan Et" style="${status==='war'?'border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.12);':''}">⚔️</button>
+              <button class="fc-diplo-btn war-btn" onclick="declareWarChecked('${tag}')" title="Savaş İlan Et" style="${status==='war'?'border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.12);':''}">⚔️</button>
             </div>`:''}
           </div>`;
         }).join('')
@@ -6243,6 +6318,267 @@ function demoteMember(memberName){
   renderFactionModal();
 }
 
+// ── POSTA KUTUSU SİSTEMİ ──────────────────────────────────────────────────
+// Mailler localStorage'da tutulur: [{id, type, from, fromTag, fromColor, fromEmoji,
+//   to, toTag, msg, ts, read, pending}]
+// type: 'ally_invite' | 'ally_accept' | 'ally_reject' | 'war_declared' | 'war_info'
+
+function getMails(){
+  try{ return JSON.parse(localStorage.getItem('pv_mails_'+username)||'[]'); }catch(e){ return []; }
+}
+function saveMails(mails){
+  try{ localStorage.setItem('pv_mails_'+username, JSON.stringify(mails)); }catch(e){}
+}
+function addMail(mail){
+  const mails = getMails();
+  mails.unshift({...mail, id: Date.now()+'_'+Math.random().toString(36).slice(2), ts: Date.now(), read: false});
+  // Maksimum 50 mail tut
+  if(mails.length > 50) mails.splice(50);
+  saveMails(mails);
+  updateMailboxBadge();
+}
+function updateMailboxBadge(){
+  const badge = document.getElementById('mailbox-badge');
+  if(!badge) return;
+  const unread = getMails().filter(m=>!m.read).length;
+  if(unread > 0){
+    badge.textContent = unread > 9 ? '9+' : unread;
+    badge.style.display='flex';
+  } else {
+    badge.style.display='none';
+  }
+}
+function openMailbox(){
+  renderMailbox();
+  document.getElementById('mailbox-modal').classList.add('open');
+  // Hepsini okundu işaretle
+  const mails = getMails().map(m=>({...m, read:true}));
+  saveMails(mails);
+  updateMailboxBadge();
+}
+function closeMailbox(){
+  document.getElementById('mailbox-modal').classList.remove('open');
+}
+function clearReadMails(){
+  const mails = getMails().filter(m=>!m.read);
+  saveMails(mails);
+  renderMailbox();
+}
+function renderMailbox(){
+  const list = document.getElementById('mailbox-list');
+  if(!list) return;
+  const mails = getMails();
+  if(mails.length===0){
+    list.innerHTML='<div class="mail-empty">📭 Posta kutunuz boş.</div>';
+    return;
+  }
+  list.innerHTML = mails.map(m=>{
+    const time = new Date(m.ts).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    let icon='📩', title='', body='', actions='';
+    if(m.type==='ally_invite'){
+      icon='🤝'; title=`<b>${_esc(m.from)}</b> [${_esc(m.fromTag)}] İttifak Daveti`;
+      body=`<b>${_esc(m.from)}</b> fraksiyonu sizi ittifaka davet ediyor.`;
+      if(m.pending!==false){
+        actions=`<button class="mail-accept-btn" onclick="acceptAllyInvite('${m.id}','${m.fromTag}')">✅ Kabul Et</button>
+                 <button class="mail-reject-btn" onclick="rejectAllyInvite('${m.id}','${m.fromTag}')">❌ Reddet</button>`;
+      } else {
+        actions=`<span style="font-size:.62rem;color:var(--muted);">${m.resolved==='accepted'?'✅ Kabul edildi':'❌ Reddedildi'}</span>`;
+      }
+    } else if(m.type==='ally_accept'){
+      icon='🎉'; title=`<b>${_esc(m.from)}</b> İttifak Davetini Kabul Etti`;
+      body=`<b>${_esc(m.from)}</b> fraksiyonu ittifak davetinizi kabul etti! Artık müttefiksiniz.`;
+    } else if(m.type==='ally_reject'){
+      icon='💔'; title=`<b>${_esc(m.from)}</b> İttifak Davetini Reddetti`;
+      body=`<b>${_esc(m.from)}</b> fraksiyonu ittifak davetinizi reddetti.`;
+    } else if(m.type==='war_declared'){
+      icon='⚔️'; title=`<b>${_esc(m.from)}</b> Size Savaş İlan Etti!`;
+      body=`<b>${_esc(m.from)}</b> [${_esc(m.fromTag)}] fraksiyonunuza savaş ilan etti!`;
+    } else if(m.type==='war_info'){
+      icon='📢'; title=m.subject||'Savaş Bildirimi';
+      body=m.body||'';
+    } else {
+      icon='📩'; title=m.subject||'Bildirim'; body=m.body||'';
+    }
+    return `<div class="mail-item${m.read?'':' unread'}">
+      <div class="mail-item-top">${icon} ${title} <span style="margin-left:auto;font-size:.55rem;color:var(--muted);font-weight:400;">${time}</span></div>
+      <div class="mail-item-body">${body}</div>
+      ${actions?`<div class="mail-item-actions">${actions}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── İTTİFAK DAVETİ SİSTEMİ ──────────────────────────────────────────────
+// Bekleyen davetler localStorage'da: pv_ally_invites = [{from, fromTag, to, toTag, ts}]
+function getAllyInvites(){
+  try{ return JSON.parse(localStorage.getItem('pv_ally_invites')||'[]'); }catch(e){ return []; }
+}
+function saveAllyInvites(inv){ try{ localStorage.setItem('pv_ally_invites', JSON.stringify(inv)); }catch(e){} }
+
+function hasPendingAllyInvite(fromTag, toTag){
+  return getAllyInvites().some(i=>i.fromTag===fromTag && i.toTag===toTag);
+}
+
+function sendAllyInvite(targetTag){
+  if(!factionData) return;
+  if(hasPendingAllyInvite(factionData.tag, targetTag)){
+    showPopup('⏳ Bu fraksiyona zaten davet gönderildi.');
+    return;
+  }
+  const targetFaction = allFactions[targetTag];
+  if(!targetFaction){ showPopup('Fraksiyon bulunamadı.'); return; }
+  // Davet kaydı
+  const invites = getAllyInvites();
+  invites.push({from: factionData.name, fromTag: factionData.tag,
+                to: targetFaction.name, toTag: targetTag, ts: Date.now()});
+  saveAllyInvites(invites);
+  // Broadcast ile karşı tarafa gönder
+  try{
+    getWarChannel().send({ type:'broadcast', event:'ally_invite', payload:{
+      from: factionData.name, fromTag: factionData.tag,
+      fromColor: factionData.color, fromEmoji: factionData.emoji||'⚑',
+      to: targetFaction.name, toTag: targetTag,
+      ts: Date.now()
+    }});
+  }catch(e){}
+  showPopup(`🤝 ${targetFaction.name} fraksiyonuna ittifak daveti gönderildi!`);
+  renderFactionModal();
+}
+
+function acceptAllyInvite(mailId, fromTag){
+  if(!factionData) return;
+  // Davet mailini "kabul edildi" olarak işaretle
+  const mails = getMails().map(m=>{
+    if(m.id===mailId) return {...m, pending:false, resolved:'accepted', read:true};
+    return m;
+  });
+  saveMails(mails);
+  // Kendi diplomasisini güncelle
+  if(!factionData.diplomacy) factionData.diplomacy={};
+  factionData.diplomacy[fromTag] = 'ally';
+  allFactions[factionData.tag] = factionData;
+  saveFactions();
+  // Bekleyen daveti sil
+  const invites = getAllyInvites().filter(i=>!(i.toTag===factionData.tag && i.fromTag===fromTag));
+  saveAllyInvites(invites);
+  // Karşı tarafa kabul bildirimi gönder (broadcast)
+  const fromFaction = allFactions[fromTag];
+  try{
+    getWarChannel().send({ type:'broadcast', event:'ally_accept', payload:{
+      from: factionData.name, fromTag: factionData.tag,
+      fromColor: factionData.color,
+      toTag: fromTag, ts: Date.now()
+    }});
+  }catch(e){}
+  showAllyBanner({
+    f1Name: factionData.name, f1Color: factionData.color, f1Emoji: factionData.emoji||'⚑',
+    f2Name: fromFaction?fromFaction.name:fromTag, f2Color: fromFaction?fromFaction.color:'#6c5ce7'
+  });
+  if(typeof SFX!=='undefined') SFX.ally();
+  renderMailbox();
+  renderFactionModal();
+  showPopup('✅ İttifak kuruldu!');
+}
+
+function rejectAllyInvite(mailId, fromTag){
+  if(!factionData) return;
+  const mails = getMails().map(m=>{
+    if(m.id===mailId) return {...m, pending:false, resolved:'rejected', read:true};
+    return m;
+  });
+  saveMails(mails);
+  // Bekleyen daveti sil
+  const invites = getAllyInvites().filter(i=>!(i.toTag===factionData.tag && i.fromTag===fromTag));
+  saveAllyInvites(invites);
+  // Karşı tarafa red bildirimi
+  try{
+    getWarChannel().send({ type:'broadcast', event:'ally_reject', payload:{
+      from: factionData.name, fromTag: factionData.tag,
+      toTag: fromTag, ts: Date.now()
+    }});
+  }catch(e){}
+  renderMailbox();
+  showPopup('❌ Davet reddedildi.');
+}
+
+// ── SAVAŞ LİMİTİ KONTROLÜ ──────────────────────────────────────────────
+const MAX_WARS = 2;
+
+function getActiveWarCount(){
+  if(!factionData) return 0;
+  return Object.values(factionData.diplomacy||{}).filter(v=>v==='war').length;
+}
+
+function declareWarChecked(targetTag){
+  if(!factionData) return;
+  const currentStatus = (factionData.diplomacy||{})[targetTag] || 'neutral';
+  if(currentStatus === 'war'){
+    // Zaten savaştalar, nötre çek
+    setDiplomacy(targetTag, 'neutral');
+    return;
+  }
+  const warCount = getActiveWarCount();
+  if(warCount >= MAX_WARS){
+    showPopup(`⚠️ Maksimum ${MAX_WARS} fraksiyona aynı anda savaş açabilirsiniz!`);
+    return;
+  }
+  if(!confirm(`⚔️ ${allFactions[targetTag]?.name||targetTag} fraksiyonuna savaş ilan etmek istiyor musunuz?`)) return;
+  setDiplomacy(targetTag, 'war');
+}
+
+function initMailboxChannel(){
+  getWarChannel(); // Kanalı başlat, listener'lar aşağıda ekleniyor
+}
+
+function setupMailboxListeners(){
+  const ch = getWarChannel();
+  ch.on('broadcast', { event:'ally_invite' }, (payload)=>{
+    const p = payload && payload.payload;
+    if(!p) return;
+    // Bize mi geldi?
+    if(!factionData || factionData.tag !== p.toTag) return;
+    addMail({
+      type:'ally_invite',
+      from: p.from, fromTag: p.fromTag,
+      fromColor: p.fromColor, fromEmoji: p.fromEmoji,
+      pending: true
+    });
+    showPopup(`🤝 ${p.from} fraksiyonundan ittifak daveti aldınız!`);
+  });
+  ch.on('broadcast', { event:'ally_accept' }, (payload)=>{
+    const p = payload && payload.payload;
+    if(!p) return;
+    if(!factionData || factionData.tag !== p.toTag) return;
+    // Karşı taraf da artık ally — kendi verimizi güncelle
+    if(!factionData.diplomacy) factionData.diplomacy={};
+    factionData.diplomacy[p.fromTag] = 'ally';
+    allFactions[factionData.tag] = factionData;
+    saveFactions();
+    // Bekleyen daveti sil
+    const invites = getAllyInvites().filter(i=>!(i.fromTag===factionData.tag && i.toTag===p.fromTag));
+    saveAllyInvites(invites);
+    addMail({ type:'ally_accept', from: p.from, fromTag: p.fromTag });
+    showPopup(`🎉 ${p.from} ittifak davetinizi kabul etti!`);
+    renderFactionModal();
+  });
+  ch.on('broadcast', { event:'ally_reject' }, (payload)=>{
+    const p = payload && payload.payload;
+    if(!p) return;
+    if(!factionData || factionData.tag !== p.toTag) return;
+    // Bekleyen daveti sil
+    const invites = getAllyInvites().filter(i=>!(i.fromTag===factionData.tag && i.toTag===p.fromTag));
+    saveAllyInvites(invites);
+    addMail({ type:'ally_reject', from: p.from, fromTag: p.fromTag });
+    showPopup(`💔 ${p.from} ittifak davetinizi reddetti.`);
+    renderFactionModal();
+  });
+}
+
+// Sayfa yüklenince mail badge güncelle ve listener'ları kur
+setTimeout(()=>{
+  updateMailboxBadge();
+  setupMailboxListeners();
+}, 1500);
+
 function setDiplomacy(targetTag, status){
   if(!factionData) return;
   if(!factionData.diplomacy) factionData.diplomacy={};
@@ -6259,8 +6595,6 @@ function setDiplomacy(targetTag, status){
   const targetEmoji = targetFaction ? (targetFaction.emoji || '⚑') : '⚑';
 
   if(status === 'war'){
-    // Savaş sesi
-    if(typeof SFX !== 'undefined') SFX.war();
     // Savaş bildirimi banner'ı
     showWarBanner({
       attackerName: factionData.name,
@@ -9992,6 +10326,20 @@ body.war-shake{animation:war-screen-shake .5s ease-in-out;}
 <div id="war-banner-overlay"></div>
 
 <!-- Savaş İlan Kartı -->
+<!-- Posta Kutusu Modal -->
+<div id="mailbox-modal" onclick="if(event.target===this)closeMailbox()">
+  <div class="mailbox-box">
+    <div class="mailbox-hdr">
+      <div class="mailbox-title">📬 Posta Kutusu</div>
+      <button class="mailbox-close" onclick="closeMailbox()">✕</button>
+    </div>
+    <div class="mailbox-list" id="mailbox-list">
+      <div class="mail-empty">Posta kutunuz boş.</div>
+    </div>
+    <button onclick="clearReadMails()" style="background:none;border:1px solid var(--bdr);color:var(--muted);border-radius:7px;padding:.3rem .7rem;font-size:.62rem;font-family:'Outfit',sans-serif;cursor:pointer;align-self:flex-end;">🗑 Okunanları Temizle</button>
+  </div>
+</div>
+
 <div id="war-banner-card">
   <div class="war-title">⚔️ — SAVAŞ İLAN EDİLDİ — ⚔️</div>
   <div class="war-vs-row">
@@ -10115,7 +10463,6 @@ function getWarChannel(){
   _warChannel.on('broadcast', { event:'war' }, (payload)=>{
     const p = payload && payload.payload;
     if(!p) return;
-    if(typeof SFX !== 'undefined') SFX.war();
     showWarBanner({
       attackerName: p.attackerName || '?',
       attackerColor: p.attackerColor || '#ef4444',
