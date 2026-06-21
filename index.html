@@ -4122,9 +4122,26 @@ function doZoom(f){
 function clampView(){
   const cw=canvas.width, ch=canvas.height;
   const iw=IMG_W*scale, ih=IMG_H*scale;
-  const marginX=cw*0.2, marginY=ch*0.2;
-  ox=Math.min(cw-marginX, Math.max(marginX-iw, ox));
-  oy=Math.min(ch-marginY, Math.max(marginY-ih, oy));
+  // ── BUG FIX: zoom-out'ta haritanın ekrandan kaybolması düzeltmesi ──
+  // ESKİ MANTIK: marginX/Y sabit bir kenar boşluğuydu (cw*0.2), ve harita
+  // ekrandan KÜÇÜK olduğunda (uzaklaştırıldığında) bile ox/oy geniş bir
+  // aralıkta serbest kalıyordu. Sonuç: kullanıcı uzaklaştırıp sürükleyince
+  // küçülmüş harita ekranın bir köşesine/kenarına sıkışıp "kaybolabiliyordu".
+  // YENİ MANTIK: harita bir eksende ekrandan küçükse (iw<cw veya ih<ch),
+  // o eksende SERBEST KAYDIRMA YOK — harita o eksende ekrana ORTALANIR.
+  // Harita ekrandan büyükse eskisi gibi %20'lik taşma payı bırakılır.
+  if(iw<=cw){
+    ox=(cw-iw)/2;
+  } else {
+    const marginX=cw*0.2;
+    ox=Math.min(cw-marginX, Math.max(marginX-iw, ox));
+  }
+  if(ih<=ch){
+    oy=(ch-ih)/2;
+  } else {
+    const marginY=ch*0.2;
+    oy=Math.min(ch-marginY, Math.max(marginY-ih, oy));
+  }
 }
 function resetView(){
   const sx=canvas.width/IMG_W,sy=canvas.height/IMG_H;
@@ -9788,11 +9805,21 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeTbMenu(); })
     0 0 80px rgba(239,68,68,.15),
     0 32px 80px rgba(0,0,0,.8);
   display:flex;flex-direction:column;align-items:center;gap:1.1rem;
-  pointer-events:auto;
+  /* ── BUG FIX: görünmez ama tıklanabilir katman düzeltmesi ──
+     opacity:0 bir elemanı GÖRSEL olarak gizler ama tıklamaları
+     engellemez. Bu kart .show class'ı almadığı sürece ekranın
+     ortasında (genelde diğer modallerin/butonların TAM üzerinde)
+     gözle görünmez bir tıklama-yutan katman olarak duruyordu —
+     örn. faction "Kur" butonuna basan kullanıcı farkında olmadan
+     bu kartın (görünmez) kapatma butonuna basıyordu. Çözüm:
+     varsayılan durumda pointer-events:none, sadece .show ile
+     birlikte pointer-events:auto. */
+  pointer-events:none;
 }
 #war-banner-card.show{
   transform:translate(-50%,-50%) scale(1);
   opacity:1;
+  pointer-events:auto;
 }
 
 /* Kırmızı pırıltı efekti */
@@ -9890,11 +9917,13 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeTbMenu(); })
   padding:1.6rem 1.4rem 1.4rem;
   box-shadow:0 0 40px rgba(16,185,129,.25), 0 32px 80px rgba(0,0,0,.7);
   display:flex;flex-direction:column;align-items:center;gap:1rem;
-  pointer-events:auto;
+  /* ── BUG FIX: bkz. #war-banner-card'daki aynı düzeltme açıklaması ── */
+  pointer-events:none;
 }
 #ally-banner-card.show{
   transform:translate(-50%,-50%) scale(1);
   opacity:1;
+  pointer-events:auto;
 }
 .ally-title{
   font-size:.6rem;font-weight:900;letter-spacing:.2em;text-transform:uppercase;
