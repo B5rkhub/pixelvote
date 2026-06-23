@@ -2590,7 +2590,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
    genişliğinde ayırarak haritanın gerçek görünür/tıklanabilir alanı
    sidebar'ı asla içermeyecek şekilde küçülüyor; sidebar gizliyken de
    ikinci kolon 0'a inip haritaya tam genişlik geri veriliyor. */
-#main{flex:1;display:none;grid-template-columns:1fr var(--sidebar-w);overflow:hidden;transition:grid-template-columns .35s cubic-bezier(.4,0,.2,1);}
+#main{flex:1;display:none;grid-template-columns:1fr;overflow:hidden;}
 #cwrap{position:relative;overflow:hidden;background:#06060f;touch-action:none;grid-column:1;}
 #c{display:block;cursor:crosshair;image-rendering:pixelated;image-rendering:crisp-edges;}
 #label-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
@@ -2987,7 +2987,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
 .zb:hover{background:var(--surf2);}
 #ptoolbar{
   position:fixed;bottom:16px;
-  right:calc(var(--sidebar-w) + 12px);
+  right:12px;
   background:var(--surf);border:1px solid var(--bdr);border-radius:14px;
   padding:.5rem .7rem;display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;
   z-index:45;max-width:52px;justify-content:center;overflow:hidden;
@@ -3175,7 +3175,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
   transition:color .2s,background .2s,right .35s cubic-bezier(.4,0,.2,1);
 }
 #sidebar-toggle:hover{color:var(--txt);background:var(--surf2);}
-#main.sidebar-hidden{grid-template-columns:1fr 0px;}
+#main.sidebar-hidden{grid-template-columns:1fr;}
 #main.sidebar-hidden #sidebar{
   transform:translateX(100%);
   opacity:0;
@@ -6729,25 +6729,8 @@ function globalCounts(){
   return c;
 }
 function tsince(t){const s=Math.floor((Date.now()-t)/1000);return s<60?s+'sn':s<3600?Math.floor(s/60)+'dk':Math.floor(s/3600)+'sa';}
-function updateSidebar(){
-  const seen=new Set();
-  document.getElementById('rlist').innerHTML=REGION_ORDER.map(rid=>{
-    const reg=REGIONS[rid];
-    const provs=PROV_IDS.filter(pid=>PROV_REGIONS[pid]===rid&&!seen.has(pid));
-    provs.forEach(p=>seen.add(p));
-    const items=provs.map(pid=>{
-      const w=winner(pid);
-      const badge=w?`<span class="pbadge" style="background:${PARTIES[w.p].color}">${PARTIES[w.p].name.replace('Parti ','')} ${w.pct}%</span>`
-        :`<span class="pbadge" style="background:#252538">—</span>`;
-      return `<div class="pi"><span>${PROV_NAMES[pid]}</span>${badge}</div>`;
-    }).join('');
-    return `<div class="rblock"><div class="rhdr" style="background:${reg.color}22;color:${reg.color}"><span>${reg.label}</span><span style="opacity:.6;font-size:.58rem">${provs.length} il</span></div>${items}</div>`;
-  }).join('');
-  document.getElementById('afeed').innerHTML=actLog.length
-    ?actLog.slice(0,12).map(a=>`<div class="af"><span>${a.user}</span> → <span style="color:${PARTIES[a.party].color}">${PARTIES[a.party].name}</span> / ${a.prov} <span style="opacity:.4">${tsince(a.t)}</span></div>`).join('')
-    :`<div class="af" style="color:var(--muted)">Henüz hamle yok...</div>`;
-}
-let ptmo;
+function updateSidebar(){ /* sidebar kaldırıldı */ }
+
 function showPopup(msg){const el=document.getElementById('popup');el.textContent=msg;el.classList.add('show');clearTimeout(ptmo);ptmo=setTimeout(()=>el.classList.remove('show'),2800);}
 let _lastCwrapW=null, _lastCwrapH=null;
 function resizeCanvas(){
@@ -9181,31 +9164,7 @@ function getSidebarW(){
 function isMobile(){ return window.innerWidth<=768 && _isTouchCapableDevice(); }
 
 function toggleSidebar(){
-  const sidebar=document.getElementById('sidebar');
-  const btn=document.getElementById('sidebar-toggle');
-  const pt=document.getElementById('ptoolbar');
-  if(isMobile()){
-    const open=sidebar.classList.toggle('mobile-open');
-    btn.textContent=open?'▼':'▲';
-    if(open && typeof renderProfileStats==='function') renderProfileStats();
-    // Drawer açıkken arka plana tıklayınca kapat
-    if(open){
-      const overlay=document.createElement('div');
-      overlay.id='mob-sidebar-overlay';
-      overlay.style.cssText='position:fixed;inset:0;z-index:59;background:rgba(0,0,0,.45);';
-      overlay.addEventListener('click',()=>{ sidebar.classList.remove('mobile-open'); overlay.remove(); btn.textContent='▲'; });
-      document.body.appendChild(overlay);
-    } else {
-      const ov=document.getElementById('mob-sidebar-overlay');
-      if(ov) ov.remove();
-    }
-  } else {
-    const hidden=sidebar.classList.toggle('hidden');
-    btn.textContent=hidden?'❮':'❯';
-    btn.style.right=hidden?'0':getSidebarW()+'px';
-    if(hidden) pt.classList.add('sidebar-gone');
-    else pt.classList.remove('sidebar-gone');
-  }
+  // Sidebar kaldırıldı — no-op
 }
 function initSidebarToggle(){
   const btn=document.getElementById('sidebar-toggle');
@@ -9219,23 +9178,8 @@ function initSidebarToggle(){
   }
 }
 
-// Ekran yeniden boyutlandırılınca sidebar durumunu düzelt
-window.addEventListener('resize',()=>{
-  const sidebar=document.getElementById('sidebar');
-  const btn=document.getElementById('sidebar-toggle');
-  const ov=document.getElementById('mob-sidebar-overlay');
-  if(!isMobile()){
-    sidebar.classList.remove('mobile-open');
-    if(ov) ov.remove();
-    if(!sidebar.classList.contains('hidden')){
-      btn.style.right=getSidebarW()+'px';
-      btn.textContent='❯';
-    }
-  } else {
-    btn.style.right='';
-    btn.textContent=sidebar.classList.contains('mobile-open')?'▼':'▲';
-  }
-});
+// sidebar kaldırıldı
+
 
 // ── PALETTE TOGGLE ──
 let paletteOpen=false;
