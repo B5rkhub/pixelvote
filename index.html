@@ -3001,6 +3001,14 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
   border:2.5px solid #fff;flex-shrink:0;transition:transform .15s;
 }
 #palette-toggle:hover{transform:scale(1.15);}
+#pen-toggle{
+  width:26px;height:26px;border-radius:50%;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surf2);border:2px solid var(--bdr);color:var(--txt);
+  transition:transform .15s,background .15s,border-color .15s,color .15s;
+}
+#pen-toggle:hover{transform:scale(1.1);}
+#pen-toggle.active{background:var(--accent);border-color:var(--accent);color:#fff;transform:scale(1.05);}
 .psw{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;display:none;}
 #ptoolbar.expanded .psw{display:block;}
 .psw:hover{transform:scale(1.15);}
@@ -4575,6 +4583,9 @@ button, [onclick], .pc-frame, .psw, .zb {
       <button class="zb" style="font-size:.65rem" onclick="resetView()">⌂</button>
     </div>
     <div id="ptoolbar">
+      <div id="pen-toggle" onclick="togglePenMode()" title="Kalem modu (basılı tut + sürükle = piksel bas)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+      </div>
       <div id="palette-toggle" style="background:#ffffff" onclick="togglePalette()" title="Renk seç"></div>
       <div class="psw sel" style="background:#ffffff" id="sw0" onclick="selP(0)" title="Beyaz"></div>
       <div class="psw" style="background:#e4e4e4" id="sw1" onclick="selP(1)" title="Açık Gri"></div>
@@ -6055,10 +6066,24 @@ function canvasToFlat(mx,my){
 // Böylece hem hiçbir piksel atlanmıyor (kuyruğa giren her şey eninde sonunda
 // işlenir) hem de sunucuya asla aynı anda onlarca paralel istek gitmiyor
 // (ki bu, cooldown hesaplamasını yanıltıp "fazladan piksel" hatasına yol açıyordu).
-let _brushActive = false; // shift+mousedown ile aktif olur
+let _brushActive = false; // shift+mousedown İLE YA DA _penMode AÇIKKEN mousedown ile aktif olur
 let _brushLastFlat = -1; // fırçanın en son KUYRUĞA EKLEDİĞİ hücre — aynı hücreyi art arda kuyruğa eklemeyi önler
 let _brushQueue = []; // [{mx,my}, ...] — sırayla işlenecek bekleyen tıklamalar
 let _brushQueueRunning = false;
+
+// ── KALEM MODU: Shift'e basmaya gerek kalmadan, paletin yanındaki kalem
+// butonuyla açılıp kapanan sürekli "fırça" modu. Açıkken mantık tamamen
+// Shift+sürükle ile birebir aynı kuyruk/RPC/sayaç sistemini kullanır —
+// sadece tetikleyici Shift tuşu değil bu flag'tir. Mobilde de aynı flag
+// touch sürüklemesinin pan değil piksel basma anlamına gelmesini sağlar.
+let _penMode = false;
+function togglePenMode(){
+  _penMode = !_penMode;
+  const btn=document.getElementById('pen-toggle');
+  if(btn) btn.classList.toggle('active', _penMode);
+  canvas.style.cursor = _penMode ? 'cell' : 'crosshair';
+  if(!_penMode){ _brushActive=false; _brushLastFlat=-1; }
+}
 
 // ── Mouse/Touch çakışma koruması ─────────────────────────────────────────
 // Dokunmatik masaüstü/laptoplarda (Surface, 2-in-1, dokunmatik monitör) bir
@@ -6126,7 +6151,7 @@ canvas.addEventListener('mousedown',e=>{
     return;
   }
   const r=canvas.getBoundingClientRect();
-  if(e.shiftKey){
+  if(e.shiftKey||_penMode){
     _brushActive = true;
     canvas.style.cursor = 'cell';
     _brushLastFlat = canvasToFlat(e.clientX-r.left,e.clientY-r.top);
@@ -6139,8 +6164,8 @@ canvas.addEventListener('mouseleave',()=>{ _brushActive = false; _brushLastFlat 
 canvas.addEventListener('mousemove',e=>{
   if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
   if(panning){ox=e.clientX-panSt.x;oy=e.clientY-panSt.y;clampView();draw();return;}
-  // Shift basılı + sol tuş sürükleme = fırça modu
-  if(_brushActive && e.shiftKey && e.buttons===1){
+  // Shift basılı (ya da kalem modu açık) + sol tuş sürükleme = fırça modu
+  if(_brushActive && (e.shiftKey||_penMode) && e.buttons===1){
     const r=canvas.getBoundingClientRect();
     const mx=e.clientX-r.left, my=e.clientY-r.top;
     const flat=canvasToFlat(mx,my);
@@ -6151,13 +6176,13 @@ canvas.addEventListener('mousemove',e=>{
     _brushLastFlat = flat;
     _brushEnqueue(mx,my);
     return;
-  } else if(_brushActive && (!e.shiftKey || e.buttons!==1)){
+  } else if(_brushActive && (!(e.shiftKey||_penMode) || e.buttons!==1)){
     _brushActive = false;
     _brushLastFlat = -1;
-    canvas.style.cursor = 'crosshair';
+    canvas.style.cursor = _penMode ? 'cell' : 'crosshair';
   }
-  // Shift tuşuna basılıyken cursor'u değiştir (sürüklemeden önce de ipucu ver)
-  if(e.shiftKey && !panning){
+  // Shift tuşuna basılıyken (ya da kalem modu açıkken) cursor'u değiştir
+  if((e.shiftKey||_penMode) && !panning){
     canvas.style.cursor = 'cell';
   } else if(!panning && !_brushActive){
     canvas.style.cursor = 'crosshair';
@@ -6263,6 +6288,13 @@ canvas.addEventListener('touchstart',e=>{
     lastT={x:tt[0].clientX,y:tt[0].clientY};
     touchMoved=false;
     pinchStartDist=null;
+    if(_penMode){
+      // Kalem modu: parmak henüz hareket etmeden de ucun bastığı ilk hücreyi boya.
+      const r=canvas.getBoundingClientRect();
+      const mx=tt[0].clientX-r.left, my=tt[0].clientY-r.top;
+      _brushLastFlat=canvasToFlat(mx,my);
+      _brushEnqueue(mx,my);
+    }
   } else if(tt.length>=2){
     e.preventDefault();
     const r=canvas.getBoundingClientRect();
@@ -6320,6 +6352,18 @@ canvas.addEventListener('touchmove',e=>{
   } else if(tt.length===1&&lastT){
     const dx=tt[0].clientX-lastT.x, dy=tt[0].clientY-lastT.y;
     if(Math.abs(dx)>4||Math.abs(dy)>4) touchMoved=true;
+    if(_penMode){
+      // Kalem modu: tek parmak sürüklemesi haritayı KAYDIRMAZ, piksel basar.
+      const r=canvas.getBoundingClientRect();
+      const mx=tt[0].clientX-r.left, my=tt[0].clientY-r.top;
+      const flat=canvasToFlat(mx,my);
+      lastT={x:tt[0].clientX,y:tt[0].clientY};
+      if(flat!==_brushLastFlat){
+        _brushLastFlat=flat;
+        _brushEnqueue(mx,my);
+      }
+      return;
+    }
     ox+=dx;oy+=dy;
     lastT={x:tt[0].clientX,y:tt[0].clientY};
     clampView();draw();
@@ -6330,8 +6374,9 @@ canvas.addEventListener('touchend',e=>{
   e.preventDefault(); // tap sonrası tarayıcının ürettiği sentetik click/mousedown'ı bastırır (çift piksel basma riskini sıfırlar)
   const tt=e.targetTouches; // bu canvas'ı hâlâ "hedefleyen", kalkmamış dokunuşlar
   if(tt.length===0){
-    // Sadece sürükleme/pinch yoksa (tek dokunuş, hareketsiz) piksel koy
-    if(!touchMoved&&e.changedTouches.length===1){
+    // Sadece sürükleme/pinch yoksa (tek dokunuş, hareketsiz) piksel koy.
+    // Kalem modunda touchstart'ta zaten basıldı (bkz. yukarı) — burada tekrar basma.
+    if(!touchMoved&&e.changedTouches.length===1&&!_penMode){
       const t=e.changedTouches[0];const r=canvas.getBoundingClientRect();
       window.handleClick(t.clientX-r.left,t.clientY-r.top);
     }
@@ -6939,7 +6984,7 @@ document.getElementById('auth-email').addEventListener('keydown',e=>{if(e.key===
 document.getElementById('auth-password').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
 // ── Shift tuşu: canvas üzerinde fırça modu ipucu ──
 document.addEventListener('keydown',e=>{if(e.key==='Shift'&&!panning&&!_brushActive)canvas.style.cursor='cell';});
-document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.style.cursor='crosshair';});
+document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.style.cursor=_penMode?'cell':'crosshair';});
 
 // Haritayı hemen başlat — login gerekmez (misafir olarak harita görünür,
 // pixel basmak için Supabase Auth oturumu gerekir)
