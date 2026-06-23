@@ -8238,7 +8238,68 @@ const FC_COLORS = [
 ];
 const FC_EMOJIS = ['⚑','🏴','🔥','⚔️','🛡️','👑','🌙','⭐','🦅','🐉','🌊','🏔️','🎯','💎','🚀'];
 
+// ── Supabase faction yükleyici (async) ──────────────────────────────────
+// factions tablosu: id (uuid), name, color, tag, emoji, leader, invite,
+//   members (jsonb), diplomacy (jsonb)  — eksik sütunlar data jsonb'de saklanır.
+async function loadFactionsFromSupabase(){
+  if(typeof supabase === 'undefined') return false;
+  try{
+    const { data, error } = await supabase.from('factions').select('*');
+    if(error){ console.warn('loadFactions supabase:', error); return false; }
+    if(!data) return false;
+    allFactions = {};
+    data.forEach(row => {
+      // Ekstra alanları ya doğrudan sütunlardan ya da data/extra jsonb'den al
+      const extra = row.data || row.extra || {};
+      const f = {
+        id:       row.id,
+        name:     row.name,
+        tag:      row.tag,
+        color:    row.color || extra.color || '#7B61FF',
+        emoji:    row.emoji || extra.emoji || '⚑',
+        leader:   row.leader || extra.leader || '',
+        invite:   row.invite || extra.invite || '',
+        members:  row.members || extra.members || [],
+        diplomacy:row.diplomacy || extra.diplomacy || {},
+        totalPixels: row.total_pixels || extra.totalPixels || 0,
+        createdAt: row.created_at || extra.createdAt || 0,
+      };
+      allFactions[f.tag] = f;
+    });
+    // localStorage'a da yaz (offline fallback)
+    try{ localStorage.setItem('pv_factions', JSON.stringify(allFactions)); }catch(e){}
+    return true;
+  }catch(e){ console.warn('loadFactions error:', e); return false; }
+}
+
+async function saveFactionsToSupabase(f){
+  if(typeof supabase === 'undefined') return false;
+  if(!f) return false;
+  try{
+    // Önce bu tag var mı kontrol et
+    const { data: existing } = await supabase.from('factions').select('id').eq('tag', f.tag).maybeSingle();
+    const payload = {
+      name:     f.name,
+      tag:      f.tag,
+      color:    f.color,
+      emoji:    f.emoji,
+      leader:   f.leader,
+      invite:   f.invite,
+      members:  f.members,
+      diplomacy:f.diplomacy,
+    };
+    if(existing && existing.id){
+      await supabase.from('factions').update(payload).eq('id', existing.id);
+    } else {
+      const { data: ins } = await supabase.from('factions').insert(payload).select('id').single();
+      if(ins && ins.id) { f.id = ins.id; allFactions[f.tag] = f; }
+    }
+    return true;
+  }catch(e){ console.warn('saveFactions error:', e); return false; }
+}
+
 function loadFactions(){
+  // Önce localStorage'dan hızlı yükle
   try{
     const raw = localStorage.getItem('pv_factions');
     if(raw) allFactions = JSON.parse(raw);
@@ -8251,19 +8312,48 @@ function loadFactions(){
       factionData = null;
     }
   }catch(e){}
+  // Arka planda Supabase'den taze veri çek
+  loadFactionsFromSupabase().then(ok=>{
+    if(ok){
+      // Supabase'den gelen veriden kullanıcının faction'ını güncelle
+      try{
+        const myTag = localStorage.getItem('pv_my_faction_'+username);
+        if(myTag && allFactions[myTag]){
+          factionData = allFactions[myTag];
+        } else if(factionData && allFactions[factionData.tag]){
+          factionData = allFactions[factionData.tag];
+        }
+      }catch(e){}
+      renderFactionModal();
+    }
+  });
 }
+
 function saveFactions(){
   try{ localStorage.setItem('pv_factions', JSON.stringify(allFactions)); }catch(e){}
+  // Supabase'e de kaydet (sadece kendi faction'ını)
+  if(factionData) saveFactionsToSupabase(factionData);
 }
 function generateCode(){
   return Math.random().toString(36).substring(2,8).toUpperCase();
 }
 
 function openFactionModal(){
-  loadFactions();
   fcActiveTab = 'info';
   document.getElementById('faction-modal').classList.add('open');
+  // Önce localStorage'dan anlık render
+  loadFactions();
   renderFactionModal();
+  // Supabase'den taze veri çek ve yeniden render et
+  loadFactionsFromSupabase().then(ok=>{
+    if(ok){
+      try{
+        const myTag = localStorage.getItem('pv_my_faction_'+username);
+        if(myTag && allFactions[myTag]) factionData = allFactions[myTag];
+      }catch(e){}
+      renderFactionModal();
+    }
+  });
 }
 function closeFactionModal(){
   document.getElementById('faction-modal').classList.remove('open');
@@ -8386,19 +8476,36 @@ function filterFactionBrowse(){
   document.getElementById('fc-browse-list').innerHTML = window._fcRenderFactionList(filtered);
 }
 
-function createFaction(){
+async function createFaction(){
   const name = (document.getElementById('fc-name-in').value||'').trim();
   const tag = (document.getElementById('fc-tag-in').value||'').trim().toUpperCase().replace(/[^A-ZÇĞİÖŞÜ0-9]/gi,'');
   const color = window._fcSelectedColor || '#7B61FF';
   const emoji = FC_EMOJIS[window._fcEmojiIdx||0];
   if(!name){ showPopup(t('msg.faction_name_required')); return; }
   if(tag.length<2){ showPopup(t('msg.faction_tag_short')); return; }
-  if(allFactions[tag]){ showPopup(t('msg.faction_tag_taken')); return; }
+  // Supabase'de tag kontrolü
+  if(typeof supabase !== 'undefined'){
+    const { data: ex } = await supabase.from('factions').select('id').eq('tag', tag).maybeSingle();
+    if(ex){ showPopup(t('msg.faction_tag_taken')); return; }
+  } else {
+    if(allFactions[tag]){ showPopup(t('msg.faction_tag_taken')); return; }
+  }
   const invite = generateCode();
-  allFactions[tag] = {name, tag, color, emoji, leader: username, invite,
+  const newFaction = {name, tag, color, emoji, leader: username, invite,
     members:[{name:username,role:'Lider',joined:Date.now()}],
     diplomacy:{}, createdAt:Date.now(), totalPixels:0};
+  allFactions[tag] = newFaction;
   saveFactions();
+  // Supabase'e kaydet
+  if(typeof supabase !== 'undefined'){
+    try{
+      const { data: ins, error: ie } = await supabase.from('factions').insert({
+        name, tag, color, emoji, leader: username, invite,
+        members: newFaction.members, diplomacy: {}
+      }).select('id').single();
+      if(!ie && ins && ins.id) allFactions[tag].id = ins.id;
+    }catch(e){ console.warn('createFaction supabase insert:', e); }
+  }
   try{ localStorage.setItem('pv_my_faction_'+username, tag); }catch(e){}
   factionData = allFactions[tag];
   updateFactionBtn();
@@ -8407,35 +8514,37 @@ function createFaction(){
   renderFactionModal();
 }
 
-function joinFactionByTag(tag){
-  loadFactions();
+async function joinFactionByTag(tag){
+  await loadFactionsFromSupabase();
   const found = allFactions[tag];
   if(!found){ showPopup(t('msg.faction_not_found')); return; }
   if(found.members.find(m=>m.name===username)){ showPopup(t('msg.faction_already_in')); return; }
   found.members.push({name:username,role:'Üye',joined:Date.now()});
+  allFactions[found.tag] = found;
   saveFactions();
   try{ localStorage.setItem('pv_my_faction_'+username, found.tag); }catch(e){}
   factionData = found;
-  allFactions[found.tag] = found;
   updateFactionBtn();
-  updateChatFactionTab();
+  if(typeof updateChatFactionTab==='function') updateChatFactionTab();
   showPopup(t('msg.faction_joined', {name: found.name}));
   renderFactionModal();
 }
 
-function joinFactionByCode(){
+async function joinFactionByCode(){
   const code = (document.getElementById('fc-join-in').value||'').trim().toUpperCase();
   if(!code){ showPopup(t('msg.invite_code_required')); return; }
+  // Supabase'den taze veri çek
+  await loadFactionsFromSupabase();
   const found = Object.values(allFactions).find(f=>f.invite===code);
   if(!found){ showPopup(t('msg.invite_code_invalid')); return; }
   if(found.members.find(m=>m.name===username)){ showPopup(t('msg.faction_already_in')); return; }
   found.members.push({name:username,role:'Üye',joined:Date.now()});
+  allFactions[found.tag] = found;
   saveFactions();
   try{ localStorage.setItem('pv_my_faction_'+username, found.tag); }catch(e){}
   factionData = found;
-  allFactions[found.tag] = found;
   updateFactionBtn();
-  updateChatFactionTab();
+  if(typeof updateChatFactionTab==='function') updateChatFactionTab();
   showPopup(t('msg.faction_joined', {name: found.name}));
   renderFactionModal();
 }
@@ -8661,21 +8770,28 @@ function switchFcTab(tab){
   renderFactionModal();
 }
 
-function leaveFaction(){
+async function leaveFaction(){
   const f = factionData;
   const isLeader = f.leader === username;
   if(isLeader){
     if(!confirm(t('faction.disband_confirm'))) return;
+    // Supabase'den sil
+    if(typeof supabase !== 'undefined' && f.id){
+      try{ await supabase.from('factions').delete().eq('id', f.id); }catch(e){}
+    } else if(typeof supabase !== 'undefined'){
+      try{ await supabase.from('factions').delete().eq('tag', f.tag); }catch(e){}
+    }
     delete allFactions[f.tag];
-    // Tüm üyelerin kayıtlarını sil
     f.members.forEach(m=>{
       try{ localStorage.removeItem('pv_my_faction_'+m.name); }catch(e){}
     });
   } else {
     allFactions[f.tag].members = allFactions[f.tag].members.filter(m=>m.name!==username);
     try{ localStorage.removeItem('pv_my_faction_'+username); }catch(e){}
+    // Supabase'e güncel üye listesini kaydet
+    saveFactions();
   }
-  saveFactions();
+  try{ localStorage.setItem('pv_factions', JSON.stringify(allFactions)); }catch(e){}
   factionData = null;
   updateFactionBtn();
   showPopup(isLeader?t('msg.faction_disbanded'):t('msg.faction_left'));
