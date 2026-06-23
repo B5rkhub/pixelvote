@@ -13178,6 +13178,36 @@ document.addEventListener('keydown', e => {
 }
 #tpl-upload-status.ok  { color:#00d4a0; }
 #tpl-upload-status.err { color:#f04a4a; }
+
+/* ── BRUSH KONTROLLERI ── */
+.tpl-slider-wrap {
+  display:flex; align-items:center; gap:.35rem; flex-shrink:0;
+}
+.tpl-slider-label {
+  font-size:.6rem; font-weight:700; color:rgba(255,255,255,.5);
+  text-transform:uppercase; letter-spacing:.06em; white-space:nowrap;
+}
+.tpl-slider {
+  -webkit-appearance:none; appearance:none;
+  width:64px; height:3px; border-radius:2px;
+  background:rgba(255,255,255,.15); outline:none; cursor:pointer;
+}
+.tpl-slider::-webkit-slider-thumb {
+  -webkit-appearance:none; width:13px; height:13px;
+  border-radius:50%; background:#a78bfa; cursor:pointer;
+  border:2px solid rgba(255,255,255,.3); transition:transform .1s;
+}
+.tpl-slider::-webkit-slider-thumb:hover { transform:scale(1.2); }
+.tpl-slider::-moz-range-thumb {
+  width:13px; height:13px; border-radius:50%;
+  background:#a78bfa; cursor:pointer; border:2px solid rgba(255,255,255,.3);
+}
+.tpl-slider-val {
+  font-size:.62rem; font-family:var(--font-mono,'JetBrains Mono',monospace);
+  color:rgba(255,255,255,.6); min-width:1.8rem; text-align:right;
+}
+/* Sağ tık silme aktifken cursor */
+#template-canvas.rclick-erase { cursor:cell; }
 </style>
 
 <!-- ═══════════════════════════════════════════════════════
@@ -13189,6 +13219,21 @@ document.addEventListener('keydown', e => {
     <div id="tpl-palette-popout"></div>
   </div>
   <div class="tpl-sep"></div>
+  <!-- Brush Size -->
+  <div class="tpl-slider-wrap" title="Brush Boyutu">
+    <span class="tpl-slider-label">B</span>
+    <input class="tpl-slider" id="tpl-size-slider" type="range" min="1" max="9" step="2" value="1"
+      oninput="tplSetBrushSize(+this.value)">
+    <span class="tpl-slider-val" id="tpl-size-val">1</span>
+  </div>
+  <!-- Opacity -->
+  <div class="tpl-slider-wrap" title="Opacity (Şeffaflık)">
+    <span class="tpl-slider-label">O</span>
+    <input class="tpl-slider" id="tpl-opacity-slider" type="range" min="10" max="100" step="5" value="100"
+      oninput="tplSetOpacity(+this.value)">
+    <span class="tpl-slider-val" id="tpl-opacity-val">100%</span>
+  </div>
+  <div class="tpl-sep"></div>
   <button class="tpl-tool-btn active" id="tpl-brush-btn" onclick="tplSetTool('brush')">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg>
     Piksel
@@ -13196,6 +13241,32 @@ document.addEventListener('keydown', e => {
   <button class="tpl-tool-btn" id="tpl-eraser-btn" onclick="tplSetTool('eraser')">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
     Silgi
+  </button>
+  <button class="tpl-tool-btn" id="tpl-fill-btn" onclick="tplSetTool('fill')" title="Doldur (Bucket Fill)">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2a2 2 0 0 0 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-3 2-3s2 1.4 2 3Z"/></svg>
+    Doldur
+  </button>
+  <button class="tpl-tool-btn active" id="tpl-rclick-btn" onclick="tplToggleRightClickErase()" title="Sağ Tık = Silgi (aç/kapa)">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 3h6v10a3 3 0 0 1-6 0V3z"/><path d="M14 3h6v10a3 3 0 0 1-6 0V3z"/><path d="M12 3v5"/><line x1="4" y1="21" x2="20" y2="21"/></svg>
+    ⌥ Sağ
+  </button>
+  <div class="tpl-sep"></div>
+  <button class="tpl-tool-btn" id="tpl-undo-btn" onclick="tplUndo()" title="Geri Al (Ctrl+Z)" disabled>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+    Geri
+  </button>
+  <button class="tpl-tool-btn" id="tpl-redo-btn" onclick="tplRedo()" title="İleri Al (Ctrl+Y)" disabled>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+    İleri
+  </button>
+  <div class="tpl-sep"></div>
+  <button class="tpl-tool-btn" id="tpl-mirrorx-btn" onclick="tplToggleMirror('x')" title="Yatay Simetri (Mirror X)">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v18"/><path d="M4 7l4 5-4 5"/><path d="M20 7l-4 5 4 5"/></svg>
+    ↔ X
+  </button>
+  <button class="tpl-tool-btn" id="tpl-mirrory-btn" onclick="tplToggleMirror('y')" title="Dikey Simetri (Mirror Y)">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18"/><path d="M7 4l5 4 5-4"/><path d="M7 20l5-4 5 4"/></svg>
+    ↕ Y
   </button>
   <div class="tpl-sep"></div>
   <button class="tpl-tool-btn" onclick="tplClear()">
@@ -13271,6 +13342,191 @@ let _tplData=new Map();
 // Offscreen bitmap: harita gibi 1px=1 grid hücresi, draw() içinde ölçeklenerek basılır.
 let _tplBitmap=null, _tplBitmapCtx=null;
 
+// ── UNDO / REDO SİSTEMİ ─────────────────────────────────────────────────
+// Tüm canvas yerine sadece _tplData (Map<flat,color>) snapshot'ları tutulur.
+// Her çizim/silgi stroke sonunda (mouseup/pointerup) bir snapshot alınır.
+// Sürükleme sırasında anlık snapshot alınmaz → performanslı.
+const TPL_UNDO_LIMIT = 50; // maksimum kayıt sayısı
+let _tplUndoStack = [];    // geçmiş state'ler (en yeni = sonda)
+let _tplRedoStack = [];    // redo state'leri
+let _tplStrokeActive = false; // stroke başladı mı (ilk snapshot henüz alındı mı)
+
+// ── MIRROR SİSTEMİ ──────────────────────────────────────────────────────
+let _tplMirrorX = false; // yatay simetri (sol↔sağ)
+let _tplMirrorY = false; // dikey simetri (üst↔alt)
+
+function tplToggleMirror(axis){
+  if(axis==='x'){
+    _tplMirrorX=!_tplMirrorX;
+    const btn=document.getElementById('tpl-mirrorx-btn');
+    if(btn) btn.classList.toggle('active',_tplMirrorX);
+    showPopup(_tplMirrorX ? '↔ Mirror X açık' : '↔ Mirror X kapalı');
+  } else {
+    _tplMirrorY=!_tplMirrorY;
+    const btn=document.getElementById('tpl-mirrory-btn');
+    if(btn) btn.classList.toggle('active',_tplMirrorY);
+    showPopup(_tplMirrorY ? '↕ Mirror Y açık' : '↕ Mirror Y kapalı');
+  }
+}
+
+// ── BRUSH SIZE / OPACITY / SAĞ TIK SİLGİ ───────────────────────────────
+let _tplBrushSize = 1;    // 1,3,5,7,9 (tek sayı — merkez piksel dahil kare)
+let _tplOpacity   = 1.0;  // 0.1 – 1.0
+let _tplRightClickErase = true;  // varsayılan açık — sağ tık doğrudan silgi olarak çalışır
+let _tplRightClickDown  = false; // sağ tık basılı mı
+
+function tplSetBrushSize(v){
+  _tplBrushSize = Math.max(1, Math.min(9, v));
+  const val=document.getElementById('tpl-size-val');
+  if(val) val.textContent=_tplBrushSize;
+}
+
+function tplSetOpacity(v){
+  _tplOpacity = Math.round(v) / 100;
+  const val=document.getElementById('tpl-opacity-val');
+  if(val) val.textContent=Math.round(v)+'%';
+}
+
+function tplToggleRightClickErase(){
+  _tplRightClickErase=!_tplRightClickErase;
+  const btn=document.getElementById('tpl-rclick-btn');
+  if(btn) btn.classList.toggle('active',_tplRightClickErase);
+  const tc=document.getElementById('template-canvas');
+  if(tc) tc.classList.toggle('rclick-erase',_tplRightClickErase);
+  showPopup(_tplRightClickErase ? '⌥ Sağ tık silgi açık' : '⌥ Sağ tık silgi kapalı');
+}
+
+// Opacity'li renk oluştur — hex + alpha → rgba string
+function _tplColorWithOpacity(hex, alpha){
+  if(alpha>=1) return hex;
+  // hex → r,g,b
+  const h=hex.replace('#','');
+  const r=parseInt(h.substring(0,2),16);
+  const g=parseInt(h.substring(2,4),16);
+  const b=parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${alpha.toFixed(2)})`;
+}
+
+// Brush size'a göre çizilecek piksel offset listesini döner (kare brush)
+function _tplBrushOffsets(size){
+  if(size<=1) return [[0,0]];
+  const half=Math.floor(size/2);
+  const offs=[];
+  for(let dy=-half;dy<=half;dy++){
+    for(let dx=-half;dx<=half;dx++){
+      offs.push([dx,dy]);
+    }
+  }
+  return offs;
+}
+// ────────────────────────────────────────────────────────────────────────
+
+// Tek bir flat koordinatı için gerekli tüm mirror noktalarını döner
+// (kendisi dahil, 1–4 arası nokta)
+function _tplMirrorFlats(flat){
+  const ix=flat%IMG_W, iy=Math.floor(flat/IMG_W);
+  const mx=IMG_W-1-ix; // yansı X
+  const my=IMG_H-1-iy; // yansı Y
+  const pts=new Set();
+  pts.add(flat);
+  if(_tplMirrorX) pts.add(mx + iy*IMG_W);
+  if(_tplMirrorY) pts.add(ix + my*IMG_W);
+  if(_tplMirrorX && _tplMirrorY) pts.add(mx + my*IMG_W);
+  return pts;
+}
+// ────────────────────────────────────────────────────────────────────────
+
+// Mevcut _tplData'nın derin kopyasını al
+function _tplSnapshot(){
+  return new Map(_tplData);
+}
+
+// Stroke başlangıcında: o anki state'i undo stack'e it
+function _tplPushUndo(){
+  _tplUndoStack.push(_tplSnapshot());
+  if(_tplUndoStack.length > TPL_UNDO_LIMIT) _tplUndoStack.shift();
+  _tplRedoStack = []; // yeni eylem → redo temizlenir
+  _tplUpdateUndoButtons();
+}
+
+// Belirli bir state'i geri yükle
+function _tplRestoreState(state){
+  _tplData = new Map(state);
+  // Bitmap'i sıfırdan yeniden çiz
+  if(_tplBitmapCtx){
+    _tplBitmapCtx.clearRect(0,0,_tplBitmap.width,_tplBitmap.height);
+    for(const [flat,color] of _tplData){
+      const ix=flat%IMG_W, iy=Math.floor(flat/IMG_W);
+      _tplBitmapCtx.fillStyle=color;
+      _tplBitmapCtx.fillRect(ix,iy,1,1);
+    }
+  }
+  _tplRenderOverlay();
+}
+
+function tplUndo(){
+  if(_tplUndoStack.length===0) return;
+  _tplRedoStack.push(_tplSnapshot());     // mevcut state redo'ya
+  const prev=_tplUndoStack.pop();
+  _tplRestoreState(prev);
+  _tplUpdateUndoButtons();
+}
+
+function tplRedo(){
+  if(_tplRedoStack.length===0) return;
+  _tplUndoStack.push(_tplSnapshot());     // mevcut state undo'ya
+  const next=_tplRedoStack.pop();
+  _tplRestoreState(next);
+  _tplUpdateUndoButtons();
+}
+
+function _tplUpdateUndoButtons(){
+  const undoBtn=document.getElementById('tpl-undo-btn');
+  const redoBtn=document.getElementById('tpl-redo-btn');
+  if(undoBtn) undoBtn.disabled=_tplUndoStack.length===0;
+  if(redoBtn) redoBtn.disabled=_tplRedoStack.length===0;
+}
+
+// tplClear() undo'ya kaydedilmeli — orijinal fonksiyon override
+(function(){
+  const _origClear=window.tplClear;
+  window.tplClear=function(){
+    if(_tplData && _tplData.size>0) _tplPushUndo();
+    if(typeof _origClear==='function') _origClear.apply(this,arguments);
+  };
+})();
+
+// Klavye kısayolları: Ctrl+Z / Ctrl+Y (şablon aktifken)
+document.addEventListener('keydown',(e)=>{
+  if(!_tplActive) return;
+  // Input/textarea odaklanmışsa müdahale etme
+  const tag=(document.activeElement||{}).tagName||'';
+  if(tag==='INPUT'||tag==='TEXTAREA') return;
+  if(e.ctrlKey && !e.shiftKey && e.key==='z'){
+    e.preventDefault();
+    tplUndo();
+  } else if(e.ctrlKey && (e.key==='y' || (e.shiftKey && e.key==='z'))){
+    e.preventDefault();
+    tplRedo();
+  }
+});
+
+// Stroke tamamlandığında snapshot al (mouseup / pointerup)
+// pointerup zaten tanımlı — ona hook'lanıyoruz
+(function(){
+  const _origPointerUp=window.addEventListener;
+  // Var olan pointerup listener'ına eklemek yerine yenisini ekle
+  window.addEventListener('pointerup',()=>{
+    if(!_tplActive) return;
+    if(_tplStrokeActive){
+      _tplStrokeActive=false;
+      // Stroke sona erdi — eğer bir şey değiştiyse undo'ya kaydet
+      // (stroke başında alınan snapshot zaten stackte)
+    }
+  });
+})();
+// ────────────────────────────────────────────────────────────────────────
+
 function _tplBuildPalette(){
   const pop=document.getElementById('tpl-palette-popout');
   pop.innerHTML=TPL_PALETTE.map((p,i)=>
@@ -13302,6 +13558,11 @@ function openTemplateEditor(){
   if(_tplActive) return;
   if(typeof IMG_W==='undefined' || !canvas){ showPopup('Harita henüz yüklenmedi.'); return; }
   _tplActive=true;
+  // Undo/redo stack'lerini sıfırla
+  _tplUndoStack=[];
+  _tplRedoStack=[];
+  _tplStrokeActive=false;
+  _tplUpdateUndoButtons();
   // Offscreen bitmap'i harita çözünürlüğünde kur (sadece ilk açılışta sıfırla, sonraki açılışlarda eski şablonu koru)
   if(!_tplBitmap){
     _tplBitmap=document.createElement('canvas');
@@ -13316,6 +13577,9 @@ function openTemplateEditor(){
   _tplBuildPalette();
   document.getElementById('tpl-palette-toggle').style.background=_tplColor;
   tplSetTool('brush');
+  // Sağ-tık-silgi UI durumunu mevcut state ile senkronla (varsayılan: açık)
+  document.getElementById('tpl-rclick-btn')?.classList.toggle('active',_tplRightClickErase);
+  document.getElementById('template-canvas')?.classList.toggle('rclick-erase',_tplRightClickErase);
   _tplRenderOverlay();
   showPopup('Şablon aracı açıldı — haritayı normal şekilde zoomla/kaydır, durduğunda tıklayarak piksel bas.');
 }
@@ -13324,6 +13588,7 @@ function tplSetTool(t){
   _tplTool=t;
   document.getElementById('tpl-brush-btn').classList.toggle('active',t==='brush');
   document.getElementById('tpl-eraser-btn').classList.toggle('active',t==='eraser');
+  document.getElementById('tpl-fill-btn')?.classList.toggle('active',t==='fill');
 }
 function tplClear(){
   if(!_tplBitmapCtx) return;
@@ -13340,16 +13605,148 @@ function _tplCanvasToFlat(mx,my){
   return ix+iy*IMG_W;
 }
 
-function _tplPaintAt(flat){
+function _tplPaintAt(flat, forceErase){
   if(flat<0) return;
-  const ix=flat%IMG_W, iy=Math.floor(flat/IMG_W);
-  if(_tplTool==='eraser'){
-    _tplData.delete(flat);
-    _tplBitmapCtx.clearRect(ix,iy,1,1);
+  // Stroke başlıyorsa (ilk piksel) → undo snapshot al
+  if(!_tplStrokeActive){
+    _tplStrokeActive=true;
+    _tplPushUndo();
+  }
+  const erasing=forceErase || _tplTool==='eraser';
+  const fillColor=_tplColorWithOpacity(_tplColor,_tplOpacity);
+  const cix=flat%IMG_W, ciy=Math.floor(flat/IMG_W);
+  // ── BRUSH SIZE: merkez piksel etrafında kare blok (offset listesi) ──
+  // Kare blok = pixel-perfect: yumuşatma/anti-alias yok, tam grid hücresi.
+  const offsets=_tplBrushOffsets(_tplBrushSize);
+  for(const [dx,dy] of offsets){
+    const bx=cix+dx, by=ciy+dy;
+    if(bx<0||bx>=IMG_W||by<0||by>=IMG_H) continue;
+    const baseFlat=bx+by*IMG_W;
+    // Mirror: çizilecek tüm noktalar (orijinal + yansılar)
+    const targets=_tplMirrorFlats(baseFlat);
+    for(const f of targets){
+      if(f<0||f>=IMG_W*IMG_H) continue;
+      const ix=f%IMG_W, iy=Math.floor(f/IMG_W);
+      if(erasing){
+        _tplData.delete(f);
+        _tplBitmapCtx.clearRect(ix,iy,1,1);
+      } else {
+        _tplData.set(f,fillColor);
+        // Önce temizle, sonra bas — opacity her zaman tutarlı kalsın
+        // (aynı pikselin üst üste boyanmasıyla şeffaflık birikip
+        // beklenmedik şekilde koyulaşmasın; ayar her zaman net yansısın).
+        _tplBitmapCtx.clearRect(ix,iy,1,1);
+        _tplBitmapCtx.fillStyle=fillColor;
+        _tplBitmapCtx.fillRect(ix,iy,1,1);
+      }
+    }
+  }
+  _tplRenderOverlay();
+}
+
+// ── PIXEL-PERFECT ÇİZİM: iki flat-index arasını Bresenham ile doldurur ──
+// Mouse/sürükleme hızlı hareket ettiğinde ardışık pointermove olayları
+// arasında piksel hücreleri atlanabilir (boşluklu çizgi). Bu fonksiyon
+// son nokta ile yeni nokta arasındaki TÜM hücreleri tek tek boyayarak
+// kesintisiz, gap'siz, tam piksel-ızgarasına oturan bir fırça izi garanti
+// eder — sürekli çizim + pixel-perfect davranış budur.
+function _tplPaintLine(fromFlat, toFlat, forceErase){
+  if(toFlat<0) return;
+  if(fromFlat<0 || fromFlat===toFlat){ _tplPaintAt(toFlat, forceErase); return; }
+  let x0=fromFlat%IMG_W, y0=Math.floor(fromFlat/IMG_W);
+  const x1=toFlat%IMG_W, y1=Math.floor(toFlat/IMG_W);
+  const dx=Math.abs(x1-x0), dy=Math.abs(y1-y0);
+  const sx=x1>=x0?1:-1, sy=y1>=y0?1:-1;
+  let err=dx-dy;
+  const maxSteps=IMG_W+IMG_H; // anormal uzun atlamalarda sonsuz döngüye karşı güvenlik
+  let steps=0;
+  while(true){
+    _tplPaintAt(y0*IMG_W+x0, forceErase);
+    if(x0===x1 && y0===y1) break;
+    if(++steps>maxSteps) break;
+    const e2=err*2;
+    if(e2>-dy){ err-=dy; x0+=sx; }
+    if(e2<dx){ err+=dx; y0+=sy; }
+  }
+}
+
+// ── BUCKET (FİLL) TOOL — performanslı, iteratif flood fill ──────────────
+// ÖNEMLİ: recursion KULLANILMAZ — özyinelemeli bir flood fill büyük
+// haritalarda (binlerce piksel) çağrı yığını taşmasına (stack overflow)
+// yol açabilir. Bunun yerine düz dizi tabanlı bir "stack" ile iteratif
+// gezilir. visited/stack buffer'ları IMG_W×IMG_H boyutunda LAZY olarak
+// bir kez ayrılır ve her doldurma çağrısında sadece sıfırlanıp yeniden
+// kullanılır (tekrar tekrar bellek ayırmak yerine) — büyük canvas'larda
+// da performanslı kalır, GC baskısı oluşmaz.
+let _tplFillVisited=null, _tplFillStack=null;
+function _tplEnsureFillBuffers(){
+  const total=IMG_W*IMG_H;
+  if(!_tplFillVisited || _tplFillVisited.length!==total){
+    _tplFillVisited=new Uint8Array(total);
+    _tplFillStack=new Int32Array(total);
   } else {
-    _tplData.set(flat,_tplColor);
-    _tplBitmapCtx.fillStyle=_tplColor;
-    _tplBitmapCtx.fillRect(ix,iy,1,1);
+    _tplFillVisited.fill(0);
+  }
+}
+
+// 4-yönlü (yukarı/aşağı/sol/sağ) flood fill: startFlat'teki MEVCUT renkle
+// eşleşen, birbirine bağlı (komşu) TÜM hücreleri fillColor ile değiştirir.
+// fillColor=null verilirse o bölge tamamen silinir (transparan yapılır).
+// Sadece eşleşen-ve-komşu hücreler ziyaret edilir (canvas boyutunda değil,
+// doldurulan ALAN boyutunda iş yapılır) — bu yüzden büyük haritalarda da hızlıdır.
+function _tplFloodFillFrom(startFlat, fillColor){
+  if(startFlat<0 || startFlat>=IMG_W*IMG_H) return false;
+  const targetColor=_tplData.get(startFlat) ?? null;
+  if(targetColor===fillColor) return false; // zaten aynı renk/aynı boşluk — iş yok
+  _tplEnsureFillBuffers();
+  const visited=_tplFillVisited, stack=_tplFillStack;
+  const sameAsTarget=(f)=>(_tplData.get(f) ?? null)===targetColor;
+  let sp=0;
+  stack[sp++]=startFlat; visited[startFlat]=1;
+  let painted=false;
+  while(sp>0){
+    const f=stack[--sp];
+    const ix=f%IMG_W, iy=Math.floor(f/IMG_W);
+    if(fillColor===null){
+      _tplData.delete(f);
+      _tplBitmapCtx.clearRect(ix,iy,1,1);
+    } else {
+      _tplData.set(f,fillColor);
+      _tplBitmapCtx.clearRect(ix,iy,1,1);
+      _tplBitmapCtx.fillStyle=fillColor;
+      _tplBitmapCtx.fillRect(ix,iy,1,1);
+    }
+    painted=true;
+    // 4 komşu hücre — sadece hedef renkle eşleşen VE henüz ziyaret edilmemiş
+    // olanlar yığına eklenir (eşleşmeyenler hiç işlenmez → bölge dışına taşmaz).
+    if(ix>0){ const n=f-1; if(!visited[n] && sameAsTarget(n)){ visited[n]=1; stack[sp++]=n; } }
+    if(ix<IMG_W-1){ const n=f+1; if(!visited[n] && sameAsTarget(n)){ visited[n]=1; stack[sp++]=n; } }
+    if(iy>0){ const n=f-IMG_W; if(!visited[n] && sameAsTarget(n)){ visited[n]=1; stack[sp++]=n; } }
+    if(iy<IMG_H-1){ const n=f+IMG_W; if(!visited[n] && sameAsTarget(n)){ visited[n]=1; stack[sp++]=n; } }
+  }
+  return painted;
+}
+
+// Bucket tool'un tıklama girişi: TEK tıkla doldurur (sürüklemede tekrar
+// tekrar TAŞMAZ — bkz. aşağıdaki pointermove'daki "_tplTool!=='fill'" kontrolü).
+// Mirror açıksa, her yansı noktasındaki bölge BAĞIMSIZ olarak da doldurulur
+// (simetrik şablonlarda iki taraf da aynı işlemi görür).
+function _tplDoFill(flat){
+  if(flat<0) return;
+  const fillColor=_tplColorWithOpacity(_tplColor,_tplOpacity);
+  const starts=_tplMirrorFlats(flat);
+  // Önce gerçekten bir değişiklik olacak mı kontrol et — hiçbir şey
+  // değişmeyecekse boş bir undo kaydı oluşturmayalım.
+  let willChange=false;
+  for(const s of starts){
+    if(s<0||s>=IMG_W*IMG_H) continue;
+    if((_tplData.get(s) ?? null)!==fillColor){ willChange=true; break; }
+  }
+  if(!willChange) return;
+  _tplPushUndo();
+  for(const s of starts){
+    if(s<0||s>=IMG_W*IMG_H) continue;
+    _tplFloodFillFrom(s,fillColor);
   }
   _tplRenderOverlay();
 }
@@ -13380,7 +13777,11 @@ function _tplRenderOverlay(){
   window.handleClick=function(mx,my){
     if(_tplActive){
       const flat=_tplCanvasToFlat(mx,my);
-      _tplPaintAt(flat);
+      if(_tplTool==='fill'){
+        _tplDoFill(flat);
+      } else {
+        _tplPaintAt(flat);
+      }
       return;
     }
     if(typeof _origHandleClick==='function') return _origHandleClick(mx,my);
@@ -13398,6 +13799,7 @@ canvas.addEventListener('pointerdown',(e)=>{
   if(e.button!==undefined && e.button!==0) return; // sadece sol tık
   if(e.shiftKey) return; // shift = oyunun kendi fırça modu, şablona karışma
   _tplDrawingNow=true;
+  _tplStrokeActive=false; // yeni stroke başlıyor → snapshot bir sonraki _tplPaintAt'te alınacak
   const r=canvas.getBoundingClientRect();
   const flat=_tplCanvasToFlat(e.clientX-r.left,e.clientY-r.top);
   _tplLastFlat=flat;
@@ -13406,17 +13808,42 @@ canvas.addEventListener('pointerdown',(e)=>{
   // sadece SÜRÜKLEME başlangıcını işaretliyoruz.
 },{passive:true});
 canvas.addEventListener('pointermove',(e)=>{
-  if(!_tplActive || !_tplDrawingNow) return;
+  if(!_tplActive) return;
   if(e.pointerType==='touch') return;
-  if(e.buttons!==1) return;
   if(e.shiftKey) return;
+  const leftDrag = _tplDrawingNow && (e.buttons & 1) && _tplTool!=='fill';
+  const rightDrag = _tplRightClickErase && _tplRightClickDown && (e.buttons & 2);
+  if(!leftDrag && !rightDrag) return;
   const r=canvas.getBoundingClientRect();
   const flat=_tplCanvasToFlat(e.clientX-r.left,e.clientY-r.top);
   if(flat===_tplLastFlat) return;
+  // Pixel-perfect: son nokta ile şimdiki nokta arasını da doldur (boşluk bırakma)
+  _tplPaintLine(_tplLastFlat, flat, rightDrag);
   _tplLastFlat=flat;
-  _tplPaintAt(flat);
 },{passive:true});
-window.addEventListener('pointerup',()=>{ _tplDrawingNow=false; _tplLastFlat=-1; });
+window.addEventListener('pointerup',()=>{ _tplDrawingNow=false; _tplRightClickDown=false; _tplLastFlat=-1; });
+
+// ── SAĞ TIK = SİLGİ ──────────────────────────────────────────────────────
+// Haritanın kendi mousedown dinleyicisi sağ/orta tıkta panning=true yapıyor
+// (dosyanın üst kısmındaki "panning=true;...;return;" bloğu). Bu listener
+// SONRADAN eklendiği için (DOM/script sırasına göre aynı event'te ondan
+// SONRA çalışır) ve panning'i hemen false'a geri çekerek haritanın
+// kaymasını engeller — böylece şablon aktifken sağ tık sürüklemesi pan
+// yerine silgi olarak çalışır. Sadece şablon AKTİF ve sağ-tık-silgi AÇIK
+// iken devreye girer; kapalıyken davranış aynen eskisi gibi (sağ tık = pan).
+canvas.addEventListener('mousedown',(e)=>{
+  if(!_tplActive || !_tplRightClickErase) return;
+  if(e.button!==2) return;
+  if(_recentTouch()) return;
+  panning=false; // haritanın az önce başlattığı pan'ı iptal et
+  _tplRightClickDown=true;
+  _tplStrokeActive=false; // yeni silgi stroke'u başlıyor
+  const r=canvas.getBoundingClientRect();
+  const flat=_tplCanvasToFlat(e.clientX-r.left,e.clientY-r.top);
+  _tplLastFlat=flat;
+  _tplPaintAt(flat,true); // tek tıkla da silsin (sürüklemeden bağımsız)
+  canvas.style.cursor='cell';
+});
 
 // ── draw() hook'u: harita her çizildiğinde (zoom/pan/resize/her şey)
 // şablon overlay'i de otomatik senkron yeniden çizilir. ──
@@ -13432,7 +13859,13 @@ window.addEventListener('pointerup',()=>{ _tplDrawingNow=false; _tplLastFlat=-1;
 window.addEventListener('resize',()=>{ if(_tplActive) _tplRenderOverlay(); });
 
 function closeTemplateEditor(){
-  _tplActive=false; _tplDrawingNow=false;
+  _tplActive=false; _tplDrawingNow=false; _tplRightClickDown=false; _tplLastFlat=-1;
+  // Mirror state'leri sıfırla
+  _tplMirrorX=false; _tplMirrorY=false;
+  const mx=document.getElementById('tpl-mirrorx-btn');
+  const my=document.getElementById('tpl-mirrory-btn');
+  if(mx) mx.classList.remove('active');
+  if(my) my.classList.remove('active');
   const tc=document.getElementById('template-canvas');
   tc.classList.remove('active');
   tc.getContext('2d').clearRect(0,0,tc.width,tc.height);
