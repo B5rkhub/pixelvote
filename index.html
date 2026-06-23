@@ -4471,6 +4471,7 @@ button, [onclick], .pc-frame, .psw, .zb {
     <canvas id="c"></canvas>
     <canvas id="ripple-canvas"></canvas>
     <canvas id="rollback-select-canvas"></canvas>
+    <canvas id="template-canvas"></canvas>
     <div id="label-overlay" style="display:none"></div>
     <div id="pixel-event-banner">
       <div class="ev-dot"></div>
@@ -12961,9 +12962,8 @@ document.addEventListener('keydown', e => {
 #tpl-done-btn:hover { opacity:.88; }
 #tpl-done-btn:disabled { opacity:.45; cursor:not-allowed; }
 #template-canvas {
-  position:fixed; z-index:799; cursor:crosshair;
+  position:absolute; inset:0; z-index:18; cursor:crosshair;
   touch-action:none; display:none; pointer-events:none;
-  top:0; left:0;
 }
 #template-canvas.active { display:block; pointer-events:none; }
 
@@ -13064,8 +13064,6 @@ document.addEventListener('keydown', e => {
     Bitti & İndir
   </button>
 </div>
-
-<canvas id="template-canvas"></canvas>
 
 <!-- ═══════════════════════════════════════════════════════
      ŞABLON SONUÇ POPUP
