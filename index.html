@@ -12942,13 +12942,6 @@ document.addEventListener('keydown', e => {
 }
 #template-toolbar.active { display: flex; }
 .tpl-sep { width:1px; height:24px; background:rgba(255,255,255,.1); margin:0 .1rem; flex-shrink:0; }
-#tpl-color-btn {
-  width:28px; height:28px; border-radius:8px;
-  border:2px solid rgba(255,255,255,.35);
-  cursor:pointer; padding:0; flex-shrink:0; transition:border-color .15s;
-}
-#tpl-color-btn:hover { border-color:rgba(255,255,255,.7); }
-#tpl-color-input { display:none; }
 .tpl-tool-btn {
   display:flex; align-items:center; justify-content:center; gap:.3rem;
   background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
@@ -12958,14 +12951,6 @@ document.addEventListener('keydown', e => {
 }
 .tpl-tool-btn:hover { background:rgba(255,255,255,.14); color:#fff; border-color:rgba(255,255,255,.25); }
 .tpl-tool-btn.active { background:rgba(124,58,237,.3); border-color:#7c3aed; color:#c4aaff; }
-#tpl-size-slider {
-  -webkit-appearance:none; width:70px; height:4px;
-  background:rgba(255,255,255,.2); border-radius:2px; outline:none; cursor:pointer;
-}
-#tpl-size-slider::-webkit-slider-thumb {
-  -webkit-appearance:none; width:14px; height:14px;
-  border-radius:50%; background:#7c3aed; cursor:pointer;
-}
 #tpl-done-btn {
   background:linear-gradient(135deg,#7c3aed,#c026d3);
   border:none; border-radius:8px; color:#fff;
@@ -12978,8 +12963,32 @@ document.addEventListener('keydown', e => {
 #template-canvas {
   position:fixed; z-index:799; cursor:crosshair;
   touch-action:none; display:none; pointer-events:none;
+  top:0; left:0;
 }
-#template-canvas.active { display:block; pointer-events:all; }
+#template-canvas.active { display:block; pointer-events:none; }
+
+/* ── ŞABLON RENK PALETİ — oyundaki #ptoolbar ile birebir aynı ── */
+#tpl-palette-wrap { position:relative; flex-shrink:0; }
+.tpl-psw {
+  width:18px; height:18px; border-radius:5px; cursor:pointer;
+  border:2px solid transparent; box-shadow:0 0 0 1px rgba(255,255,255,.18) inset;
+  flex-shrink:0; transition:transform .12s, border-color .12s;
+}
+.tpl-psw:hover { transform:scale(1.18); }
+.tpl-psw.sel { border-color:#fff; transform:scale(1.2); box-shadow:0 0 0 1px rgba(0,0,0,.35) inset, 0 0 6px rgba(255,255,255,.5); }
+#tpl-palette-toggle {
+  width:26px; height:26px; border-radius:8px; cursor:pointer; flex-shrink:0;
+  border:2px solid rgba(255,255,255,.35);
+}
+#tpl-palette-popout {
+  position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  background:rgba(15,12,28,.96); backdrop-filter:blur(14px);
+  border:1px solid rgba(124,58,237,.45); border-radius:12px;
+  padding:.5rem; display:none; grid-template-columns:repeat(8,18px); gap:.3rem;
+  box-shadow:0 8px 32px rgba(0,0,0,.6);
+  z-index:850;
+}
+#tpl-palette-popout.open { display:grid; }
 #tpl-result-popup {
   display:none; position:fixed; inset:0; z-index:1000;
   background:rgba(0,0,0,.78); backdrop-filter:blur(8px);
@@ -13027,21 +13036,19 @@ document.addEventListener('keydown', e => {
      ŞABLON ARACI — TOOLBAR HTML
 ════════════════════════════════════════════════════════ -->
 <div id="template-toolbar">
-  <button id="tpl-color-btn" title="Renk seç" onclick="document.getElementById('tpl-color-input').click()"></button>
-  <input type="color" id="tpl-color-input" value="#e30a17">
+  <div id="tpl-palette-wrap">
+    <div id="tpl-palette-toggle" style="background:#e30a17" onclick="tplTogglePalette()" title="Renk seç"></div>
+    <div id="tpl-palette-popout"></div>
+  </div>
   <div class="tpl-sep"></div>
   <button class="tpl-tool-btn active" id="tpl-brush-btn" onclick="tplSetTool('brush')">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-    Fırça
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg>
+    Piksel
   </button>
   <button class="tpl-tool-btn" id="tpl-eraser-btn" onclick="tplSetTool('eraser')">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
     Silgi
   </button>
-  <div class="tpl-sep"></div>
-  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="12" r="4"/></svg>
-  <input type="range" id="tpl-size-slider" min="2" max="40" value="10" oninput="tplSetSize(this.value)">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="12" r="8"/></svg>
   <div class="tpl-sep"></div>
   <button class="tpl-tool-btn" onclick="tplClear()">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
@@ -13084,80 +13091,207 @@ document.addEventListener('keydown', e => {
      ŞABLON ARACI — JavaScript
 ════════════════════════════════════════════════════════ -->
 <script>
-let _tplActive=false, _tplDrawing=false, _tplTool='brush';
-let _tplColor='#e30a17', _tplSize=10, _tplLastBlob=null;
+/* ── ŞABLON ARACI — oyun haritasıyla TAM senkron piksel-grid sistemi ──
+   Mantık: Harita nasıl IMG_W×IMG_H boyutunda flat-indexli bir grid'e
+   pikselleri basıyorsa (bkz. PARTIES[].color + pixelCanvas), şablon da
+   AYNI flat-index sistemini kullanan kendi offscreen bitmap'ine (_tplBitmap)
+   piksel basar. Ekrana basılırken haritanın kendi draw() fonksiyonundaki
+   ox/oy/scale değerleriyle ÇİZİLİR — yani zoom/pan harita ile bire bir
+   senkron kalır, ayrı bir konum/boyut hesaplama hilesine gerek kalmaz.
+   Tıklama/sürükleme, haritanın zaten pan/zoom'u tıklamadan ayırt eden
+   window.handleClick() zincirine eklenerek yakalanır — böylece mevcut
+   pan/zoom/pinch mantığı hiç bozulmaz. */
+
+let _tplActive=false, _tplTool='brush', _tplLastBlob=null;
+let _tplDrawingNow=false, _tplLastFlat=-1;
+
+// Oyundaki gerçek piksel paleti (#ptoolbar sw0-sw29 ile birebir aynı)
+const TPL_PALETTE=[
+  {c:'#ffffff',n:'Beyaz'},{c:'#e4e4e4',n:'Açık Gri'},{c:'#c4c4c4',n:'Gri'},
+  {c:'#888888',n:'Koyu Gri'},{c:'#4e4e4e',n:'Çok Koyu Gri'},{c:'#000000',n:'Siyah'},
+  {c:'#f4b3ae',n:'Açık Pembe'},{c:'#ffa7d1',n:'Pembe'},{c:'#ff54b2',n:'Fuşya'},
+  {c:'#ff6565',n:'Açık Kırmızı'},{c:'#e50000',n:'Kırmızı'},{c:'#9a0000',n:'Koyu Kırmızı'},
+  {c:'#fea460',n:'Şeftali'},{c:'#e59500',n:'Turuncu'},{c:'#a06a42',n:'Kahverengi'},
+  {c:'#604028',n:'Koyu Kahverengi'},{c:'#f5dfb0',n:'Krem'},{c:'#fff889',n:'Açık Sarı'},
+  {c:'#e5d900',n:'Sarı'},{c:'#94e044',n:'Açık Yeşil'},{c:'#02be01',n:'Yeşil'},
+  {c:'#688338',n:'Çimen'},{c:'#006513',n:'Koyu Yeşil'},{c:'#cae3ff',n:'Açık Mavi'},
+  {c:'#00d3dd',n:'Cyan'},{c:'#0083c7',n:'Mavi'},{c:'#0000ea',n:'Parlak Mavi'},
+  {c:'#191973',n:'Lacivert'},{c:'#cf6ee4',n:'Lila'},{c:'#820080',n:'Mor'}
+];
+let _tplColor=TPL_PALETTE[10].c; // varsayılan: Kırmızı
+
+// Şablon verisi: flat-index -> hex renk. IMG_W/IMG_H ile haritayla aynı grid.
+let _tplData=new Map();
+// Offscreen bitmap: harita gibi 1px=1 grid hücresi, draw() içinde ölçeklenerek basılır.
+let _tplBitmap=null, _tplBitmapCtx=null;
+
+function _tplBuildPalette(){
+  const pop=document.getElementById('tpl-palette-popout');
+  pop.innerHTML=TPL_PALETTE.map((p,i)=>
+    `<div class="tpl-psw${p.c===_tplColor?' sel':''}" style="background:${p.c}" title="${p.n}" onclick="tplPickColor('${p.c}',this)"></div>`
+  ).join('');
+}
+function tplTogglePalette(){
+  const pop=document.getElementById('tpl-palette-popout');
+  pop.classList.toggle('open');
+}
+function tplPickColor(hex,el){
+  _tplColor=hex;
+  document.getElementById('tpl-palette-toggle').style.background=hex;
+  document.querySelectorAll('.tpl-psw').forEach(s=>s.classList.remove('sel'));
+  if(el) el.classList.add('sel');
+  document.getElementById('tpl-palette-popout').classList.remove('open');
+  // Renk seçince otomatik fırça moduna geç (silgide kalmasın)
+  tplSetTool('brush');
+}
+document.addEventListener('click',(e)=>{
+  const wrap=document.getElementById('tpl-palette-wrap');
+  if(wrap && !wrap.contains(e.target)){
+    document.getElementById('tpl-palette-popout')?.classList.remove('open');
+  }
+});
 
 function openTemplateEditor(){
   if(!username){ showPopup('Şablon aracı için giriş yapman gerekiyor.'); return; }
   if(_tplActive) return;
+  if(typeof IMG_W==='undefined' || !canvas){ showPopup('Harita henüz yüklenmedi.'); return; }
   _tplActive=true;
-  const mapCanvas=document.getElementById('c');
-  if(!mapCanvas){ showPopup('Harita henüz yüklenmedi.'); _tplActive=false; return; }
+  // Offscreen bitmap'i harita çözünürlüğünde kur (sadece ilk açılışta sıfırla, sonraki açılışlarda eski şablonu koru)
+  if(!_tplBitmap){
+    _tplBitmap=document.createElement('canvas');
+    _tplBitmap.width=IMG_W; _tplBitmap.height=IMG_H;
+    _tplBitmapCtx=_tplBitmap.getContext('2d');
+    _tplBitmapCtx.imageSmoothingEnabled=false;
+  }
   const tc=document.getElementById('template-canvas');
-  tc.width=mapCanvas.width; tc.height=mapCanvas.height;
-  _syncTplPos();
+  tc.width=canvas.width; tc.height=canvas.height;
   tc.classList.add('active');
   document.getElementById('template-toolbar').classList.add('active');
-  document.getElementById('tpl-color-btn').style.background=_tplColor;
-  _tplBindEvents();
-  showPopup('Şablon aracı açıldı — çiz, bitince "Bitti & İndir" e bas.');
+  _tplBuildPalette();
+  document.getElementById('tpl-palette-toggle').style.background=_tplColor;
+  tplSetTool('brush');
+  _tplRenderOverlay();
+  showPopup('Şablon aracı açıldı — haritayı normal şekilde zoomla/kaydır, durduğunda tıklayarak piksel bas.');
 }
-
-function _syncTplPos(){
-  const mc=document.getElementById('c'), tc=document.getElementById('template-canvas');
-  if(!mc||!tc) return;
-  const r=mc.getBoundingClientRect();
-  Object.assign(tc.style,{position:'fixed',left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'});
-}
-window.addEventListener('resize',()=>{ if(_tplActive) _syncTplPos(); });
 
 function tplSetTool(t){
   _tplTool=t;
   document.getElementById('tpl-brush-btn').classList.toggle('active',t==='brush');
   document.getElementById('tpl-eraser-btn').classList.toggle('active',t==='eraser');
-  document.getElementById('template-canvas').style.cursor=t==='eraser'?'cell':'crosshair';
 }
-function tplSetSize(v){ _tplSize=parseInt(v); }
 function tplClear(){
-  const tc=document.getElementById('template-canvas');
-  tc.getContext('2d').clearRect(0,0,tc.width,tc.height);
+  if(!_tplBitmapCtx) return;
+  _tplBitmapCtx.clearRect(0,0,_tplBitmap.width,_tplBitmap.height);
+  _tplData.clear();
+  _tplRenderOverlay();
 }
 
-function _tplBindEvents(){
-  const old=document.getElementById('template-canvas');
-  const fresh=old.cloneNode(true);
-  old.parentNode.replaceChild(fresh,old);
-  const tc=document.getElementById('template-canvas');
-
-  const pos=(e)=>{
-    const r=tc.getBoundingClientRect(), src=e.touches?.[0]??e;
-    return{x:(src.clientX-r.left)*(tc.width/r.width),y:(src.clientY-r.top)*(tc.height/r.height)};
-  };
-  const paint=(e)=>{
-    if(!_tplDrawing) return;
-    const{x,y}=pos(e), ctx=tc.getContext('2d');
-    ctx.globalCompositeOperation=_tplTool==='eraser'?'destination-out':'source-over';
-    ctx.fillStyle=_tplColor;
-    ctx.beginPath(); ctx.arc(x,y,_tplSize,0,Math.PI*2); ctx.fill();
-  };
-  tc.addEventListener('pointerdown',(e)=>{_tplDrawing=true;paint(e);e.preventDefault();},{passive:false});
-  tc.addEventListener('pointermove',(e)=>{paint(e);e.preventDefault();},{passive:false});
-  tc.addEventListener('pointerup',()=>_tplDrawing=false);
-  tc.addEventListener('pointerleave',()=>_tplDrawing=false);
-  tc.addEventListener('touchstart',(e)=>{_tplDrawing=true;paint(e);e.preventDefault();},{passive:false});
-  tc.addEventListener('touchmove',(e)=>{paint(e);e.preventDefault();},{passive:false});
-  tc.addEventListener('touchend',()=>_tplDrawing=false);
-
-  const ci=document.getElementById('tpl-color-input');
-  ci.oninput=(e)=>{ _tplColor=e.target.value; document.getElementById('tpl-color-btn').style.background=_tplColor; };
+// Haritanın kendi canvasToFlat'ı ile AYNI mantık: ekran koordinatından flat index.
+function _tplCanvasToFlat(mx,my){
+  if(typeof canvasToFlat==='function') return canvasToFlat(mx,my);
+  const ix=Math.floor((mx-ox)/scale), iy=Math.floor((my-oy)/scale);
+  if(ix<0||ix>=IMG_W||iy<0||iy>=IMG_H) return -1;
+  return ix+iy*IMG_W;
 }
+
+function _tplPaintAt(flat){
+  if(flat<0) return;
+  const ix=flat%IMG_W, iy=Math.floor(flat/IMG_W);
+  if(_tplTool==='eraser'){
+    _tplData.delete(flat);
+    _tplBitmapCtx.clearRect(ix,iy,1,1);
+  } else {
+    _tplData.set(flat,_tplColor);
+    _tplBitmapCtx.fillStyle=_tplColor;
+    _tplBitmapCtx.fillRect(ix,iy,1,1);
+  }
+  _tplRenderOverlay();
+}
+
+// Ekrandaki şablon overlay'ini haritanın o anki ox/oy/scale'iyle çiz —
+// draw() her zoom/pan/resize sonrası tekrar çağrıldığı için bu fonksiyon
+// da draw()'a hook'lanarak her zaman senkron kalır (bkz. dosya altı).
+function _tplRenderOverlay(){
+  if(!_tplActive) return;
+  const tc=document.getElementById('template-canvas');
+  if(!tc) return;
+  if(tc.width!==canvas.width||tc.height!==canvas.height){
+    tc.width=canvas.width; tc.height=canvas.height;
+  }
+  const tctx=tc.getContext('2d');
+  tctx.clearRect(0,0,tc.width,tc.height);
+  if(!_tplBitmap) return;
+  tctx.imageSmoothingEnabled=false;
+  const iw=IMG_W*scale, ih=IMG_H*scale;
+  tctx.drawImage(_tplBitmap,ox,oy,iw,ih);
+}
+
+// ── Tıklama/sürükleme yakalama — haritanın zaten pan/zoom'u tıklamadan
+// ayırt ettiği window.handleClick() zincirine eklenir. Pan/zoom/pinch
+// mantığına HİÇ dokunulmaz; sadece "bu bir tıklamaydı" anına müdahale edilir.
+(function(){
+  const _origHandleClick=window.handleClick;
+  window.handleClick=function(mx,my){
+    if(_tplActive){
+      const flat=_tplCanvasToFlat(mx,my);
+      _tplPaintAt(flat);
+      return;
+    }
+    if(typeof _origHandleClick==='function') return _origHandleClick(mx,my);
+  };
+})();
+
+// ── Sürükleyerek (basılı tutup gezdirerek) de piksel basabilmek için ──
+// Shift'siz sol tık + sürükleme şablon modunda "piksel kalemi" gibi çalışır.
+// Bu, haritanın kendi pan'ını ENGELLEMEMESİ için sadece şablon AKTİFKEN ve
+// sadece tek-dokunuş/sol-tık sürüklemesinde devreye girer; iki parmaklı
+// pinch-zoom ve orta/sağ tık pan'a asla dokunulmaz (onlar zaten ayrı event'ler).
+canvas.addEventListener('pointerdown',(e)=>{
+  if(!_tplActive) return;
+  if(e.pointerType==='touch') return; // dokunmatik sürükleme = haritanın kendi pan/tap mantığı; karışma
+  if(e.button!==undefined && e.button!==0) return; // sadece sol tık
+  if(e.shiftKey) return; // shift = oyunun kendi fırça modu, şablona karışma
+  _tplDrawingNow=true;
+  const r=canvas.getBoundingClientRect();
+  const flat=_tplCanvasToFlat(e.clientX-r.left,e.clientY-r.top);
+  _tplLastFlat=flat;
+  // NOT: burada paint ETMİYORUZ — gerçek "tıklama" handleClick zincirinden
+  // gelecek (mousedown→handleClick ya da touchend→handleClick). Burada
+  // sadece SÜRÜKLEME başlangıcını işaretliyoruz.
+},{passive:true});
+canvas.addEventListener('pointermove',(e)=>{
+  if(!_tplActive || !_tplDrawingNow) return;
+  if(e.pointerType==='touch') return;
+  if(e.buttons!==1) return;
+  if(e.shiftKey) return;
+  const r=canvas.getBoundingClientRect();
+  const flat=_tplCanvasToFlat(e.clientX-r.left,e.clientY-r.top);
+  if(flat===_tplLastFlat) return;
+  _tplLastFlat=flat;
+  _tplPaintAt(flat);
+},{passive:true});
+window.addEventListener('pointerup',()=>{ _tplDrawingNow=false; _tplLastFlat=-1; });
+
+// ── draw() hook'u: harita her çizildiğinde (zoom/pan/resize/her şey)
+// şablon overlay'i de otomatik senkron yeniden çizilir. ──
+(function(){
+  const _origDraw=window.draw;
+  if(typeof _origDraw==='function'){
+    window.draw=function(){
+      _origDraw.apply(this,arguments);
+      _tplRenderOverlay();
+    };
+  }
+})();
+window.addEventListener('resize',()=>{ if(_tplActive) _tplRenderOverlay(); });
 
 function closeTemplateEditor(){
-  _tplActive=false; _tplDrawing=false;
+  _tplActive=false; _tplDrawingNow=false;
   const tc=document.getElementById('template-canvas');
   tc.classList.remove('active');
   tc.getContext('2d').clearRect(0,0,tc.width,tc.height);
   document.getElementById('template-toolbar').classList.remove('active');
+  document.getElementById('tpl-palette-popout')?.classList.remove('open');
 }
 
 async function tplHandleDone(){
@@ -13181,14 +13315,17 @@ async function tplHandleDone(){
   }
 }
 
+// Export: harita (taban + oy pikselleri) + şablon bitmap'i tam çözünürlükte (IMG_W×IMG_H) birleştirilir.
+// Ekran ölçeğine değil, oyunun gerçek piksel grid'ine göre export edilir — şablon her zoom seviyesinde tutarlı kalır.
 async function _tplExportPNG(){
-  const mc=document.getElementById('c'), tc=document.getElementById('template-canvas');
-  if(!mc) throw new Error('Harita canvas bulunamadı');
+  if(!baseCanvas) throw new Error('Harita canvas bulunamadı');
   const merged=document.createElement('canvas');
-  merged.width=mc.width; merged.height=mc.height;
-  const ctx=merged.getContext('2d');
-  ctx.drawImage(mc,0,0);
-  if(tc.width>0&&tc.height>0) ctx.drawImage(tc,0,0);
+  merged.width=IMG_W; merged.height=IMG_H;
+  const ctx2=merged.getContext('2d');
+  ctx2.imageSmoothingEnabled=false;
+  ctx2.drawImage(baseCanvas,0,0);
+  ctx2.drawImage(pixelCanvas,0,0);
+  if(_tplBitmap) ctx2.drawImage(_tplBitmap,0,0);
   return new Promise((resolve,reject)=>{
     merged.toBlob(b=>b?resolve(b):reject(new Error('toBlob başarısız')),'image/png');
   });
