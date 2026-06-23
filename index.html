@@ -6120,42 +6120,6 @@ function _brushEnqueue(mx,my){
   _runBrushQueue();
 }
 
-// ── Bresenham çizgi interpolasyonu ──────────────────────────────────────────
-// İki ekran koordinatı arasındaki tüm piksel hücrelerini hesaplayıp kuyruğa
-// ekler. Böylece fare hızlı hareket etse bile aralarındaki boşluklar dolar
-// ve çizgi kesintisiz (düz) görünür. Gerçek pixel sayısı artıyor, cooldown
-// hâlâ sunucu tarafında uygulanıyor — sistem bunu normal fırça gibi işler.
-let _brushLastMx = -1; // son kuyruğa-eklenen ekran X (piksel birimi değil, canvas px)
-let _brushLastMy = -1;
-
-function _brushEnqueueLine(mx, my) {
-  // İlk nokta ya da önceki konum bilinmiyorsa sadece tek nokta ekle
-  if (_brushLastMx < 0 || _brushLastMy < 0) {
-    _brushLastMx = mx; _brushLastMy = my;
-    _brushEnqueue(mx, my);
-    return;
-  }
-  // Piksel boyutunda adım: bir pikselin ekran üzerindeki genişliği = scale
-  const step = Math.max(1, scale * 0.5); // pikselin yarısı kadar hassas adım
-  const dx = mx - _brushLastMx, dy = my - _brushLastMy;
-  const dist = Math.sqrt(dx*dx + dy*dy);
-  if (dist < step) { return; } // aynı piksel içindeyiz, ekleme
-  const steps = Math.ceil(dist / step);
-  let prevFlat = _brushLastFlat;
-  for (let i = 1; i <= steps; i++) {
-    const t = i / steps;
-    const ix = _brushLastMx + dx * t;
-    const iy = _brushLastMy + dy * t;
-    const flat = canvasToFlat(ix, iy);
-    if (flat >= 0 && flat !== prevFlat) {
-      prevFlat = flat;
-      _brushEnqueue(ix, iy);
-    }
-  }
-  _brushLastMx = mx; _brushLastMy = my;
-  _brushLastFlat = prevFlat;
-}
-
 async function _runBrushQueue(){
   if(_brushQueueRunning) return; // zaten bir kuyruk-tüketici çalışıyor
   _brushQueueRunning = true;
@@ -6190,14 +6154,13 @@ canvas.addEventListener('mousedown',e=>{
   if(e.shiftKey||_penMode){
     _brushActive = true;
     canvas.style.cursor = 'cell';
-    _brushLastMx = e.clientX-r.left; _brushLastMy = e.clientY-r.top;
     _brushLastFlat = canvasToFlat(e.clientX-r.left,e.clientY-r.top);
     _brushEnqueue(e.clientX-r.left,e.clientY-r.top);
     return;
   }
   window.handleClick(e.clientX-r.left,e.clientY-r.top);
 });
-canvas.addEventListener('mouseleave',()=>{ _brushActive = false; _brushLastFlat = -1; _brushLastMx=-1; _brushLastMy=-1; });
+canvas.addEventListener('mouseleave',()=>{ _brushActive = false; _brushLastFlat = -1; });
 canvas.addEventListener('mousemove',e=>{
   if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
   if(panning){ox=e.clientX-panSt.x;oy=e.clientY-panSt.y;clampView();draw();return;}
@@ -6205,13 +6168,17 @@ canvas.addEventListener('mousemove',e=>{
   if(_brushActive && (e.shiftKey||_penMode) && e.buttons===1){
     const r=canvas.getBoundingClientRect();
     const mx=e.clientX-r.left, my=e.clientY-r.top;
-    // Bresenham: son konum ile yeni konum arasındaki tüm pikselleri doldur
-    _brushEnqueueLine(mx, my);
+    const flat=canvasToFlat(mx,my);
+    // Mouse hâlâ aynı pikselin üzerindeyse kuyruğa tekrar ekleme —
+    // ufak titreşim hareketleri aynı hücreyi onlarca kez kuyruğa
+    // ekleyip gereksiz yere büyütmesin diye.
+    if(flat===_brushLastFlat) return;
+    _brushLastFlat = flat;
+    _brushEnqueue(mx,my);
     return;
   } else if(_brushActive && (!(e.shiftKey||_penMode) || e.buttons!==1)){
     _brushActive = false;
     _brushLastFlat = -1;
-    _brushLastMx = -1; _brushLastMy = -1;
     canvas.style.cursor = _penMode ? 'cell' : 'crosshair';
   }
   // Shift tuşuna basılıyken (ya da kalem modu açıkken) cursor'u değiştir
@@ -6273,7 +6240,7 @@ canvas.addEventListener('mousemove',e=>{
     tip.style.opacity='0';
   }
 });
-canvas.addEventListener('mouseup',()=>{ if(_recentTouch()) return; panning=false;_brushActive=false;_brushLastFlat=-1;_brushLastMx=-1;_brushLastMy=-1;canvas.style.cursor='crosshair';});
+canvas.addEventListener('mouseup',()=>{ if(_recentTouch()) return; panning=false;_brushActive=false;_brushLastFlat=-1;canvas.style.cursor='crosshair';});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('wheel',e=>{
   e.preventDefault();
@@ -6326,7 +6293,6 @@ canvas.addEventListener('touchstart',e=>{
       const r=canvas.getBoundingClientRect();
       const mx=tt[0].clientX-r.left, my=tt[0].clientY-r.top;
       _brushLastFlat=canvasToFlat(mx,my);
-      _brushLastMx=mx; _brushLastMy=my;
       _brushEnqueue(mx,my);
     }
   } else if(tt.length>=2){
@@ -6390,9 +6356,12 @@ canvas.addEventListener('touchmove',e=>{
       // Kalem modu: tek parmak sürüklemesi haritayı KAYDIRMAZ, piksel basar.
       const r=canvas.getBoundingClientRect();
       const mx=tt[0].clientX-r.left, my=tt[0].clientY-r.top;
+      const flat=canvasToFlat(mx,my);
       lastT={x:tt[0].clientX,y:tt[0].clientY};
-      // Bresenham: son konum ile yeni konum arasındaki tüm pikselleri doldur
-      _brushEnqueueLine(mx,my);
+      if(flat!==_brushLastFlat){
+        _brushLastFlat=flat;
+        _brushEnqueue(mx,my);
+      }
       return;
     }
     ox+=dx;oy+=dy;
@@ -6414,7 +6383,6 @@ canvas.addEventListener('touchend',e=>{
     lastT=null;
     pinchStartDist=null;
     touchMoved=false;
-    _brushLastMx=-1; _brushLastMy=-1; _brushLastFlat=-1;
   } else if(tt.length===1){
     // İki (veya daha fazla) parmaktan biri kalktı — kalan parmakla sürüklemeye devam et, tap sayma
     lastT={x:tt[0].clientX,y:tt[0].clientY};
@@ -13459,6 +13427,1179 @@ function closeTplResultPopup(){
     if(tb&&ts) ts.style.display=tb.style.display==='none'?'none':'';
   };
 })();
+</script>
+<!--
+  ════════════════════════════════════════════════════════════════════
+  SAVAŞ OVERLAY SİSTEMİ — PixelFront
+  ────────────────────────────────────────────────────────────────────
+  KURULUM: Bu bloğu pixelvote_finalsssssss.html dosyasında
+           son </script> etiketinden hemen önce (ya da </body>'den
+           hemen önce) yapıştır.
+
+  SUPABASE TABLO YAPISI (backend):
+  ────────────────────────────────
+  -- wars tablosu
+  CREATE TABLE wars (
+    id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    name          text,                      -- Savaşın adı (opsiyonel)
+    faction_a_id  uuid REFERENCES factions(id),
+    faction_b_id  uuid REFERENCES factions(id),
+    region        text,                      -- Savaşın yaşandığı bölge/province ID
+    center_x      float,                     -- Harita piksel koordinatı (0–IMG_W)
+    center_y      float,                     -- Harita piksel koordinatı (0–IMG_H)
+    started_at    timestamptz DEFAULT now(),
+    ended_at      timestamptz,               -- NULL = devam ediyor
+    winner        text,                      -- 'a' | 'b' | 'draw' | NULL
+    created_by    uuid REFERENCES auth.users(id)
+  );
+
+  -- war_pixels tablosu: savaş başladığında o bölgedeki tüm piksel sayaçları
+  CREATE TABLE war_pixels (
+    war_id        uuid REFERENCES wars(id),
+    user_id       uuid REFERENCES auth.users(id),
+    username      text,
+    faction_id    uuid,
+    pixel_count   int DEFAULT 0,
+    PRIMARY KEY (war_id, user_id)
+  );
+
+  -- Realtime için RLS politikaları:
+  -- wars: herkes okuyabilir, sadece admin yazabilir
+  -- war_pixels: herkes okuyabilir, sistem/trigger yazabilir
+
+  -- Savaş başlayınca pixel sayaçları otomatik açılır (trigger ya da backend):
+  -- INSERT INTO war_pixels (war_id, user_id, username, faction_id, pixel_count)
+  --   SELECT war_id, user_id, username, faction_id, 0
+  --   FROM faction_members
+  --   WHERE faction_id IN (faction_a_id, faction_b_id);
+
+  -- Her piksel basıldığında war_pixels güncellenir:
+  -- UPDATE war_pixels SET pixel_count = pixel_count + 1
+  --   WHERE war_id = (SELECT id FROM wars WHERE ended_at IS NULL LIMIT 1)
+  --   AND user_id = auth.uid();
+  ════════════════════════════════════════════════════════════════════
+-->
+
+<!-- ── WAR OVERLAY HTML ─────────────────────────────────────────── -->
+
+<!-- Savaş badge'leri harita canvas'ı üzerinde render edilir — canvas sibling -->
+<div id="war-badges-layer" style="
+  position:absolute;inset:0;
+  pointer-events:none;
+  z-index:18;
+  overflow:hidden;
+"></div>
+
+<!-- Savaş detay popup'ı (badge'e tıklanınca açılır) -->
+<div id="war-popup" style="display:none">
+  <div id="war-popup-inner">
+    <!-- JS ile doldurulur -->
+  </div>
+</div>
+
+<!-- Savaş ilanı tam ekran banner (savaş başlayınca) -->
+<div id="war-declaration-banner" style="display:none">
+  <div id="war-decl-inner">
+    <div class="war-decl-sword">⚔️</div>
+    <div class="war-decl-label">SAVAŞ İLAN EDİLDİ</div>
+    <div class="war-decl-vs">
+      <span class="war-decl-side" id="wdb-faction-a">—</span>
+      <span class="war-decl-vstext">VS</span>
+      <span class="war-decl-side" id="wdb-faction-b">—</span>
+    </div>
+    <div class="war-decl-region" id="wdb-region">—</div>
+    <div class="war-decl-note">Piksel sayaçları açıldı — savaş başladı!</div>
+    <button class="war-decl-close" onclick="closeWarDeclaration()">Haritaya Dön ✕</button>
+  </div>
+</div>
+
+<!-- ── WAR OVERLAY CSS ────────────────────────────────────────────── -->
+<style>
+/* ── Harita üzeri savaş badge'leri ── */
+.war-badge {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  z-index: 18;
+  /* Transition: zoom < threshold → görünür, zoom ≥ threshold → gizli (JS ile) */
+  transition: opacity .25s ease, transform .2s ease;
+}
+
+.war-badge-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: rgba(8, 6, 22, 0.92);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  padding: 6px 10px 6px 8px;
+  border: 1px solid rgba(240, 74, 74, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(240,74,74,.18),
+    0 4px 18px rgba(0,0,0,.65),
+    0 0 20px rgba(240,74,74,.22);
+  white-space: nowrap;
+  transition: box-shadow .2s ease, border-color .2s ease;
+  min-width: 110px;
+}
+
+.war-badge-inner:hover {
+  border-color: rgba(240,74,74,.85);
+  box-shadow:
+    0 0 0 1px rgba(240,74,74,.35),
+    0 6px 24px rgba(0,0,0,.75),
+    0 0 30px rgba(240,74,74,.40);
+}
+
+.war-badge-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #f04a4a;
+}
+
+.war-badge-sword {
+  animation: badge-sword-pulse 1.5s ease-in-out infinite;
+  font-size: .75rem;
+}
+
+@keyframes badge-sword-pulse {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(-5deg); }
+  50%       { opacity: .7; transform: scale(1.15) rotate(5deg); }
+}
+
+.war-badge-title {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: .72rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.01em;
+}
+
+.war-badge-title .wbt-sep {
+  color: #f04a4a;
+  padding: 0 3px;
+  font-size: .65rem;
+}
+
+.war-badge-stats {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: .58rem;
+  color: rgba(255,255,255,.55);
+}
+
+.war-badge-bar-wrap {
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,.10);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 1px;
+}
+
+.war-badge-bar-a {
+  height: 100%;
+  border-radius: 2px 0 0 2px;
+  transition: width .6s ease;
+  display: inline-block;
+  float: left;
+}
+.war-badge-bar-b {
+  height: 100%;
+  border-radius: 0 2px 2px 0;
+  display: inline-block;
+  float: left;
+  opacity: .75;
+}
+
+/* Blinking live dot */
+.war-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f04a4a;
+  flex-shrink: 0;
+  animation: war-live-blink 1s ease-in-out infinite;
+}
+
+@keyframes war-live-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .25; }
+}
+
+/* ── Savaş detay popup ── */
+#war-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(4px);
+  animation: war-popup-fade .2s ease;
+}
+
+@keyframes war-popup-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+#war-popup-inner {
+  background: rgba(10, 10, 24, .97);
+  border: 1px solid rgba(240,74,74,.35);
+  border-radius: 18px;
+  padding: 1.4rem 1.5rem;
+  width: min(480px, 94vw);
+  max-height: 86vh;
+  overflow-y: auto;
+  box-shadow:
+    0 0 0 1px rgba(240,74,74,.12),
+    0 28px 60px rgba(0,0,0,.75),
+    0 0 40px rgba(240,74,74,.14);
+  position: relative;
+  animation: war-popup-slide .25s cubic-bezier(.34,1.4,.64,1);
+}
+
+@keyframes war-popup-slide {
+  from { transform: translateY(12px) scale(.97); opacity: 0; }
+  to   { transform: translateY(0) scale(1);      opacity: 1; }
+}
+
+#war-popup-inner::-webkit-scrollbar { width: 3px; }
+#war-popup-inner::-webkit-scrollbar-thumb { background: rgba(240,74,74,.3); border-radius: 2px; }
+
+.wp-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,.45);
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: color .15s;
+  padding: 2px;
+}
+.wp-close:hover { color: #fff; }
+
+.wp-header {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  margin-bottom: 1rem;
+  padding-right: 1.5rem;
+}
+
+.wp-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.wp-header-text { flex: 1; }
+
+.wp-war-name {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -.01em;
+  line-height: 1.2;
+}
+
+.wp-war-meta {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: .62rem;
+  color: rgba(255,255,255,.4);
+  margin-top: 3px;
+}
+
+.wp-war-meta span {
+  color: #f04a4a;
+}
+
+/* Bar karşılaştırma */
+.wp-progress-section {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 12px;
+  padding: .9rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.wp-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: .5rem;
+}
+
+.wp-faction-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wp-faction-label.right { align-items: flex-end; }
+
+.wp-faction-color-name {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.wp-faction-pix {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: .62rem;
+  color: rgba(255,255,255,.45);
+}
+
+.wp-vs-center {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  color: rgba(255,255,255,.3);
+  text-align: center;
+}
+
+.wp-progress-bar-wrap {
+  height: 8px;
+  background: rgba(255,255,255,.06);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+}
+
+.wp-bar-a {
+  height: 100%;
+  transition: width .7s ease;
+  border-radius: 4px 0 0 4px;
+}
+
+.wp-bar-b {
+  height: 100%;
+  transition: width .7s ease;
+  border-radius: 0 4px 4px 0;
+  opacity: .8;
+}
+
+/* Oyuncu listeleri */
+.wp-players-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .65rem;
+}
+
+.wp-player-col-title {
+  font-family: var(--font-ui, 'Inter', sans-serif);
+  font-size: .58rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.35);
+  margin-bottom: .45rem;
+  padding-bottom: .3rem;
+  border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.wp-player-row {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .3rem .4rem;
+  border-radius: 7px;
+  transition: background .15s;
+}
+
+.wp-player-row:hover { background: rgba(255,255,255,.05); }
+
+.wp-player-rank {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: .55rem;
+  font-weight: 600;
+  color: rgba(255,255,255,.25);
+  min-width: 14px;
+  text-align: center;
+}
+
+.wp-player-rank.gold   { color: #f5a623; }
+.wp-player-rank.silver { color: #c0c0c0; }
+.wp-player-rank.bronze { color: #cd7f32; }
+
+.wp-player-name {
+  font-family: var(--font-ui, 'Inter', sans-serif);
+  font-size: .72rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wp-player-name.is-me { color: #b8acff; }
+
+.wp-player-pix {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: .62rem;
+  font-weight: 500;
+  color: rgba(255,255,255,.4);
+  flex-shrink: 0;
+}
+
+.wp-top-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(245,166,35,.15);
+  border: 1px solid rgba(245,166,35,.35);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: .5rem;
+  font-weight: 700;
+  color: #f5a623;
+  letter-spacing: .04em;
+  flex-shrink: 0;
+}
+
+.wp-empty-list {
+  font-family: var(--font-ui, 'Inter', sans-serif);
+  font-size: .72rem;
+  color: rgba(255,255,255,.25);
+  text-align: center;
+  padding: .5rem 0;
+}
+
+/* ── Savaş ilan banner ── */
+#war-declaration-banner {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(8px);
+  animation: war-decl-fade .3s ease;
+}
+
+@keyframes war-decl-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+#war-decl-inner {
+  background: linear-gradient(145deg, #100616, #1a0a0a, #130d22);
+  border: 1px solid rgba(240,74,74,.45);
+  border-radius: 22px;
+  padding: 2rem 2rem 1.6rem;
+  width: min(420px, 90vw);
+  text-align: center;
+  box-shadow:
+    0 0 0 1px rgba(240,74,74,.15),
+    0 40px 80px rgba(0,0,0,.85),
+    0 0 60px rgba(240,74,74,.25);
+  animation: war-decl-slide .4s cubic-bezier(.34,1.4,.64,1);
+}
+
+@keyframes war-decl-slide {
+  from { transform: scale(.85) translateY(20px); opacity: 0; }
+  to   { transform: scale(1)   translateY(0);    opacity: 1; }
+}
+
+.war-decl-sword {
+  font-size: 2.5rem;
+  animation: war-decl-shake .6s ease-in-out;
+  display: block;
+  margin-bottom: .5rem;
+}
+
+@keyframes war-decl-shake {
+  0%, 100% { transform: rotate(-15deg); }
+  25%       { transform: rotate(15deg); }
+  50%       { transform: rotate(-10deg); }
+  75%       { transform: rotate(10deg); }
+}
+
+.war-decl-label {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: .65rem;
+  font-weight: 800;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #f04a4a;
+  margin-bottom: .85rem;
+}
+
+.war-decl-vs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  margin-bottom: .65rem;
+}
+
+.war-decl-side {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: #fff;
+  flex: 1;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.war-decl-vstext {
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .1em;
+  color: #f04a4a;
+  flex-shrink: 0;
+}
+
+.war-decl-region {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: .68rem;
+  color: rgba(255,255,255,.45);
+  margin-bottom: .85rem;
+}
+
+.war-decl-note {
+  font-family: var(--font-ui, 'Inter', sans-serif);
+  font-size: .72rem;
+  color: rgba(255,255,255,.5);
+  line-height: 1.6;
+  margin-bottom: 1.1rem;
+}
+
+.war-decl-close {
+  background: linear-gradient(135deg, #b91c1c, #f04a4a);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-family: var(--font-display, 'Space Grotesk', sans-serif);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  padding: .6rem 1.4rem;
+  cursor: pointer;
+  transition: transform .15s cubic-bezier(.34,1.56,.64,1), box-shadow .15s ease;
+  box-shadow: 0 4px 16px rgba(240,74,74,.45);
+}
+
+.war-decl-close:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 8px 24px rgba(240,74,74,.60);
+}
+.war-decl-close:active {
+  transform: scale(.96);
+  transition-duration: .08s;
+}
+
+/* ── Profil/Ayarlar'a "Savaş Overlay" toggle'ı ──
+   Bu stil mevcut pca-row sistemiyle uyumlu, ek CSS gerekmez.
+   Toggle zaten var (pca-toggle class). */
+
+/* ── Mobil responsive ── */
+@media (max-width: 768px) {
+  .wp-players-grid { grid-template-columns: 1fr; gap: .5rem; }
+  #war-popup-inner { padding: 1.1rem 1rem; border-radius: 20px 20px 0 0; }
+  #war-popup { align-items: flex-end; }
+  .war-decl-side { font-size: .92rem; }
+  #war-decl-inner { padding: 1.6rem 1.3rem 1.3rem; }
+}
+
+@media (max-width: 375px) {
+  .war-badge-inner { min-width: 90px; padding: 5px 8px; }
+  .war-badge-title { font-size: .62rem; }
+}
+</style>
+
+<!-- ── WAR OVERLAY JAVASCRIPT ──────────────────────────────────── -->
+<script>
+/* ════════════════════════════════════════════════════════════════
+   SAVAŞ OVERLAY SİSTEMİ
+   ─ Harita zoom'una göre değişen iki modlu badge sistemi
+   ─ Tıklanınca açılan detay popup
+   ─ Savaş ilanı banner
+   ─ Supabase realtime sync
+   ─ Kullanıcı tercihi (ayarlarda toggle)
+   ════════════════════════════════════════════════════════════════ */
+
+// ── Kullanıcı tercihi: overlay açık mı? (localStorage'dan okunur)
+let _warOverlayEnabled = true;
+try {
+  const saved = localStorage.getItem('pv_war_overlay');
+  if (saved !== null) _warOverlayEnabled = (saved === '1');
+} catch(e) {}
+
+// ── Aktif savaş verileri (Supabase'den çekilir)
+let _wars = [];           // [{ id, name, factionA, factionB, region, centerX, centerY, startedAt, playersA, playersB }]
+let _warPopupOpenId = null;
+
+// ── Zoom eşiği: bu scale değerinin üzerinde badge kaybolur
+const WAR_BADGE_HIDE_SCALE = 3.5;
+
+// ── Badge DOM referansları
+let _warBadgeEls = {}; // warId → DOM element
+
+/* ── Veri yapısı normalize ─────────────────────────────────── */
+function _normalizeWarRow(row, factions, players) {
+  const fa = factions.find(f => f.id === row.faction_a_id) || { name: 'Faction A', color: '#f04a4a', tag: 'A' };
+  const fb = factions.find(f => f.id === row.faction_b_id) || { name: 'Faction B', color: '#7B61FF', tag: 'B' };
+
+  // Oyuncuları factionlarına göre ayır, piksel sayısına göre sırala
+  const sortedA = players
+    .filter(p => p.war_id === row.id && p.faction_id === row.faction_a_id)
+    .sort((a, b) => (b.pixel_count || 0) - (a.pixel_count || 0));
+  const sortedB = players
+    .filter(p => p.war_id === row.id && p.faction_id === row.faction_b_id)
+    .sort((a, b) => (b.pixel_count || 0) - (a.pixel_count || 0));
+
+  const totalA = sortedA.reduce((s, p) => s + (p.pixel_count || 0), 0);
+  const totalB = sortedB.reduce((s, p) => s + (p.pixel_count || 0), 0);
+
+  return {
+    id:        row.id,
+    name:      row.name || `${fa.name} vs ${fb.name}`,
+    region:    row.region || '—',
+    centerX:   row.center_x || 0,
+    centerY:   row.center_y || 0,
+    startedAt: row.started_at,
+    factionA:  { ...fa, total: totalA, players: sortedA },
+    factionB:  { ...fb, total: totalB, players: sortedB },
+  };
+}
+
+/* ── Supabase'den savaşları yükle ─────────────────────────── */
+async function loadWars() {
+  if (typeof supabase === 'undefined') return;
+  try {
+    // Aktif savaşları çek (ended_at IS NULL)
+    const { data: warRows, error: we } = await supabase
+      .from('wars')
+      .select('*')
+      .is('ended_at', null);
+    if (we) { console.warn('wars fetch:', we); return; }
+    if (!warRows || warRows.length === 0) { _wars = []; renderWarBadges(); return; }
+
+    // Faction bilgilerini çek
+    const factionIds = [...new Set(warRows.flatMap(r => [r.faction_a_id, r.faction_b_id]).filter(Boolean))];
+    let factions = [];
+    if (factionIds.length > 0) {
+      const { data: fd } = await supabase
+        .from('factions')
+        .select('id, name, color, tag')
+        .in('id', factionIds);
+      factions = fd || [];
+    }
+
+    // Oyuncu sayaçlarını çek
+    const warIds = warRows.map(r => r.id);
+    let players = [];
+    const { data: pd } = await supabase
+      .from('war_pixels')
+      .select('war_id, user_id, username, faction_id, pixel_count')
+      .in('war_id', warIds);
+    players = pd || [];
+
+    _wars = warRows.map(row => _normalizeWarRow(row, factions, players));
+    renderWarBadges();
+    if (_warPopupOpenId) _refreshWarPopup(_warPopupOpenId);
+  } catch(e) {
+    console.error('loadWars:', e);
+  }
+}
+
+/* ── Realtime subscription ─────────────────────────────────── */
+function startWarRealtimeSync() {
+  if (typeof supabase === 'undefined') return;
+  // Savaş değişikliklerini dinle
+  supabase.channel('war-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'wars' }, () => {
+      loadWars();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'war_pixels' }, (payload) => {
+      // war_pixels güncellemesi: sadece o savaşı güncelle
+      const warId = payload.new?.war_id || payload.old?.war_id;
+      if (warId) _refreshWarPixels(warId);
+    })
+    .subscribe();
+}
+
+async function _refreshWarPixels(warId) {
+  if (typeof supabase === 'undefined') return;
+  const war = _wars.find(w => w.id === warId);
+  if (!war) return;
+
+  const { data: pd } = await supabase
+    .from('war_pixels')
+    .select('user_id, username, faction_id, pixel_count')
+    .eq('war_id', warId);
+  if (!pd) return;
+
+  const { data: fd } = await supabase
+    .from('factions')
+    .select('id, name, color, tag')
+    .in('id', [war.factionA.id, war.factionB.id].filter(Boolean));
+  const factions = fd || [];
+
+  // İki tarafın oyuncularını yeniden hesapla
+  const sortAndTotal = (fid) => {
+    const arr = pd
+      .filter(p => p.faction_id === fid)
+      .sort((a, b) => (b.pixel_count || 0) - (a.pixel_count || 0));
+    return { players: arr, total: arr.reduce((s, p) => s + (p.pixel_count || 0), 0) };
+  };
+
+  war.factionA = { ...war.factionA, ...sortAndTotal(war.factionA.id) };
+  war.factionB = { ...war.factionB, ...sortAndTotal(war.factionB.id) };
+
+  _updateBadge(war);
+  if (_warPopupOpenId === warId) _refreshWarPopup(warId);
+}
+
+/* ── Badge render ──────────────────────────────────────────── */
+function renderWarBadges() {
+  const layer = document.getElementById('war-badges-layer');
+  if (!layer) return;
+
+  // Mevcut badge'lerin artık aktif olmayan savaşlara ait olanlarını sil
+  const activeIds = new Set(_wars.map(w => w.id));
+  Object.keys(_warBadgeEls).forEach(wid => {
+    if (!activeIds.has(wid)) {
+      _warBadgeEls[wid]?.remove();
+      delete _warBadgeEls[wid];
+    }
+  });
+
+  _wars.forEach(war => {
+    if (!_warBadgeEls[war.id]) {
+      // Yeni badge oluştur
+      const el = document.createElement('div');
+      el.className = 'war-badge';
+      el.id = 'war-badge-' + war.id;
+      el.addEventListener('click', () => openWarPopup(war.id));
+      layer.appendChild(el);
+      _warBadgeEls[war.id] = el;
+    }
+    _updateBadge(war);
+  });
+
+  positionWarBadges();
+}
+
+function _updateBadge(war) {
+  const el = _warBadgeEls[war.id];
+  if (!el) return;
+
+  const totalA = war.factionA.total || 0;
+  const totalB = war.factionB.total || 0;
+  const total  = totalA + totalB || 1;
+  const pctA   = Math.round(totalA / total * 100);
+  const pctB   = 100 - pctA;
+  const cntA   = war.factionA.players.length;
+  const cntB   = war.factionB.players.length;
+
+  el.innerHTML = `
+    <div class="war-badge-inner">
+      <div class="war-badge-header">
+        <div class="war-live-dot"></div>
+        <span class="war-badge-sword">⚔️</span>
+        <span style="color:rgba(255,255,255,.5);font-size:.55rem;letter-spacing:.06em">SAVAŞ</span>
+      </div>
+      <div class="war-badge-title">
+        <span style="color:${war.factionA.color || '#f04a4a'}">${_truncate(war.factionA.name, 10)}</span>
+        <span class="wbt-sep">⚔</span>
+        <span style="color:${war.factionB.color || '#7B61FF'}">${_truncate(war.factionB.name, 10)}</span>
+      </div>
+      <div class="war-badge-stats">
+        <span style="color:${war.factionA.color || '#f04a4a'}">${totalA}px</span>
+        <span style="opacity:.4">·</span>
+        <span style="color:rgba(255,255,255,.4)">${cntA} vs ${cntB}</span>
+        <span style="opacity:.4">·</span>
+        <span style="color:${war.factionB.color || '#7B61FF'}">${totalB}px</span>
+      </div>
+      <div class="war-badge-bar-wrap">
+        <div class="war-badge-bar-a" style="width:${pctA}%;background:${war.factionA.color || '#f04a4a'}"></div>
+        <div class="war-badge-bar-b" style="width:${pctB}%;background:${war.factionB.color || '#7B61FF'}"></div>
+      </div>
+    </div>
+  `;
+}
+
+/* ── Badge konumlandırma (zoom/pan ile senkron) ─────────────── */
+function positionWarBadges() {
+  if (!_warOverlayEnabled) {
+    Object.values(_warBadgeEls).forEach(el => { if(el) el.style.opacity = '0'; el.style.pointerEvents = 'none'; });
+    return;
+  }
+
+  // scale, ox, oy — haritanın kendi global değişkenleri
+  const s  = (typeof scale !== 'undefined') ? scale : 1;
+  const sx = (typeof ox    !== 'undefined') ? ox    : 0;
+  const sy = (typeof oy    !== 'undefined') ? oy    : 0;
+
+  // Zoom eşiği: yakında badge gizlenir
+  const tooClose = s >= WAR_BADGE_HIDE_SCALE;
+
+  _wars.forEach(war => {
+    const el = _warBadgeEls[war.id];
+    if (!el) return;
+
+    // Harita koordinatından ekran koordinatına çevir
+    const screenX = war.centerX * s + sx;
+    const screenY = war.centerY * s + sy;
+
+    el.style.left = screenX + 'px';
+    el.style.top  = screenY + 'px';
+
+    if (tooClose) {
+      el.style.opacity = '0';
+      el.style.pointerEvents = 'none';
+    } else {
+      // 1.5–3.5 arası: smooth fade
+      const fadePct = Math.max(0, Math.min(1, (WAR_BADGE_HIDE_SCALE - s) / 1.5));
+      el.style.opacity = fadePct.toFixed(3);
+      el.style.pointerEvents = fadePct > 0.2 ? 'auto' : 'none';
+    }
+  });
+}
+
+/* ── draw() hook: her zoom/pan/resize sonrası badge pozisyonları güncellenir */
+(function() {
+  const _origDraw = window.draw;
+  if (typeof _origDraw === 'function') {
+    window.draw = function() {
+      _origDraw.apply(this, arguments);
+      positionWarBadges();
+    };
+  } else {
+    // draw() henüz tanımlanmamışsa biraz bekle
+    setTimeout(() => {
+      const _d = window.draw;
+      if (typeof _d === 'function') {
+        window.draw = function() {
+          _d.apply(this, arguments);
+          positionWarBadges();
+        };
+      }
+    }, 2000);
+  }
+})();
+
+window.addEventListener('resize', positionWarBadges);
+
+/* ── Popup aç/kapat ──────────────────────────────────────────── */
+function openWarPopup(warId) {
+  const war = _wars.find(w => w.id === warId);
+  if (!war) return;
+  _warPopupOpenId = warId;
+
+  const pop = document.getElementById('war-popup');
+  const inner = document.getElementById('war-popup-inner');
+  inner.innerHTML = _buildWarPopupHTML(war);
+  pop.style.display = 'flex';
+
+  // Popup kapama (overlay tıklama)
+  pop.onclick = (e) => { if (e.target === pop) closeWarPopup(); };
+}
+
+function closeWarPopup() {
+  document.getElementById('war-popup').style.display = 'none';
+  _warPopupOpenId = null;
+}
+
+function _refreshWarPopup(warId) {
+  if (_warPopupOpenId !== warId) return;
+  const war = _wars.find(w => w.id === warId);
+  if (!war) { closeWarPopup(); return; }
+  document.getElementById('war-popup-inner').innerHTML = _buildWarPopupHTML(war);
+}
+
+function _buildWarPopupHTML(war) {
+  const totalA = war.factionA.total || 0;
+  const totalB = war.factionB.total || 0;
+  const total  = totalA + totalB || 1;
+  const pctA   = Math.round(totalA / total * 100);
+  const pctB   = 100 - pctA;
+
+  const startedStr = war.startedAt
+    ? new Date(war.startedAt).toLocaleString('tr-TR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+    : '—';
+
+  const me = (typeof username !== 'undefined') ? username : '';
+
+  const renderPlayers = (players, color) => {
+    if (!players || players.length === 0) {
+      return `<div class="wp-empty-list">Henüz katılımcı yok</div>`;
+    }
+    return players.slice(0, 15).map((p, i) => {
+      const rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+      const rankLabel = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1)+'';
+      const isMe = p.username === me;
+      const topBadge = i === 0
+        ? `<span class="wp-top-badge">⭐ TOP</span>`
+        : '';
+      return `
+        <div class="wp-player-row">
+          <span class="wp-player-rank ${rankClass}">${rankLabel}</span>
+          <span class="wp-player-name${isMe ? ' is-me' : ''}">${_esc(p.username || 'Bilinmiyor')}</span>
+          ${topBadge}
+          <span class="wp-player-pix" style="color:${color}">${p.pixel_count || 0}px</span>
+        </div>
+      `;
+    }).join('');
+  };
+
+  return `
+    <button class="wp-close" onclick="closeWarPopup()" title="Kapat">✕</button>
+
+    <div class="wp-header">
+      <div class="wp-icon">⚔️</div>
+      <div class="wp-header-text">
+        <div class="wp-war-name">${_esc(war.name)}</div>
+        <div class="wp-war-meta">
+          📍 ${_esc(war.region)} &nbsp;·&nbsp;
+          <span>🕐 ${startedStr}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="wp-progress-section">
+      <div class="wp-progress-labels">
+        <div class="wp-faction-label">
+          <span class="wp-faction-color-name" style="color:${war.factionA.color || '#f04a4a'}">${_esc(war.factionA.name)}</span>
+          <span class="wp-faction-pix">${totalA} piksel · ${war.factionA.players.length} oyuncu</span>
+        </div>
+        <div class="wp-vs-center">VS</div>
+        <div class="wp-faction-label right">
+          <span class="wp-faction-color-name" style="color:${war.factionB.color || '#7B61FF'}">${_esc(war.factionB.name)}</span>
+          <span class="wp-faction-pix">${totalB} piksel · ${war.factionB.players.length} oyuncu</span>
+        </div>
+      </div>
+      <div class="wp-progress-bar-wrap">
+        <div class="wp-bar-a" style="width:${pctA}%;background:${war.factionA.color || '#f04a4a'}"></div>
+        <div class="wp-bar-b" style="width:${pctB}%;background:${war.factionB.color || '#7B61FF'}"></div>
+      </div>
+    </div>
+
+    <div class="wp-players-grid">
+      <div>
+        <div class="wp-player-col-title" style="color:${war.factionA.color || '#f04a4a'}">${_esc(war.factionA.name)} — ${pctA}%</div>
+        ${renderPlayers(war.factionA.players, war.factionA.color || '#f04a4a')}
+      </div>
+      <div>
+        <div class="wp-player-col-title" style="color:${war.factionB.color || '#7B61FF'}">${_esc(war.factionB.name)} — ${pctB}%</div>
+        ${renderPlayers(war.factionB.players, war.factionB.color || '#7B61FF')}
+      </div>
+    </div>
+  `;
+}
+
+/* ── Savaş ilanı banner (savaş başlayınca) ──────────────────── */
+function showWarDeclaration(war) {
+  if (!war) return;
+  document.getElementById('wdb-faction-a').textContent = war.factionA?.name || '—';
+  document.getElementById('wdb-faction-b').textContent = war.factionB?.name || '—';
+  document.getElementById('wdb-region').textContent    = '📍 ' + (war.region || '—');
+
+  document.getElementById('wdb-faction-a').style.color = war.factionA?.color || '#f04a4a';
+  document.getElementById('wdb-faction-b').style.color = war.factionB?.color || '#7B61FF';
+
+  document.getElementById('war-declaration-banner').style.display = 'flex';
+}
+
+function closeWarDeclaration() {
+  document.getElementById('war-declaration-banner').style.display = 'none';
+}
+
+/* ── Realtime'da yeni savaş gelince banner göster ─────────────
+   (startWarRealtimeSync içinde zaten wars değişikliği dinleniyor;
+    burada yeni INSERT'leri ayırt edip banner açıyoruz) */
+function _handleNewWarInsert(row) {
+  // Zaten bilinen bir savaş mı?
+  if (_wars.find(w => w.id === row.id)) return;
+  // Yeni savaş → veriyi yükle → banner göster
+  loadWars().then(() => {
+    const war = _wars.find(w => w.id === row.id);
+    if (war) showWarDeclaration(war);
+  });
+}
+
+/* Realtime override: INSERT event'lerini yakala */
+(function() {
+  const _origStart = window.startWarRealtimeSync || startWarRealtimeSync;
+  window.startWarRealtimeSync = function() {
+    if (typeof supabase === 'undefined') return;
+    supabase.channel('war-changes-v2')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'wars' }, (payload) => {
+        _handleNewWarInsert(payload.new);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'wars' }, () => {
+        loadWars();
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'wars' }, () => {
+        loadWars();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'war_pixels' }, (payload) => {
+        const warId = payload.new?.war_id || payload.old?.war_id;
+        if (warId) _refreshWarPixels(warId);
+      })
+      .subscribe();
+  };
+})();
+
+/* ── Kullanıcı tercihi: overlay toggle ──────────────────────── */
+function setWarOverlay(enabled) {
+  _warOverlayEnabled = enabled;
+  try { localStorage.setItem('pv_war_overlay', enabled ? '1' : '0'); } catch(e) {}
+  positionWarBadges();
+  if (!enabled) {
+    Object.values(_warBadgeEls).forEach(el => {
+      if (el) { el.style.opacity = '0'; el.style.pointerEvents = 'none'; }
+    });
+  }
+}
+
+/* ── Profil ayarları paneline toggle ekleme ─────────────────── */
+// Mevcut renderProfileSettings() fonksiyonu ya da switchProfileTab() hook'lanarak
+// "Savaş Overlay" toggleı ayarlar paneline inject edilir.
+(function() {
+  const _origSwitch = window.switchProfileTab;
+  if (typeof _origSwitch === 'function') {
+    window.switchProfileTab = function(tab) {
+      _origSwitch.apply(this, arguments);
+      if (tab === 'ayarlar') {
+        // Mevcut "Görünüm" section'ına war toggle'ı ekle (henüz yoksa)
+        setTimeout(() => _injectWarOverlayToggle(), 80);
+      }
+    };
+  }
+})();
+
+function _injectWarOverlayToggle() {
+  if (document.getElementById('war-overlay-toggle-row')) return; // Zaten var
+
+  // "Görünüm" başlığını bul ve altına ekle
+  const panels = document.querySelectorAll('.pca-section-title');
+  let targetSection = null;
+  panels.forEach(el => {
+    if (el.textContent.includes('Görünüm') || el.textContent.includes('Appearance')) {
+      targetSection = el.parentElement;
+    }
+  });
+
+  if (!targetSection) return; // Panel henüz yok
+
+  const row = document.createElement('div');
+  row.id = 'war-overlay-toggle-row';
+  row.className = 'pca-row';
+  row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-height:40px;';
+  row.innerHTML = `
+    <div>
+      <div class="pca-row-title">Savaş Overlay</div>
+      <div class="pca-row-desc">Haritada aktif savaş badge'lerini göster</div>
+    </div>
+    <label class="pca-toggle">
+      <input type="checkbox" id="war-overlay-cb" onchange="setWarOverlay(this.checked)" ${_warOverlayEnabled ? 'checked' : ''}>
+      <span class="pca-toggle-slider"></span>
+    </label>
+  `;
+  targetSection.appendChild(row);
+}
+
+/* ── Yardımcı fonksiyonlar ──────────────────────────────────── */
+function _truncate(str, n) {
+  if (!str) return '';
+  return str.length <= n ? str : str.slice(0, n-1) + '…';
+}
+
+function _esc(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ── Init: kullanıcı giriş yapınca başlat ─────────────────── */
+(function() {
+  const _origActivate = window._activateUser;
+  if (typeof _origActivate === 'function') {
+    window._activateUser = function(v) {
+      _origActivate.apply(this, arguments);
+      // Kısa bir gecikme ile: supabase bağlantısı oturumu açsın
+      setTimeout(() => {
+        loadWars();
+        startWarRealtimeSync();
+      }, 600);
+    };
+  } else {
+    // _activateUser henüz tanımlanmamışsa sayfa yüklendikten sonra dene
+    window.addEventListener('load', () => {
+      const _orig2 = window._activateUser;
+      if (typeof _orig2 === 'function') {
+        window._activateUser = function(v) {
+          _orig2.apply(this, arguments);
+          setTimeout(() => {
+            loadWars();
+            startWarRealtimeSync();
+          }, 600);
+        };
+      }
+    });
+  }
+})();
+
+/* ── Admin: savaş başlatma fonksiyonu (opsiyonel, admin panelinden çağrılır) ──
+   Kullanım: await declareWar('faction-uuid-a', 'faction-uuid-b', 'Ankara', 512, 400);
+   center_x, center_y: haritadaki IMG koordinatları (ox/oy/scale bağımsız) */
+window.declareWar = async function(factionAId, factionBId, region, centerX, centerY, warName) {
+  if (typeof supabase === 'undefined') { console.error('Supabase yok'); return null; }
+  const { data, error } = await supabase.from('wars').insert({
+    faction_a_id: factionAId,
+    faction_b_id: factionBId,
+    region: region || '',
+    center_x: centerX || 0,
+    center_y: centerY || 0,
+    name: warName || null,
+    started_at: new Date().toISOString(),
+  }).select().single();
+  if (error) { console.error('declareWar error:', error); return null; }
+  return data;
+};
+
+/* ── Admin: savaşı bitir ── */
+window.endWar = async function(warId, winner) {
+  if (typeof supabase === 'undefined') return;
+  await supabase.from('wars').update({
+    ended_at: new Date().toISOString(),
+    winner: winner || null,
+  }).eq('id', warId);
+};
+
+console.log('⚔️ War Overlay System loaded');
 </script>
 </body>
 </html>
