@@ -6120,6 +6120,42 @@ function _brushEnqueue(mx,my){
   _runBrushQueue();
 }
 
+// ── Bresenham çizgi interpolasyonu ──────────────────────────────────────────
+// İki ekran koordinatı arasındaki tüm piksel hücrelerini hesaplayıp kuyruğa
+// ekler. Böylece fare hızlı hareket etse bile aralarındaki boşluklar dolar
+// ve çizgi kesintisiz (düz) görünür. Gerçek pixel sayısı artıyor, cooldown
+// hâlâ sunucu tarafında uygulanıyor — sistem bunu normal fırça gibi işler.
+let _brushLastMx = -1; // son kuyruğa-eklenen ekran X (piksel birimi değil, canvas px)
+let _brushLastMy = -1;
+
+function _brushEnqueueLine(mx, my) {
+  // İlk nokta ya da önceki konum bilinmiyorsa sadece tek nokta ekle
+  if (_brushLastMx < 0 || _brushLastMy < 0) {
+    _brushLastMx = mx; _brushLastMy = my;
+    _brushEnqueue(mx, my);
+    return;
+  }
+  // Piksel boyutunda adım: bir pikselin ekran üzerindeki genişliği = scale
+  const step = Math.max(1, scale * 0.5); // pikselin yarısı kadar hassas adım
+  const dx = mx - _brushLastMx, dy = my - _brushLastMy;
+  const dist = Math.sqrt(dx*dx + dy*dy);
+  if (dist < step) { return; } // aynı piksel içindeyiz, ekleme
+  const steps = Math.ceil(dist / step);
+  let prevFlat = _brushLastFlat;
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const ix = _brushLastMx + dx * t;
+    const iy = _brushLastMy + dy * t;
+    const flat = canvasToFlat(ix, iy);
+    if (flat >= 0 && flat !== prevFlat) {
+      prevFlat = flat;
+      _brushEnqueue(ix, iy);
+    }
+  }
+  _brushLastMx = mx; _brushLastMy = my;
+  _brushLastFlat = prevFlat;
+}
+
 async function _runBrushQueue(){
   if(_brushQueueRunning) return; // zaten bir kuyruk-tüketici çalışıyor
   _brushQueueRunning = true;
@@ -6154,13 +6190,14 @@ canvas.addEventListener('mousedown',e=>{
   if(e.shiftKey||_penMode){
     _brushActive = true;
     canvas.style.cursor = 'cell';
+    _brushLastMx = e.clientX-r.left; _brushLastMy = e.clientY-r.top;
     _brushLastFlat = canvasToFlat(e.clientX-r.left,e.clientY-r.top);
     _brushEnqueue(e.clientX-r.left,e.clientY-r.top);
     return;
   }
   window.handleClick(e.clientX-r.left,e.clientY-r.top);
 });
-canvas.addEventListener('mouseleave',()=>{ _brushActive = false; _brushLastFlat = -1; });
+canvas.addEventListener('mouseleave',()=>{ _brushActive = false; _brushLastFlat = -1; _brushLastMx=-1; _brushLastMy=-1; });
 canvas.addEventListener('mousemove',e=>{
   if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
   if(panning){ox=e.clientX-panSt.x;oy=e.clientY-panSt.y;clampView();draw();return;}
@@ -6168,17 +6205,13 @@ canvas.addEventListener('mousemove',e=>{
   if(_brushActive && (e.shiftKey||_penMode) && e.buttons===1){
     const r=canvas.getBoundingClientRect();
     const mx=e.clientX-r.left, my=e.clientY-r.top;
-    const flat=canvasToFlat(mx,my);
-    // Mouse hâlâ aynı pikselin üzerindeyse kuyruğa tekrar ekleme —
-    // ufak titreşim hareketleri aynı hücreyi onlarca kez kuyruğa
-    // ekleyip gereksiz yere büyütmesin diye.
-    if(flat===_brushLastFlat) return;
-    _brushLastFlat = flat;
-    _brushEnqueue(mx,my);
+    // Bresenham: son konum ile yeni konum arasındaki tüm pikselleri doldur
+    _brushEnqueueLine(mx, my);
     return;
   } else if(_brushActive && (!(e.shiftKey||_penMode) || e.buttons!==1)){
     _brushActive = false;
     _brushLastFlat = -1;
+    _brushLastMx = -1; _brushLastMy = -1;
     canvas.style.cursor = _penMode ? 'cell' : 'crosshair';
   }
   // Shift tuşuna basılıyken (ya da kalem modu açıkken) cursor'u değiştir
@@ -6240,7 +6273,7 @@ canvas.addEventListener('mousemove',e=>{
     tip.style.opacity='0';
   }
 });
-canvas.addEventListener('mouseup',()=>{ if(_recentTouch()) return; panning=false;_brushActive=false;_brushLastFlat=-1;canvas.style.cursor='crosshair';});
+canvas.addEventListener('mouseup',()=>{ if(_recentTouch()) return; panning=false;_brushActive=false;_brushLastFlat=-1;_brushLastMx=-1;_brushLastMy=-1;canvas.style.cursor='crosshair';});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 canvas.addEventListener('wheel',e=>{
   e.preventDefault();
@@ -6293,6 +6326,7 @@ canvas.addEventListener('touchstart',e=>{
       const r=canvas.getBoundingClientRect();
       const mx=tt[0].clientX-r.left, my=tt[0].clientY-r.top;
       _brushLastFlat=canvasToFlat(mx,my);
+      _brushLastMx=mx; _brushLastMy=my;
       _brushEnqueue(mx,my);
     }
   } else if(tt.length>=2){
@@ -6356,12 +6390,9 @@ canvas.addEventListener('touchmove',e=>{
       // Kalem modu: tek parmak sürüklemesi haritayı KAYDIRMAZ, piksel basar.
       const r=canvas.getBoundingClientRect();
       const mx=tt[0].clientX-r.left, my=tt[0].clientY-r.top;
-      const flat=canvasToFlat(mx,my);
       lastT={x:tt[0].clientX,y:tt[0].clientY};
-      if(flat!==_brushLastFlat){
-        _brushLastFlat=flat;
-        _brushEnqueue(mx,my);
-      }
+      // Bresenham: son konum ile yeni konum arasındaki tüm pikselleri doldur
+      _brushEnqueueLine(mx,my);
       return;
     }
     ox+=dx;oy+=dy;
@@ -6383,6 +6414,7 @@ canvas.addEventListener('touchend',e=>{
     lastT=null;
     pinchStartDist=null;
     touchMoved=false;
+    _brushLastMx=-1; _brushLastMy=-1; _brushLastFlat=-1;
   } else if(tt.length===1){
     // İki (veya daha fazla) parmaktan biri kalktı — kalan parmakla sürüklemeye devam et, tap sayma
     lastT={x:tt[0].clientX,y:tt[0].clientY};
