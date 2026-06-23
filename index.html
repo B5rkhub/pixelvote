@@ -6988,8 +6988,7 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
         document.getElementById('history-btn').style.display='';
         document.getElementById('mailbox-btn').style.display='';
         document.getElementById('chat-btn').style.display='flex';
-        document.getElementById('sidebar-toggle').style.display='flex';
-        if(typeof initSidebarToggle==='function') initSidebarToggle();
+        // sidebar-toggle kaldırıldı
         if(typeof updateProfileBtn==='function') updateProfileBtn();
         if(typeof loadFactions==='function') loadFactions();
         if(typeof updateChatFactionTab==='function') updateChatFactionTab();
@@ -9166,23 +9165,8 @@ function isMobile(){ return window.innerWidth<=768 && _isTouchCapableDevice(); }
 function toggleSidebar(){
   // Sidebar kaldırıldı — no-op
 }
-function initSidebarToggle(){
-  const btn=document.getElementById('sidebar-toggle');
-  if(isMobile()){
-    btn.textContent='▲';
-    btn.style.right='';
-    btn.style.transform='';
-  } else {
-    btn.style.right=getSidebarW()+'px';
-    btn.textContent='❯';
-  }
-}
+function initSidebarToggle(){ /* sidebar kaldırıldı */ }
 
-// sidebar kaldırıldı
-
-
-// ── PALETTE TOGGLE ──
-let paletteOpen=false;
 function togglePalette(){
   paletteOpen=!paletteOpen;
   document.getElementById('ptoolbar').classList.toggle('expanded',paletteOpen);
@@ -9477,9 +9461,7 @@ const _origStartGame2=window.startGame;
 window.startGame=async function(){
   await _origStartGame2.apply(this,arguments);
   document.getElementById('chat-btn').style.display='flex';
-  const btn=document.getElementById('sidebar-toggle');
-  btn.style.display='flex';
-  initSidebarToggle();
+  // sidebar-toggle kaldırıldı
   loadProfile();
   // Register this session's profile under username key
   try{
