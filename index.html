@@ -3250,59 +3250,11 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
 .cm{max-width:88%;font-size:.72rem;line-height:1.55;font-family:'Space Mono',monospace;display:flex;gap:.5rem;align-items:flex-end;}
 .cm.user{flex-direction:row-reverse;align-self:flex-end;}
 .cm.other{flex-direction:row;align-self:flex-start;}
-.cm-av{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#fff;overflow:hidden;border:2px solid transparent;cursor:pointer;}
+.cm-av{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#fff;overflow:hidden;border:2px solid transparent;}
 .cm-av img{width:100%;height:100%;object-fit:cover;}
 .cm-bubble{display:flex;flex-direction:column;gap:.15rem;max-width:100%;}
-.cm-name{font-size:.58rem;color:var(--muted);font-weight:700;padding:0 .3rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem;}
-.cm-name:hover{color:var(--txt);text-decoration:underline;}
-.cm-name .cm-tag{font-family:'Space Mono',monospace;font-weight:800;letter-spacing:.02em;}
+.cm-name{font-size:.58rem;color:var(--muted);font-weight:700;padding:0 .3rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .cm.user .cm-name{text-align:right;}
-
-/* ── DİĞER KULLANICI MİNİ PROFİL KARTI ── */
-#mini-profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:480;display:none;align-items:center;justify-content:center;}
-#mini-profile-overlay.open{display:flex;}
-#mini-profile-card{
-  width:min(300px,86vw);background:var(--surf);border:1px solid var(--bdr);border-radius:16px;
-  padding:1.25rem 1.1rem 1.1rem;display:flex;flex-direction:column;align-items:center;gap:.5rem;
-  box-shadow:0 16px 48px rgba(0,0,0,.55);position:relative;
-}
-#mp-close{position:absolute;top:.6rem;right:.6rem;background:none;border:none;color:var(--muted);cursor:pointer;padding:.2rem;line-height:1;}
-#mp-close:hover{color:var(--txt);}
-#mp-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;color:#fff;overflow:hidden;border:3px solid transparent;margin-top:.2rem;}
-#mp-avatar img{width:100%;height:100%;object-fit:cover;}
-#mp-name{font-family:'Space Grotesk','Inter',sans-serif;font-weight:700;font-size:1.05rem;color:var(--txt);letter-spacing:-.01em;text-align:center;}
-#mp-tag{font-family:'JetBrains Mono','Space Mono',monospace;font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:6px;}
-#mp-level{font-family:'JetBrains Mono','Space Mono',monospace;font-size:.7rem;color:var(--muted);}
-#mp-dm-btn{
-  margin-top:.6rem;width:100%;background:var(--accent);border:none;border-radius:9px;
-  color:#fff;padding:.6rem .8rem;font-family:'Space Grotesk',sans-serif;font-weight:700;
-  font-size:.8rem;letter-spacing:.03em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;
-  transition:opacity .15s;
-}
-#mp-dm-btn:hover{opacity:.88;}
-#mp-dm-btn:disabled{opacity:.45;cursor:default;}
-
-/* ── DM (ÖZEL MESAJ) PANELİ ── */
-#dm-panel{
-  position:fixed;bottom:74px;left:16px;width:320px;height:420px;
-  background:var(--surf);border:1px solid var(--bdr);border-radius:14px;
-  display:none;flex-direction:column;z-index:490;overflow:hidden;
-  box-shadow:0 8px 32px rgba(0,0,0,.5);
-}
-#dm-panel.open{display:flex;}
-#dm-header{flex-shrink:0;padding:.65rem 1rem;background:var(--surf2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.55rem;}
-#dm-header span{font-size:.78rem;font-weight:700;color:var(--txt);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-#dm-back,#dm-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:0;line-height:1;}
-#dm-back:hover,#dm-close:hover{color:var(--txt);}
-#dm-messages{flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.5rem;}
-#dm-messages::-webkit-scrollbar{width:3px;}
-#dm-messages::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px;}
-#dm-footer{flex-shrink:0;padding:.6rem;border-top:1px solid var(--bdr);display:flex;gap:.5rem;background:var(--surf2);}
-#dm-input{flex:1;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:.45rem .7rem;color:var(--txt);font-family:'Space Mono',monospace;font-size:.72rem;outline:none;transition:border-color .2s;}
-#dm-input:focus{border-color:var(--accent);}
-#dm-send{background:var(--accent);border:none;border-radius:8px;color:#fff;padding:.4rem .75rem;cursor:pointer;font-size:.8rem;transition:opacity .2s;}
-#dm-send:hover{opacity:.85;}
-#dm-empty{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.75rem;}
 .cm-text{word-break:break-word;padding:.4rem .7rem;border-radius:10px;}
 .cm.user .cm-text{background:var(--accent);color:#fff;border-radius:10px 10px 2px 10px;}
 .cm.other .cm-text{background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);border-radius:10px 10px 10px 2px;}
@@ -4535,32 +4487,6 @@ button, [onclick], .pc-frame, .psw, .zb {
   <div id="chat-footer">
     <input id="chat-input" placeholder="Mesaj yaz..." maxlength="200" enterkeyhint="send" onkeydown="if(event.key==='Enter')sendChatMsg()"/>
     <button id="chat-send" onclick="sendChatMsg()">→</button>
-  </div>
-</div>
-
-<!-- DİĞER KULLANICININ MİNİ PROFİL KARTI -->
-<div id="mini-profile-overlay" onclick="if(event.target===this)closeMiniProfile()">
-  <div id="mini-profile-card">
-    <button id="mp-close" onclick="closeMiniProfile()"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></button>
-    <div id="mp-avatar"></div>
-    <div id="mp-name"></div>
-    <div id="mp-tag" style="display:none"></div>
-    <div id="mp-level"></div>
-    <button id="mp-dm-btn" onclick="openDMFromMiniProfile()"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> DM Gönder</button>
-  </div>
-</div>
-
-<!-- ÖZEL MESAJ (DM) PANELİ -->
-<div id="dm-panel">
-  <div id="dm-header">
-    <button id="dm-back" onclick="closeDMPanel()" title="Geri"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
-    <span id="dm-peer-name">DM</span>
-    <button id="dm-close" onclick="closeDMPanel()"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></button>
-  </div>
-  <div id="dm-messages"></div>
-  <div id="dm-footer">
-    <input id="dm-input" placeholder="Özel mesaj yaz..." maxlength="300" enterkeyhint="send" onkeydown="if(event.key==='Enter')sendDM()"/>
-    <button id="dm-send" onclick="sendDM()">→</button>
   </div>
 </div>
 
@@ -6760,7 +6686,7 @@ function startRealtimeSync(){
         const uname=typeof username!=='undefined'?username:'';
         // Kendi mesajımızı optimistic olarak zaten ekledik, tekrar ekleme
         if(row.username===uname && Date.now()-new Date(row.created_at).getTime()<5000) return;
-        const entry={user:row.username,text:row.message,t:new Date(row.created_at).getTime(),photo:'',frame:'none',factionTag:row.faction_tag||'',factionColor:row.faction_color||''};
+        const entry={user:row.username,text:row.message,t:new Date(row.created_at).getTime(),photo:'',frame:'none'};
         const isMe=entry.user===uname;
         const box=document.getElementById('chat-messages');
         const el=document.createElement('div');
@@ -7070,7 +6996,6 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
         if(typeof loadFactions==='function') loadFactions();
         if(typeof updateChatFactionTab==='function') updateChatFactionTab();
         if(typeof loadChat==='function') loadChat();
-        if(typeof subscribeDMChannel==='function') subscribeDMChannel();
         try{
           if(username){
             localStorage.setItem('pv_profile_'+username,JSON.stringify(profileData));
@@ -9261,10 +9186,14 @@ function toggleSidebar(){
     }
   } else {
     const hidden=sidebar.classList.toggle('hidden');
+    const main=document.getElementById('main');
+    if(hidden){ main.classList.add('sidebar-hidden'); } else { main.classList.remove('sidebar-hidden'); }
     btn.textContent=hidden?'❮':'❯';
     btn.style.right=hidden?'0':getSidebarW()+'px';
     if(hidden) pt.classList.add('sidebar-gone');
     else pt.classList.remove('sidebar-gone');
+    // Grid transition bittikten sonra canvas'ı yeniden boyutlandır (siyahlık önlenir)
+    setTimeout(()=>{ if(typeof resizeCanvas==='function') resizeCanvas(); }, 370);
   }
 }
 function initSidebarToggle(){
@@ -9372,7 +9301,6 @@ function toggleChat(){
   const panel=document.getElementById('chat-panel');
   panel.classList.toggle('open');
   if(panel.classList.contains('open')){
-    document.getElementById('dm-panel').classList.remove('open');
     renderChatMessages();
     document.getElementById('chat-input').focus();
   }
@@ -9397,7 +9325,6 @@ function buildChatAvatar(entry, borderOverride){
   } else {
     av.textContent=(entry.user||'?').slice(0,2).toUpperCase();
   }
-  av.onclick=(e)=>{ e.stopPropagation(); openMiniProfile(entry); };
   return av;
 }
 
@@ -9407,17 +9334,7 @@ function buildChatBubble(entry, isMe){
   if(!isMe){
     const nm=document.createElement('div');
     nm.className='cm-name';
-    const nameSpan=document.createElement('span');
-    nameSpan.textContent=entry.user||'';
-    nm.appendChild(nameSpan);
-    if(entry.factionTag){
-      const tagSpan=document.createElement('span');
-      tagSpan.className='cm-tag';
-      tagSpan.textContent='['+entry.factionTag+']';
-      tagSpan.style.color=entry.factionColor||'var(--accent)';
-      nm.appendChild(tagSpan);
-    }
-    nm.onclick=(e)=>{ e.stopPropagation(); openMiniProfile(entry); };
+    nm.textContent=entry.user||'';
     wrap.appendChild(nm);
   }
   const txt=document.createElement('div');
@@ -9443,7 +9360,7 @@ async function renderChatMessages(){
       console.log('[chat] DB select sonucu:', data?data.length+' satır':'null', error?('HATA: '+JSON.stringify(error)):'hata yok');
       if(data) data.reverse(); // en yeni 50'yi çektik, ekranda eskiden-yeniye göstermek için ters çeviriyoruz
       if(data&&!error){
-        log=data.map(r=>({user:r.username,text:r.message,t:new Date(r.created_at).getTime(),photo:'',frame:'none',factionTag:r.faction_tag||'',factionColor:r.faction_color||''}));
+        log=data.map(r=>({user:r.username,text:r.message,t:new Date(r.created_at).getTime(),photo:'',frame:'none'}));
         // DB'ye yazılamayıp localStorage'a düşmüş mesajlar varsa onları da ekle (kaybolmasınlar)
         try{
           const r=localStorage.getItem('pv_chat');
@@ -9494,7 +9411,7 @@ async function renderChatMessages(){
       const isMe=entry.user===uname;
       let memberProf={};
       try{ memberProf=JSON.parse(localStorage.getItem('pv_profile_'+entry.user)||'{}'); }catch(e){}
-      const fEntry={...entry, photo:memberProf.photo||entry.photo||'', frame:entry.frame||'none', factionTag:factionData.tag, factionColor:factionData.color};
+      const fEntry={...entry, photo:memberProf.photo||entry.photo||'', frame:entry.frame||'none'};
       const borderCol=factionData.color;
       const el=document.createElement('div');
       el.className='cm '+(isMe?'user':'other');
@@ -9510,7 +9427,7 @@ function addChatMsg(text, role){
   // Only used for global immediate render
   const uname=typeof username!=='undefined'?username:'Sen';
   const isMe=role==='user';
-  const entry={user:uname, text, photo:profileData.photo||'', frame:profileData.frame||'none', factionTag:factionData?factionData.tag:'', factionColor:factionData?factionData.color:''};
+  const entry={user:uname, text, photo:profileData.photo||'', frame:profileData.frame||'none'};
   const box=document.getElementById('chat-messages');
   const el=document.createElement('div');
   el.className='cm '+(isMe?'user':'other');
@@ -9529,7 +9446,7 @@ async function sendChatMsg(){
 
   if(currentChatTab==='faction'){
     if(!factionData){ showPopup(t('msg.join_faction_short')); return; }
-    const entry={user:uname, text:msg, t:Date.now(), photo:profileData.photo||'', frame:profileData.frame||'none', factionTag:factionData.tag, factionColor:factionData.color};
+    const entry={user:uname, text:msg, t:Date.now(), photo:profileData.photo||'', frame:profileData.frame||'none'};
     try{
       const key='pv_fc_chat_'+factionData.tag;
       const raw=localStorage.getItem(key);
@@ -9540,20 +9457,11 @@ async function sendChatMsg(){
     }catch(e){}
   } else {
     // Global chat → Önce UI'a hemen ekle (optimistic update)
-    const entry={user:uname, text:msg, t:Date.now(), photo:profileData&&profileData.photo||'', frame:profileData&&profileData.frame||'none', factionTag:factionData?factionData.tag:'', factionColor:factionData?factionData.color:''};
+    const entry={user:uname, text:msg, t:Date.now(), photo:profileData&&profileData.photo||'', frame:profileData&&profileData.frame||'none'};
     addChatMsg(msg,'user');
-    // Supabase'e kaydet (arka planda) — faction_tag/faction_color kolonu varsa onu da yaz
-    const insertRow={username:uname,message:msg,channel:'global',faction_tag:factionData?factionData.tag:null,faction_color:factionData?factionData.color:null};
-    supabase.from('chat_messages').insert(insertRow).select()
+    // Supabase'e kaydet (arka planda)
+    supabase.from('chat_messages').insert({username:uname,message:msg,channel:'global'}).select()
       .then(({data,error})=>{
-        if(error && /faction_tag|faction_color|column/i.test(error.message||'')){
-          // Kolonlar tabloda yoksa, eski şemayla tekrar dene
-          return supabase.from('chat_messages').insert({username:uname,message:msg,channel:'global'}).select();
-        }
-        return {data,error};
-      })
-      .then((res)=>{
-        const {data,error}=res||{};
         if(error || !data || data.length===0){
           // Hata olursa veya satır gerçekten eklenmediyse (RLS sessiz red) konsola yaz ve localStorage'a yedekle
           console.error('[chat] Supabase insert başarısız (satır DB\'ye yazılmadı):', error||'data boş döndü, muhtemelen RLS engelledi');
@@ -9605,217 +9513,6 @@ function updateChatFactionTab(){
     fBtn.style.opacity='.4';
     fBtn.style.cursor='default';
   }
-}
-
-// ══════════════════════════════════════════════════════════
-// ── DİĞER KULLANICI MİNİ PROFİL KARTI ──
-// Chat'te bir avatara/isme tıklanınca açılır: avatar, isim,
-// faction tag'i ve seviyesini gösterir, DM göndermeye yönlendirir.
-// ══════════════════════════════════════════════════════════
-let _mpTargetUser=null;
-
-async function openMiniProfile(entry){
-  const uname=typeof username!=='undefined'?username:'';
-  if(!entry || !entry.user || entry.user===uname) return; // kendi profiline tıklarsa hiçbir şey yapma
-  _mpTargetUser=entry.user;
-
-  const overlay=document.getElementById('mini-profile-overlay');
-  const avEl=document.getElementById('mp-avatar');
-  const nameEl=document.getElementById('mp-name');
-  const tagEl=document.getElementById('mp-tag');
-  const lvlEl=document.getElementById('mp-level');
-  const dmBtn=document.getElementById('mp-dm-btn');
-
-  // Avatar
-  avEl.innerHTML='';
-  const borderCol=FRAME_BORDERS[entry.frame||'none']||'#7B61FF';
-  const frame=FRAMES.find(f=>f.id===(entry.frame||'none'))||FRAMES[0];
-  avEl.style.borderColor=borderCol;
-  avEl.style.background=frame.style.replace('background:','');
-  let photo=entry.photo||'';
-  if(!photo){
-    try{ const mp=JSON.parse(localStorage.getItem('pv_profile_'+entry.user)||'{}'); photo=mp.photo||''; }catch(e){}
-  }
-  if(photo){
-    const img=document.createElement('img');
-    img.src=photo;
-    avEl.appendChild(img);
-  } else {
-    avEl.textContent=entry.user.slice(0,2).toUpperCase();
-  }
-
-  nameEl.textContent=entry.user;
-
-  // Faction tag
-  if(entry.factionTag){
-    tagEl.style.display='inline-block';
-    tagEl.textContent='['+entry.factionTag+']';
-    tagEl.style.color=entry.factionColor||'#7B61FF';
-    tagEl.style.background=(entry.factionColor||'#7B61FF')+'22';
-  } else {
-    tagEl.style.display='none';
-  }
-
-  lvlEl.textContent='Yükleniyor...';
-  dmBtn.disabled=false;
-
-  overlay.classList.add('open');
-
-  // Seviye bilgisini DB'den çek
-  try{
-    const {data,error}=await supabase.from('user_levels').select('level,xp').eq('username',entry.user).maybeSingle();
-    if(data && !error){
-      lvlEl.textContent='Seviye '+(data.level||1)+' · '+(data.xp||0).toLocaleString('tr-TR')+' XP';
-    } else {
-      lvlEl.textContent='';
-    }
-  }catch(e){
-    lvlEl.textContent='';
-  }
-}
-
-function closeMiniProfile(){
-  document.getElementById('mini-profile-overlay').classList.remove('open');
-}
-
-function openDMFromMiniProfile(){
-  if(!_mpTargetUser) return;
-  closeMiniProfile();
-  openDMPanel(_mpTargetUser);
-}
-
-// ══════════════════════════════════════════════════════════
-// ── ÖZEL MESAJ (DM) SİSTEMİ ──
-// Supabase üzerinde 'direct_messages' tablosu kullanır:
-//   id, sender, receiver, message, created_at
-// Bu tablo Supabase tarafında önceden oluşturulmuş olmalı,
-// aksi halde DM gönderimi/alımı çalışmaz.
-// ══════════════════════════════════════════════════════════
-let dmPeer=null;
-let _dmChannel=null;
-let _dmCache='';
-
-function dmRoomKey(a,b){ return [a,b].sort().join('::'); }
-
-async function openDMPanel(peerUsername){
-  if(!peerUsername) return;
-  const uname=typeof username!=='undefined'?username:'';
-  if(peerUsername===uname) return;
-  dmPeer=peerUsername;
-  document.getElementById('dm-peer-name').textContent='✉️ '+peerUsername;
-  document.getElementById('dm-panel').classList.add('open');
-  document.getElementById('chat-panel').classList.remove('open');
-  await renderDMMessages();
-  document.getElementById('dm-input').focus();
-  subscribeDMChannel();
-}
-
-function closeDMPanel(){
-  document.getElementById('dm-panel').classList.remove('open');
-  dmPeer=null;
-  const chatPanel=document.getElementById('chat-panel');
-  if(!chatPanel.classList.contains('open')){
-    chatPanel.classList.add('open');
-    renderChatMessages();
-  }
-}
-
-async function renderDMMessages(){
-  if(!dmPeer) return;
-  const uname=typeof username!=='undefined'?username:'';
-  const box=document.getElementById('dm-messages');
-  let log=[];
-  try{
-    const {data,error}=await supabase.from('direct_messages').select('*')
-      .or(`and(sender.eq.${uname},receiver.eq.${dmPeer}),and(sender.eq.${dmPeer},receiver.eq.${uname})`)
-      .order('created_at',{ascending:true}).limit(100);
-    if(error){
-      console.error('[dm] Supabase select hatası (direct_messages tablosu mevcut mu?):', error);
-      box.innerHTML='<div id="dm-empty">Özel mesajlar şu anda yüklenemedi.<br><span style="font-size:.65rem;opacity:.7">(direct_messages tablosu eksik olabilir)</span></div>';
-      return;
-    }
-    log=data||[];
-  }catch(e){
-    console.error('[dm] Supabase select exception:', e);
-    box.innerHTML='<div id="dm-empty">Özel mesajlar şu anda yüklenemedi.</div>';
-    return;
-  }
-  const newKey=log.map(r=>r.id).join(',');
-  if(newKey===_dmCache) return;
-  _dmCache=newKey;
-  if(!log.length){
-    box.innerHTML=`<div id="dm-empty">💬 Henüz mesaj yok.<br><span style="font-size:.65rem;opacity:.7">${_esc(dmPeer)} ile sohbete başla</span></div>`;
-    return;
-  }
-  box.innerHTML='';
-  log.forEach(row=>{
-    const isMe=row.sender===uname;
-    const entry={user:row.sender, text:row.message};
-    const el=document.createElement('div');
-    el.className='cm '+(isMe?'user':'other');
-    const av=document.createElement('div');
-    av.className='cm-av';
-    av.style.background='linear-gradient(135deg,#7B61FF,#c4aaff)';
-    av.textContent=row.sender.slice(0,2).toUpperCase();
-    const wrap=document.createElement('div');
-    wrap.className='cm-bubble';
-    const txt=document.createElement('div');
-    txt.className='cm-text';
-    txt.textContent=row.message;
-    wrap.appendChild(txt);
-    el.appendChild(av);
-    el.appendChild(wrap);
-    box.appendChild(el);
-  });
-  box.scrollTop=box.scrollHeight;
-}
-
-async function sendDM(){
-  const inp=document.getElementById('dm-input');
-  const msg=inp.value.trim();
-  if(!msg || !dmPeer) return;
-  const uname=typeof username!=='undefined'?username:'Anonim';
-  inp.value='';
-  try{
-    const {error}=await supabase.from('direct_messages').insert({sender:uname,receiver:dmPeer,message:msg});
-    if(error){
-      console.error('[dm] Supabase insert başarısız (direct_messages tablosu eksik olabilir):', error);
-      showPopup('Mesaj gönderilemedi. (DM tablosu eksik olabilir)');
-      inp.value=msg;
-      return;
-    }
-    _dmCache=''; // cache temizle, render yeniden çeksin
-    await renderDMMessages();
-  }catch(e){
-    console.error('[dm] Supabase insert exception:', e);
-    showPopup('Mesaj gönderilemedi.');
-    inp.value=msg;
-  }
-  inp.focus();
-}
-
-function subscribeDMChannel(){
-  if(_dmChannel) return;
-  const uname=typeof username!=='undefined'?username:'';
-  if(!uname) return;
-  try{
-    _dmChannel=supabase.channel('dm-changes-'+uname).on(
-      'postgres_changes',
-      {event:'INSERT',schema:'public',table:'direct_messages'},
-      (payload)=>{
-        const row=payload && payload.new;
-        if(!row) return;
-        if(row.receiver===uname || row.sender===uname){
-          if(dmPeer && (row.sender===dmPeer || row.receiver===dmPeer) && document.getElementById('dm-panel').classList.contains('open')){
-            _dmCache='';
-            renderDMMessages();
-          } else if(row.receiver===uname && row.sender!==uname){
-            showPopup('✉️ '+row.sender+' sana mesaj gönderdi');
-          }
-        }
-      }
-    ).subscribe();
-  }catch(e){ console.error('[dm] Realtime kanal hatası:', e); }
 }
 
 // Realtime subscription mesajları anlık getiriyor, polling kaldırıldı
