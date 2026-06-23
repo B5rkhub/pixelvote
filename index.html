@@ -4275,7 +4275,7 @@ button, [onclick], .pc-frame, .psw, .zb {
 <!-- Level-up bildirimi -->
 <div id="levelup-notif">
   <div id="levelup-inner">
-    <div id="levelup-label" data-i18n="levelup.label">SEVİYE ATLADI!</div>
+    <div id="levelup-label" data-i18n="levelup.label">⬆ SEVİYE ATLADI!</div>
     <div id="levelup-lv">LV 5</div>
     <div id="levelup-title">Uzman Pikselci</div>
     <div id="levelup-reward"></div>
@@ -4356,6 +4356,14 @@ button, [onclick], .pc-frame, .psw, .zb {
       <button class="tb-sheet-close" onclick="closeTbMenu()"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></button>
     </div>
     <div class="tb-sheet-grid">
+      <!-- Şablon Yap -->
+      <div id="ts-templatebtn" class="tb-sheet-item" style="display:none" onclick="closeTbMenu();openTemplateEditor()">
+        <div class="tb-sheet-item-icon" style="background:linear-gradient(135deg,#7c3aed,#c026d3)"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+        <div class="tb-sheet-item-body">
+          <div class="tb-sheet-item-name">Şablon Yap</div>
+          <div class="tb-sheet-item-desc">Haritaya çiz & kaydet</div>
+        </div>
+      </div>
       <!-- Görevler -->
       <div id="ts-questbtn" class="tb-sheet-item" style="display:none" onclick="closeTbMenu();openQuestPanel()">
         <div class="tb-sheet-item-icon" style="background:linear-gradient(135deg,#014d38,#00b888)"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/></svg></div>
@@ -4435,6 +4443,8 @@ button, [onclick], .pc-frame, .psw, .zb {
   </div>
 </div>
 
+<!-- Sidebar toggle -->
+<button id="sidebar-toggle" title="Paneli aç/kapat" onclick="toggleSidebar()" data-i18n-title="sidebar.toggle_title"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M9 18l6-6-6-6"/></svg></button>
 
 <!-- Chat button -->
 <button id="chat-btn" onclick="toggleChat()" title="AI Asistan"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg></button>
@@ -4479,14 +4489,14 @@ button, [onclick], .pc-frame, .psw, .zb {
       <span style="font-size:1rem;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span>
       <span id="history-banner-label">—</span>
       <div style="display:flex;align-items:center;gap:.3rem;border-left:1px solid rgba(255,255,255,.25);padding-left:.6rem;margin-left:.1rem;">
-        <button id="hist-scrub-back" onclick="scrubHistory(-1)" title="Geri" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.85rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;padding:.2rem .55rem;transition:background .15s;line-height:1;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"></button>
+        <button id="hist-scrub-back" onclick="scrubHistory(-1)" title="Geri" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.85rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;padding:.2rem .55rem;transition:background .15s;line-height:1;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">◀</button>
         <select id="hist-scrub-step" onchange="updateHistScrubStep()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.66rem;font-family:'Space Mono',monospace;padding:.2rem .3rem;cursor:pointer;outline:none;">
           <option value="15">15 dk</option>
           <option value="60" selected>1 saat</option>
           <option value="360">6 saat</option>
           <option value="1440">1 gün</option>
         </select>
-        <button id="hist-scrub-fwd" onclick="scrubHistory(1)" title="İleri" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.85rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;padding:.2rem .55rem;transition:background .15s;line-height:1;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"></button>
+        <button id="hist-scrub-fwd" onclick="scrubHistory(1)" title="İleri" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.85rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;padding:.2rem .55rem;transition:background .15s;line-height:1;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">▶</button>
       </div>
       <button onclick="exitHistoryMode()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:.72rem;font-family:'Outfit',sans-serif;font-weight:700;cursor:pointer;padding:.2rem .6rem;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,.28)'" onmouseout="this.style.background='rgba(255,255,255,.15)'"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg> Çık</button>
     </div>
@@ -4534,6 +4544,9 @@ button, [onclick], .pc-frame, .psw, .zb {
       <div class="tb-btn-group" id="tb-desktop-btns">
         <button id="faction-sub-btn" class="tb-btn" onclick="closeTbDesktopMenu();openFactionModal()" title="Faction" data-i18n-title="faction.btn_title">
           <span class="tb-icon fsb-dot" id="fsb-dot" style="background:#5a5a80;width:12px;height:12px;border-radius:3px;display:inline-block;"></span><span class="tb-label" id="fsb-label" data-i18n="faction.label">Faction</span>
+        </button>
+        <button id="template-btn" class="tb-btn" style="background:linear-gradient(135deg,#7c3aed,#c026d3);display:none" onclick="closeTbDesktopMenu();openTemplateEditor()" title="Şablon Yap">
+          <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span><span class="tb-label">Şablon Yap</span>
         </button>
         <button id="quest-btn" class="tb-btn" style="background:linear-gradient(135deg,#014d38,#00b888);display:none;position:relative" onclick="closeTbDesktopMenu();openQuestPanel()" title="Görevler">
           <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/></svg></span><span class="tb-label">Görevler</span>
@@ -4597,7 +4610,23 @@ button, [onclick], .pc-frame, .psw, .zb {
       <div class="psw" style="background:#820080" id="sw29" onclick="selP(29)" title="Mor"></div>
     </div>
   </div>
-
+  <div id="sidebar">
+    <div class="scard" id="sb-stats-card">
+      <h3 data-i18n="stats.my_stats"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg> İstatistiklerim</h3>
+      <div class="pcs-grid" id="sb-pcs-grid"></div>
+      <div class="pc-section">
+        <div class="pc-label" data-i18n="stats.party_breakdown">Parti Dağılımı (Toplam Piksel)</div>
+        <div class="pcs-bar-wrap" id="sb-pcs-party-bars"></div>
+      </div>
+      <div class="pc-section">
+        <div class="pc-label" data-i18n="stats.weekly_activity">Son 7 Günlük Aktivite</div>
+        <div class="pcs-activity" id="sb-pcs-activity"></div>
+      </div>
+    </div>
+    <div class="scard"><h3 data-i18n="sidebar.leaderboard"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg> En Yüksek Seviyeler</h3><div id="level-leaderboard"><div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.5rem 0" data-i18n="sidebar.loading">Yükleniyor...</div></div></div>
+    <div class="scard"><h3 data-i18n="sidebar.region_results">Bölge / İl Sonuçları</h3><div id="rlist"></div></div>
+    <div class="scard"><h3 data-i18n="sidebar.recent_moves">Son Hamleler</h3><div id="afeed"></div></div>
+  </div>
 </div>
 <div id="popup"></div>
 
@@ -4759,7 +4788,7 @@ button, [onclick], .pc-frame, .psw, .zb {
 
 <script>
 // ══════════════════════════════════════════════════════════════
-// I18N — Çoklu Dil Sistemi (Türkçe / İngilizce)
+// 🌐 I18N — Çoklu Dil Sistemi (Türkçe / İngilizce)
 // Tüm arayüz metinleri (butonlar, menüler, modal içerikleri,
 // popup mesajları) bu sözlükten geliyor. Dil tercihi localStorage'a
 // kaydedilir ve sayfa her açıldığında otomatik uygulanır.
@@ -4772,7 +4801,7 @@ button, [onclick], .pc-frame, .psw, .zb {
 const I18N = {
   tr: {
     // ── Login ekranı ──
-    'login.title': 'PixelFront',
+    'login.title': '🗳 PixelFront',
     'login.desc': "Türkiye'nin seçim haritasını şekillendir.<br>Her <b>3 dakikada</b> bir <b>7 piksel</b> hakkın var.<br>İlin içine tıkla — sınırlara tıklanamaz.",
     'login.google': 'Google ile Giriş Yap',
     'login.or_email': 'veya email ile',
@@ -4783,44 +4812,44 @@ const I18N = {
     'login.password_ph': 'Şifre (en az 6 karakter)...',
     'login.submit_signup': 'Kayıt Ol ve Haritaya Gir →',
     'login.submit_signin': 'Giriş Yap →',
-    'login.register_title': 'Hesabına Giriş Yap',
+    'login.register_title': '✏ Hesabına Giriş Yap',
     'login.register_desc': 'Piksel basmak için email ile kayıt ol veya giriş yap.',
 
     // ── Topbar ──
-    'topbar.title': 'PixelFront',
-    'topbar.guest': 'Misafir',
-    'topbar.timelapse': 'Timelapse',
-    'topbar.history': 'Geçmiş',
-    'topbar.admin': 'Admin',
-    'topbar.admin_on': 'Admin ON',
-    'topbar.owner': 'Owner',
+    'topbar.title': '🗳 PixelFront',
+    'topbar.guest': '👤 Misafir',
+    'topbar.timelapse': '🎬 Timelapse',
+    'topbar.history': '🕰 Geçmiş',
+    'topbar.admin': '⚙ Admin',
+    'topbar.admin_on': '⚙ Admin ON',
+    'topbar.owner': '👑 Owner',
     'topbar.menu': 'Menü',
 
     // ── Sidebar / panel başlıkları ──
     'sidebar.toggle_title': 'Paneli aç/kapat',
-    'sidebar.leaderboard': 'En Yüksek Seviyeler',
+    'sidebar.leaderboard': '🏅 En Yüksek Seviyeler',
     'sidebar.region_results': 'Bölge / İl Sonuçları',
     'sidebar.recent_moves': 'Son Hamleler',
     'sidebar.loading': 'Yükleniyor...',
 
     // ── Chat ──
     'chat.btn_title': 'AI Asistan',
-    'chat.tab_global': 'Genel',
-    'chat.tab_faction': 'Faction',
+    'chat.tab_global': '🌍 Genel',
+    'chat.tab_faction': '⚑ Faction',
     'chat.input_ph': 'Mesaj yaz...',
 
     // ── Pixel widget / toolbar ──
     'pixel.unit': ' piksel',
     'pixel.next': 'Sonraki piksel: ',
-    'paint.erase': 'Piksel Sil',
-    'paint.event_off': 'Piksel Etkinliği: KAPALI',
-    'paint.event_on': 'Piksel Etkinliği: AÇIK',
-    'paint.rollback_off': 'Rollback Aracı: KAPALI',
-    'paint.rollback_on': 'Rollback Aracı: AÇIK',
+    'paint.erase': '🗑 Piksel Sil',
+    'paint.event_off': '⚡ Piksel Etkinliği: KAPALI',
+    'paint.event_on': '⚡ Piksel Etkinliği: AÇIK',
+    'paint.rollback_off': '🕰 Rollback Aracı: KAPALI',
+    'paint.rollback_on': '🕰 Rollback Aracı: AÇIK',
     'paint.announce': '📢 Duyuru Yaz',
     'palette.title': 'Renk seç',
     'faction.btn_title': 'Faction',
-    'faction.label': 'Faction',
+    'faction.label': '⚑ Faction',
 
     // ── Geçmiş (history) banner ──
     'history.back_title': 'Geri',
@@ -4845,24 +4874,24 @@ const I18N = {
     'owner.loading': 'Yükleniyor...',
     'owner.load_failed': 'Yüklenemedi.',
     'owner.none_yet': 'Henüz kimse yok.',
-    'owner.role_owner': 'Owner',
-    'owner.role_admin': 'Admin',
-    'owner.email_required': 'Email gerekli.',
+    'owner.role_owner': '👑 Owner',
+    'owner.role_admin': '🛡 Admin',
+    'owner.email_required': '⚠ Email gerekli.',
     'owner.processing': 'İşleniyor...',
     'owner.assign_success': '✓ Yetki verildi: ',
     'owner.revoke_success': '✓ Yetki kaldırıldı.',
-    'owner.conn_error': 'Bağlantı hatası.',
+    'owner.conn_error': '⚠ Bağlantı hatası.',
     'owner.user_not_found': 'Bu email ile kayıtlı kullanıcı bulunamadı.',
     'owner.not_owner': 'Bu işlem için owner yetkisi gerekli.',
     'owner.cannot_revoke_self': 'Kendi owner yetkini kaldıramazsın.',
     'owner.op_failed': 'İşlem başarısız.',
 
     // ── Profil modalı ──
-    'profile.title': 'Profil',
-    'profile.tab_profile': 'Profil',
-    'profile.tab_level': 'Seviye',
-    'profile.tab_stats': 'İstatistik',
-    'profile.tab_settings': 'Ayarlar',
+    'profile.title': '👤 Profil',
+    'profile.tab_profile': '👤 Profil',
+    'profile.tab_level': '⭐ Seviye',
+    'profile.tab_stats': '📊 İstatistik',
+    'profile.tab_settings': '⚙ Ayarlar',
     'profile.stat_pixel': 'Piksel',
     'profile.stat_total': 'Toplam',
     'profile.stat_next': 'Sonraki',
@@ -4876,7 +4905,7 @@ const I18N = {
     // ── Seviye paneli ──
     'level.title': 'Seviye',
     'level.next_label': 'Sonraki: ',
-    'level.rewards_title': 'Seviye Ödülleri',
+    'level.rewards_title': '🎁 Seviye Ödülleri',
     'level.leaderboard_loading': 'Yükleniyor...',
 
     // ── Seri (streak) paneli ──
@@ -4885,15 +4914,15 @@ const I18N = {
     'streak.days_unit': ' gün',
     'streak.day_short': '.gün',
     'streak.tomorrow_note': "Yarın giriş yaparsan: {{icon}} +{{pixels}} piksel, +{{xp}} XP. Bir gün atlarsan seri 1'e sıfırlanır.",
-    'streak.notif_label': 'GÜNLÜK SERİ',
+    'streak.notif_label': '🔥 GÜNLÜK SERİ',
     'streak.cal_title': '30 Günlük Geçmiş',
     'streak.cal_active': 'Aktif gün',
     'streak.cal_missed': 'Boş gün',
     'frame.locked_tip': 'Seviye {{lvl}}\'de açılır',
-    'frame.locked_popup': 'Bu çerçeve Seviye {{lvl}}\'de açılır (şu an Seviye {{cur}})',
+    'frame.locked_popup': '🔒 Bu çerçeve Seviye {{lvl}}\'de açılır (şu an Seviye {{cur}})',
 
     // ── İstatistik paneli ──
-    'stats.my_stats': 'İstatistiklerim',
+    'stats.my_stats': '📊 İstatistiklerim',
     'stats.total_pixel': 'Toplam Piksel',
     'stats.current_pixel': 'Mevcut Piksel',
     'stats.day_streak': 'Gün Serisi',
@@ -4917,13 +4946,13 @@ const I18N = {
     'settings.pixel_ready_desc': 'Piksel dolunca uyar',
     'settings.account': 'Hesap',
     'settings.joined': 'Üye Olunma',
-    'settings.reset_stats': 'İstatistikleri Sıfırla',
+    'settings.reset_stats': '🗑 İstatistikleri Sıfırla',
     'settings.saved': '✓ Ayarlar kaydedildi',
     'settings.reset_confirm_title': 'İstatistikleri sıfırlamak istediğine emin misin?',
     'settings.reset_done': '✓ İstatistikler sıfırlandı',
 
     // ── Faction modalı ──
-    'faction.title': 'Faction',
+    'faction.title': '⚑ Faction',
     'faction.create_title': 'Faction Kur',
     'faction.create_desc': 'Kendi takımını kur, arkadaşlarını davet et, birlikte bölgeleri boya!',
     'faction.name_ph': 'Faction adı...',
@@ -4941,7 +4970,7 @@ const I18N = {
     'faction.officer': 'Yönetici',
     'faction.member': 'Üye',
     'faction.leave_btn': '🚪 Faction\'dan Ayrıl',
-    'faction.disband_btn': 'Faction\'ı Dağıt',
+    'faction.disband_btn': '⚠ Faction\'ı Dağıt',
     'faction.invite_label': 'Davet Kodu',
     'faction.copy': 'Kopyala',
     'faction.new_code': 'Yeni Kod Üret',
@@ -4957,18 +4986,18 @@ const I18N = {
     'pe.normal_rate': 'Normal hız',
     'pe.normal_rate_val': '3dk → 7 piksel',
     'pe.event_rate': 'Etkinlik hızı',
-    'pe.event_rate_val': "1dk → 6 piksel",
+    'pe.event_rate_val': "1dk → 6 piksel ⚡",
     'pe.duration_label': 'Etkinlik Süresi',
     'pe.dur_5min': '5 Dakika',
     'pe.dur_5min_sub': 'Kısa etkinlik',
     'pe.dur_10min': '10 Dakika',
     'pe.dur_10min_sub': 'Uzun etkinlik',
-    'pe.start_btn': 'Etkinliği Başlat',
+    'pe.start_btn': '⚡ Etkinliği Başlat',
     'pe.active_label': "Etkinlik Aktif — 1dk'da 6 piksel",
     'pe.remaining': 'Kalan süre:',
     'pe.refresh_btn': '🔄 Süreyi Yenile ',
     'pe.stop_btn': '⏹ Etkinliği Şimdi Durdur',
-    'pe.banner_active': 'Piksel Etkinliği Aktif — ',
+    'pe.banner_active': '⚡ Piksel Etkinliği Aktif — ',
     'pe.banner_rate': "1dk'da 6 piksel",
 
     // ── Duyuru modalı ──
@@ -4977,65 +5006,65 @@ const I18N = {
     'am.text_label': 'Duyuru Metni',
     'am.text_ph': 'Örn: Sunucu 5 dakika içinde bakıma girecek!',
     'am.send_btn': '📢 Duyuruyu Yayınla',
-    'am.empty_error': 'Duyuru metni boş olamaz.',
+    'am.empty_error': '⚠ Duyuru metni boş olamaz.',
     'am.publishing': 'Yayınlanıyor...',
     'am.published': '✓ Duyuru yayınlandı!',
-    'am.publish_failed': 'Yayınlanamadı, bağlantını kontrol et.',
+    'am.publish_failed': '⚠ Yayınlanamadı, bağlantını kontrol et.',
 
     // ── Timelapse modalı ──
     'tl.title': 'Timelapse Oluştur',
     'tl.range_label': 'Zaman Aralığı',
     'tl.speed_label': 'Hız',
-    'tl.create_btn': 'Timelapse Oluştur',
+    'tl.create_btn': '🎬 Timelapse Oluştur',
     'tl.reset_btn': '← Yeniden Ayarla',
-    'tl.download_btn': 'Videoyu İndir (.webm)',
-    'tl.ready': 'Video hazır!',
+    'tl.download_btn': '⬇ Videoyu İndir (.webm)',
+    'tl.ready': '✅ Video hazır!',
     'tl.daily_limit': '⛔ Bugün zaten timelapse oluşturdun!',
-    'tl.not_supported': 'Tarayıcın video kaydını desteklemiyor. Chrome/Edge kullan.',
+    'tl.not_supported': '⚠ Tarayıcın video kaydını desteklemiyor. Chrome/Edge kullan.',
 
     // ── Geçmiş (history) modalı ──
     'hm.title': 'Geçmişe Bak',
     'hm.desc': 'Haritanın geçmişteki bir anına git ve o zamanki halini gör.',
 
     // ── Rollback modalı ──
-    'rb.toggle_off': 'Rollback Aracı: KAPALI',
-    'rb.toggle_on': 'Rollback Aracı: AÇIK',
+    'rb.toggle_off': '🕰 Rollback Aracı: KAPALI',
+    'rb.toggle_on': '🕰 Rollback Aracı: AÇIK',
 
     // ── Level-up bildirimi ──
-    'levelup.label': 'SEVİYE ATLADI!',
+    'levelup.label': '⬆ SEVİYE ATLADI!',
 
     // ── Genel / popup mesajları ──
-    'msg.offline': 'Sunucuya bağlanılamadı — çevrimdışı modda devam ediliyor.',
-    'msg.click_border': 'Sınıra tıkladın — ilin içine tıkla!',
+    'msg.offline': '⚠ Sunucuya bağlanılamadı — çevrimdışı modda devam ediliyor.',
+    'msg.click_border': '⚠ Sınıra tıkladın — ilin içine tıkla!',
     'msg.click_province': 'Bir ilin içine tıkla!',
     'msg.no_pixels_left': '⏳ Piksel hakkın bitti!',
     'msg.already_this_color': 'Bu piksel zaten bu renkle boyalı!',
-    'msg.session_expired': 'Oturumun sona ermiş, lütfen tekrar giriş yap.',
-    'msg.action_failed': 'İşlem başarısız, tekrar dene.',
-    'msg.conn_error': 'Bağlantı hatası, tekrar dene.',
+    'msg.session_expired': '⚠ Oturumun sona ermiş, lütfen tekrar giriş yap.',
+    'msg.action_failed': '⚠ İşlem başarısız, tekrar dene.',
+    'msg.conn_error': '⚠ Bağlantı hatası, tekrar dene.',
     'msg.gained_pixels': '+{{n}} piksel! Toplam: {{total}}',
-    'msg.max_pixels': 'Maksimum {{n}} piksel!',
+    'msg.max_pixels': '🎉 Maksimum {{n}} piksel!',
     'msg.map_loading': 'Harita yükleniyor...',
     'msg.map_ready': 'Harita hazır!',
-    'msg.no_admin': 'Bu özellik için admin yetkin yok.',
-    'msg.no_owner': 'Bu özellik için owner yetkin yok.',
+    'msg.no_admin': '⚠ Bu özellik için admin yetkin yok.',
+    'msg.no_owner': '⚠ Bu özellik için owner yetkin yok.',
     'msg.admin_mode_on': 'Admin modu — piksel silmek için bir piksele tıkla',
     'msg.admin_mode_off': 'Admin modu kapatıldı',
-    'msg.delete_failed': 'Piksel(ler) sunucudan silinemedi (yetki/bağlantı hatası).',
-    'msg.deleted_n': '{{n}} piksel kalıcı olarak silindi.',
-    'msg.delete_conn_error': 'Bağlantı hatası, piksel(ler) silinemedi.',
+    'msg.delete_failed': '⚠ Piksel(ler) sunucudan silinemedi (yetki/bağlantı hatası).',
+    'msg.deleted_n': '🗑 {{n}} piksel kalıcı olarak silindi.',
+    'msg.delete_conn_error': '⚠ Bağlantı hatası, piksel(ler) silinemedi.',
     'msg.bio_saved': '✓ Biyografi kaydedildi',
-    'msg.faction_name_required': 'Faction adı gir!',
-    'msg.faction_tag_short': 'Tag en az 2 karakter olmalı!',
-    'msg.faction_tag_taken': 'Bu tag zaten alınmış!',
+    'msg.faction_name_required': '⚠ Faction adı gir!',
+    'msg.faction_tag_short': '⚠ Tag en az 2 karakter olmalı!',
+    'msg.faction_tag_taken': '⚠ Bu tag zaten alınmış!',
     'msg.faction_created': '✦ {{name}} kuruldu!',
-    'msg.faction_not_found': 'Faction bulunamadı!',
+    'msg.faction_not_found': '⚠ Faction bulunamadı!',
     'msg.faction_already_in': "Zaten bu faction'dasın!",
     'msg.faction_joined': "✦ {{name}} faction'ına katıldın!",
-    'msg.invite_code_required': 'Kod gir!',
-    'msg.invite_code_invalid': 'Geçersiz davet kodu!',
+    'msg.invite_code_required': '⚠ Kod gir!',
+    'msg.invite_code_invalid': '⚠ Geçersiz davet kodu!',
     'msg.code_copied': '✓ Kod kopyalandı!',
-    'msg.faction_disbanded': 'Faction dağıtıldı.',
+    'msg.faction_disbanded': '⚑ Faction dağıtıldı.',
     'msg.faction_left': "🚪 Faction'dan ayrıldın.",
     'msg.member_kicked': "✓ {{name}} faction'dan çıkarıldı.",
     'msg.member_promoted': '✓ {{name}} Yönetici yapıldı.',
@@ -5044,22 +5073,22 @@ const I18N = {
     'msg.new_invite_code': '✓ Yeni davet kodu: {{code}}',
     'msg.logo_updated': '✓ Faction logosu güncellendi!',
     'msg.color_updated': '✓ Faction rengi güncellendi.',
-    'msg.invalid_username': 'İsim sadece harf, rakam, boşluk, "-" ve "_" içerebilir (2-20 karakter).',
+    'msg.invalid_username': '⚠ İsim sadece harf, rakam, boşluk, "-" ve "_" içerebilir (2-20 karakter).',
     'msg.username_updated': '✓ İsim güncellendi: {{name}}',
-    'msg.join_faction_first': "Önce bir faction'a katıl!",
-    'msg.join_faction_short': "Faction'a katıl!",
+    'msg.join_faction_first': "⚑ Önce bir faction'a katıl!",
+    'msg.join_faction_short': "⚑ Faction'a katıl!",
     'msg.event_refreshed': '🔄 Etkinlik süresi yenilendi — {{n}}dk!',
-    'msg.event_started': "Piksel Etkinliği BAŞLADI! {{n}} dakika boyunca 1dk'da 6 piksel.",
-    'msg.event_stopped': 'Piksel Etkinliği durduruldu.',
-    'msg.event_ended': 'Piksel Etkinliği sona erdi — normal hıza dönüldü.',
-    'msg.went_to_moment': '{{label}} anına gidildi',
+    'msg.event_started': "⚡ Piksel Etkinliği BAŞLADI! {{n}} dakika boyunca 1dk'da 6 piksel.",
+    'msg.event_stopped': '⚡ Piksel Etkinliği durduruldu.',
+    'msg.event_ended': '⚡ Piksel Etkinliği sona erdi — normal hıza dönüldü.',
+    'msg.went_to_moment': '🕰 {{label}} anına gidildi',
     'msg.back_to_live': '✓ Canlı görünüme dönüldü',
-    'msg.in_history_mode': 'Geçmiş modundasın — piksel koyamazsın',
-    'msg.rollback_tool_on': 'Rollback aracı açık — haritada bir alan sürükleyerek seç',
-    'msg.area_too_small': 'Alan çok küçük — daha geniş bir alan sürükle',
-    'msg.selection_outside': 'Seçim harita dışında — tekrar dene',
-    'msg.rollback_done': 'Seçili alan {{label}} anına KALICI olarak döndürüldü ({{n}} piksel değişti)',
-    'msg.rollback_save_failed': 'Sunucuya geri alma yazılamadı: {{err}}',
+    'msg.in_history_mode': '🕰 Geçmiş modundasın — piksel koyamazsın',
+    'msg.rollback_tool_on': '🕰 Rollback aracı açık — haritada bir alan sürükleyerek seç',
+    'msg.area_too_small': '⚠ Alan çok küçük — daha geniş bir alan sürükle',
+    'msg.selection_outside': '⚠ Seçim harita dışında — tekrar dene',
+    'msg.rollback_done': '🕰 Seçili alan {{label}} anına KALICI olarak döndürüldü ({{n}} piksel değişti)',
+    'msg.rollback_save_failed': '⚠ Sunucuya geri alma yazılamadı: {{err}}',
     'msg.unknown_error': 'bilinmeyen hata',
     'msg.rollback_reverted': '✓ Rollback geri alındı — KALICI olarak canlı görünüme dönüldü',
     'msg.confirm_yes': 'Evet',
@@ -5107,7 +5136,7 @@ const I18N = {
     // ── Geçmiş modal ──
     'hm.title': 'Geçmişe Bak',
     'hm.desc': 'Haritanın geçmişteki bir anına git ve o zamanki halini gör.',
-     'hm.info': "Seçtiğin tarihe ait harita görüntüsü yüklenir. <b>Salt okunur moddur</b> — piksel koyamazsın. Çıkmak için banner'daki ✕ tuşuna bas.",
+     'hm.info': "📌 Seçtiğin tarihe ait harita görüntüsü yüklenir. <b>Salt okunur moddur</b> — piksel koyamazsın. Çıkmak için banner'daki ✕ tuşuna bas.",
     'hm.date_label': 'Tarih & Saat Seç',
     'hm.quick_label': 'Hızlı Seç',
     'hm.q_1h': '1 saat önce',
@@ -5116,17 +5145,17 @@ const I18N = {
     'hm.q_1d': '1 gün önce',
     'hm.q_3d': '3 gün önce',
     'hm.q_7d': '7 gün önce',
-    'hm.go_btn': 'O Zamana Git',
+    'hm.go_btn': '🕰 O Zamana Git',
     'hm.loading': '⏳ Yükleniyor...',
-    'hm.err_no_date': 'Lütfen bir tarih seç.',
-    'hm.err_invalid': 'Geçersiz tarih.',
-    'hm.err_future': 'Gelecek bir tarih seçemezsin.',
-    'hm.err_no_data': 'Bu tarihte hiç piksel verisi bulunamadı.',
-    'hm.err_generic': 'Hata: ',
+    'hm.err_no_date': '⚠ Lütfen bir tarih seç.',
+    'hm.err_invalid': '⚠ Geçersiz tarih.',
+    'hm.err_future': '⚠ Gelecek bir tarih seçemezsin.',
+    'hm.err_no_data': '⚠ Bu tarihte hiç piksel verisi bulunamadı.',
+    'hm.err_generic': '⚠ Hata: ',
 
     // ── Rollback modal ──
-    'rb.title': 'Alanı Geri Al (Rollback)',
-     'rb.info': 'Sadece haritada <b>seçtiğin alan</b> belirlediğin saatteki haline döner. Diğer bölgelere dokunulmaz. Bu işlem <b>kalıcıdır</b> — sunucudaki gerçek veriyi değiştirir, tüm kullanıcılar görür ve sayfa yenilense (F5) de aynı kalır.',
+    'rb.title': '🕰 Alanı Geri Al (Rollback)',
+     'rb.info': '📌 Sadece haritada <b>seçtiğin alan</b> belirlediğin saatteki haline döner. Diğer bölgelere dokunulmaz. Bu işlem <b>kalıcıdır</b> — sunucudaki gerçek veriyi değiştirir, tüm kullanıcılar görür ve sayfa yenilense (F5) de aynı kalır.',
     'rb.time_label': 'Hangi Saate Dönülsün?',
     'rb.quick_label': 'Hızlı Seç',
     'rb.q_30m': '30 dk önce',
@@ -5135,26 +5164,26 @@ const I18N = {
     'rb.q_1d': '1 gün önce',
     'rb.q_3d': '3 gün önce',
     'rb.q_7d': '7 gün önce',
-    'rb.go_btn': 'Rollback At',
+    'rb.go_btn': '🕰 Rollback At',
     'rb.calculating': '⏳ Hesaplanıyor...',
     'rb.applying': '⏳ Uygulanıyor...',
      'rb.undo_btn': "↩ Önceki Rollback'i Geri Al",
     'rb.undo_short': '↩ Geri Al',
     'rb.cancel': '✕ Vazgeç',
-    'rb.confirm_yes': 'Onayla ve Uygula',
-     'rb.confirm_msg': "<b>{{label}}</b> anına dönülecek.<br><b>{{changed}}</b> piksel gerçekten değişecek (seçili alan {{total}} piksel).<br><br>Bu işlem <b>KALICIDIR</b> — tüm kullanıcılar bu değişikliği görecek ve sayfa yenilense (F5) de aynı kalacak.<br><br>Bu rollback'i onaylıyor musun?",
-    'rb.banner_label': 'Seçili alan: {{label}}',
-    'rb.banner_applied': 'Seçili alan geçmişe döndürüldü',
-    'rb.err_no_date': 'Lütfen bir tarih ve saat seç.',
-    'rb.err_invalid': 'Geçersiz tarih.',
-    'rb.err_future': 'Gelecek bir tarih seçemezsin.',
-    'rb.err_no_pixels': 'Bu alanda hiç piksel yok (deniz/sınır olabilir).',
-    'rb.err_write': 'Sunucuya yazılamadı: ',
-    'rb.err_generic': 'Hata: ',
+    'rb.confirm_yes': '✅ Onayla ve Uygula',
+     'rb.confirm_msg': "⚠️ <b>{{label}}</b> anına dönülecek.<br><b>{{changed}}</b> piksel gerçekten değişecek (seçili alan {{total}} piksel).<br><br>Bu işlem <b>KALICIDIR</b> — tüm kullanıcılar bu değişikliği görecek ve sayfa yenilense (F5) de aynı kalacak.<br><br>Bu rollback'i onaylıyor musun?",
+    'rb.banner_label': '🕰 Seçili alan: {{label}}',
+    'rb.banner_applied': '🕰 Seçili alan geçmişe döndürüldü',
+    'rb.err_no_date': '⚠ Lütfen bir tarih ve saat seç.',
+    'rb.err_invalid': '⚠ Geçersiz tarih.',
+    'rb.err_future': '⚠ Gelecek bir tarih seçemezsin.',
+    'rb.err_no_pixels': '⚠ Bu alanda hiç piksel yok (deniz/sınır olabilir).',
+    'rb.err_write': '⚠ Sunucuya yazılamadı: ',
+    'rb.err_generic': '⚠ Hata: ',
   },
   en: {
     // ── Login screen ──
-    'login.title': 'PixelFront',
+    'login.title': '🗳 PixelFront',
     'login.desc': "Shape Turkey's election map.<br>You get <b>7 pixels</b> every <b>3 minutes</b>.<br>Click inside a province — borders can't be clicked.",
     'login.google': 'Sign in with Google',
     'login.or_email': 'or with email',
@@ -5165,44 +5194,44 @@ const I18N = {
     'login.password_ph': 'Password (at least 6 characters)...',
     'login.submit_signup': 'Sign Up and Enter the Map →',
     'login.submit_signin': 'Sign In →',
-    'login.register_title': 'Sign In to Your Account',
+    'login.register_title': '✏ Sign In to Your Account',
     'login.register_desc': 'Sign up or sign in with email to place pixels.',
 
     // ── Topbar ──
-    'topbar.title': 'PixelFront',
-    'topbar.guest': 'Guest',
-    'topbar.timelapse': 'Timelapse',
-    'topbar.history': 'History',
-    'topbar.admin': 'Admin',
-    'topbar.admin_on': 'Admin ON',
-    'topbar.owner': 'Owner',
+    'topbar.title': '🗳 PixelFront',
+    'topbar.guest': '👤 Guest',
+    'topbar.timelapse': '🎬 Timelapse',
+    'topbar.history': '🕰 History',
+    'topbar.admin': '⚙ Admin',
+    'topbar.admin_on': '⚙ Admin ON',
+    'topbar.owner': '👑 Owner',
     'topbar.menu': 'Menu',
 
     // ── Sidebar / panel titles ──
     'sidebar.toggle_title': 'Toggle panel',
-    'sidebar.leaderboard': 'Top Levels',
+    'sidebar.leaderboard': '🏅 Top Levels',
     'sidebar.region_results': 'Region / Province Results',
     'sidebar.recent_moves': 'Recent Moves',
     'sidebar.loading': 'Loading...',
 
     // ── Chat ──
     'chat.btn_title': 'AI Assistant',
-    'chat.tab_global': 'Global',
-    'chat.tab_faction': 'Faction',
+    'chat.tab_global': '🌍 Global',
+    'chat.tab_faction': '⚑ Faction',
     'chat.input_ph': 'Type a message...',
 
     // ── Pixel widget / toolbar ──
     'pixel.unit': ' pixels',
     'pixel.next': 'Next pixel: ',
-    'paint.erase': 'Erase Pixels',
-    'paint.event_off': 'Pixel Event: OFF',
-    'paint.event_on': 'Pixel Event: ON',
-    'paint.rollback_off': 'Rollback Tool: OFF',
-    'paint.rollback_on': 'Rollback Tool: ON',
+    'paint.erase': '🗑 Erase Pixels',
+    'paint.event_off': '⚡ Pixel Event: OFF',
+    'paint.event_on': '⚡ Pixel Event: ON',
+    'paint.rollback_off': '🕰 Rollback Tool: OFF',
+    'paint.rollback_on': '🕰 Rollback Tool: ON',
     'paint.announce': '📢 Write Announcement',
     'palette.title': 'Choose color',
     'faction.btn_title': 'Faction',
-    'faction.label': 'Faction',
+    'faction.label': '⚑ Faction',
 
     // ── History banner ──
     'history.back_title': 'Back',
@@ -5227,24 +5256,24 @@ const I18N = {
     'owner.loading': 'Loading...',
     'owner.load_failed': 'Failed to load.',
     'owner.none_yet': 'No one yet.',
-    'owner.role_owner': 'Owner',
-    'owner.role_admin': 'Admin',
-    'owner.email_required': 'Email is required.',
+    'owner.role_owner': '👑 Owner',
+    'owner.role_admin': '🛡 Admin',
+    'owner.email_required': '⚠ Email is required.',
     'owner.processing': 'Processing...',
     'owner.assign_success': '✓ Access granted: ',
     'owner.revoke_success': '✓ Access revoked.',
-    'owner.conn_error': 'Connection error.',
+    'owner.conn_error': '⚠ Connection error.',
     'owner.user_not_found': 'No user found with this email.',
     'owner.not_owner': 'Owner access is required for this action.',
     'owner.cannot_revoke_self': "You can't revoke your own owner access.",
     'owner.op_failed': 'Operation failed.',
 
     // ── Profile modal ──
-    'profile.title': 'Profile',
-    'profile.tab_profile': 'Profile',
-    'profile.tab_level': 'Level',
-    'profile.tab_stats': 'Stats',
-    'profile.tab_settings': 'Settings',
+    'profile.title': '👤 Profile',
+    'profile.tab_profile': '👤 Profile',
+    'profile.tab_level': '⭐ Level',
+    'profile.tab_stats': '📊 Stats',
+    'profile.tab_settings': '⚙ Settings',
     'profile.stat_pixel': 'Pixels',
     'profile.stat_total': 'Total',
     'profile.stat_next': 'Next',
@@ -5258,7 +5287,7 @@ const I18N = {
     // ── Level panel ──
     'level.title': 'Level',
     'level.next_label': 'Next: ',
-    'level.rewards_title': 'Level Rewards',
+    'level.rewards_title': '🎁 Level Rewards',
     'level.leaderboard_loading': 'Loading...',
 
     // ── Streak panel ──
@@ -5267,15 +5296,15 @@ const I18N = {
     'streak.days_unit': ' days',
     'streak.day_short': 'd',
     'streak.tomorrow_note': "If you log in tomorrow: {{icon}} +{{pixels}} pixels, +{{xp}} XP. Missing a day resets your streak to 1.",
-    'streak.notif_label': 'DAILY STREAK',
+    'streak.notif_label': '🔥 DAILY STREAK',
     'streak.cal_title': '30-Day History',
     'streak.cal_active': 'Active day',
     'streak.cal_missed': 'Missed day',
     'frame.locked_tip': 'Unlocks at Level {{lvl}}',
-    'frame.locked_popup': 'This frame unlocks at Level {{lvl}} (you are Level {{cur}})',
+    'frame.locked_popup': '🔒 This frame unlocks at Level {{lvl}} (you are Level {{cur}})',
 
     // ── Stats panel ──
-    'stats.my_stats': 'My Stats',
+    'stats.my_stats': '📊 My Stats',
     'stats.total_pixel': 'Total Pixels',
     'stats.current_pixel': 'Current Pixels',
     'stats.day_streak': 'Day Streak',
@@ -5299,13 +5328,13 @@ const I18N = {
     'settings.pixel_ready_desc': 'Alert when pixels are refilled',
     'settings.account': 'Account',
     'settings.joined': 'Joined',
-    'settings.reset_stats': 'Reset Statistics',
+    'settings.reset_stats': '🗑 Reset Statistics',
     'settings.saved': '✓ Settings saved',
     'settings.reset_confirm_title': 'Are you sure you want to reset your statistics?',
     'settings.reset_done': '✓ Statistics reset',
 
     // ── Faction modal ──
-    'faction.title': 'Faction',
+    'faction.title': '⚑ Faction',
     'faction.create_title': 'Create a Faction',
     'faction.create_desc': 'Start your own team, invite friends, and paint regions together!',
     'faction.name_ph': 'Faction name...',
@@ -5323,7 +5352,7 @@ const I18N = {
     'faction.officer': 'Officer',
     'faction.member': 'Member',
     'faction.leave_btn': '🚪 Leave Faction',
-    'faction.disband_btn': 'Disband Faction',
+    'faction.disband_btn': '⚠ Disband Faction',
     'faction.invite_label': 'Invite Code',
     'faction.copy': 'Copy',
     'faction.new_code': 'Generate New Code',
@@ -5339,18 +5368,18 @@ const I18N = {
     'pe.normal_rate': 'Normal rate',
     'pe.normal_rate_val': '3min → 7 pixels',
     'pe.event_rate': 'Event rate',
-    'pe.event_rate_val': '1min → 6 pixels',
+    'pe.event_rate_val': '1min → 6 pixels ⚡',
     'pe.duration_label': 'Event Duration',
     'pe.dur_5min': '5 Minutes',
     'pe.dur_5min_sub': 'Short event',
     'pe.dur_10min': '10 Minutes',
     'pe.dur_10min_sub': 'Long event',
-    'pe.start_btn': 'Start Event',
+    'pe.start_btn': '⚡ Start Event',
     'pe.active_label': "Event Active — 6 pixels per minute",
     'pe.remaining': 'Time remaining:',
     'pe.refresh_btn': '🔄 Refresh Duration ',
     'pe.stop_btn': '⏹ Stop Event Now',
-    'pe.banner_active': 'Pixel Event Active — ',
+    'pe.banner_active': '⚡ Pixel Event Active — ',
     'pe.banner_rate': '6 pixels per minute',
 
     // ── Announcement modal ──
@@ -5359,65 +5388,65 @@ const I18N = {
     'am.text_label': 'Announcement Text',
     'am.text_ph': 'E.g: Server will go into maintenance in 5 minutes!',
     'am.send_btn': '📢 Publish Announcement',
-    'am.empty_error': "Announcement text can't be empty.",
+    'am.empty_error': "⚠ Announcement text can't be empty.",
     'am.publishing': 'Publishing...',
     'am.published': '✓ Announcement published!',
-    'am.publish_failed': 'Failed to publish, check your connection.',
+    'am.publish_failed': '⚠ Failed to publish, check your connection.',
 
     // ── Timelapse modal ──
     'tl.title': 'Create Timelapse',
     'tl.range_label': 'Time Range',
     'tl.speed_label': 'Speed',
-    'tl.create_btn': 'Create Timelapse',
+    'tl.create_btn': '🎬 Create Timelapse',
     'tl.reset_btn': '← Reset',
-    'tl.download_btn': 'Download Video (.webm)',
-    'tl.ready': 'Video ready!',
+    'tl.download_btn': '⬇ Download Video (.webm)',
+    'tl.ready': '✅ Video ready!',
     'tl.daily_limit': "⛔ You've already created a timelapse today!",
-    'tl.not_supported': "Your browser doesn't support video recording. Use Chrome/Edge.",
+    'tl.not_supported': "⚠ Your browser doesn't support video recording. Use Chrome/Edge.",
 
     // ── History modal ──
     'hm.title': 'Look Back in History',
     'hm.desc': "Travel to a moment in the map's past and see how it looked.",
 
     // ── Rollback modal ──
-    'rb.toggle_off': 'Rollback Tool: OFF',
-    'rb.toggle_on': 'Rollback Tool: ON',
+    'rb.toggle_off': '🕰 Rollback Tool: OFF',
+    'rb.toggle_on': '🕰 Rollback Tool: ON',
 
     // ── Level-up notification ──
-    'levelup.label': 'LEVEL UP!',
+    'levelup.label': '⬆ LEVEL UP!',
 
     // ── General / popup messages ──
-    'msg.offline': 'Could not connect to the server — continuing in offline mode.',
-    'msg.click_border': 'You clicked a border — click inside the province!',
+    'msg.offline': '⚠ Could not connect to the server — continuing in offline mode.',
+    'msg.click_border': '⚠ You clicked a border — click inside the province!',
     'msg.click_province': 'Click inside a province!',
     'msg.no_pixels_left': "⏳ You're out of pixels!",
     'msg.already_this_color': 'This pixel is already this color!',
-    'msg.session_expired': 'Your session has expired, please sign in again.',
-    'msg.action_failed': 'Action failed, try again.',
-    'msg.conn_error': 'Connection error, try again.',
+    'msg.session_expired': '⚠ Your session has expired, please sign in again.',
+    'msg.action_failed': '⚠ Action failed, try again.',
+    'msg.conn_error': '⚠ Connection error, try again.',
     'msg.gained_pixels': '+{{n}} pixels! Total: {{total}}',
-    'msg.max_pixels': 'Maximum {{n}} pixels!',
+    'msg.max_pixels': '🎉 Maximum {{n}} pixels!',
     'msg.map_loading': 'Loading map...',
     'msg.map_ready': 'Map ready!',
-    'msg.no_admin': "You don't have admin access for this feature.",
-    'msg.no_owner': "You don't have owner access for this feature.",
+    'msg.no_admin': "⚠ You don't have admin access for this feature.",
+    'msg.no_owner': "⚠ You don't have owner access for this feature.",
     'msg.admin_mode_on': 'Admin mode — click a pixel to erase it',
     'msg.admin_mode_off': 'Admin mode turned off',
-    'msg.delete_failed': 'Pixel(s) could not be deleted from the server (permission/connection error).',
-    'msg.deleted_n': '{{n}} pixels permanently deleted.',
-    'msg.delete_conn_error': 'Connection error, pixel(s) could not be deleted.',
+    'msg.delete_failed': '⚠ Pixel(s) could not be deleted from the server (permission/connection error).',
+    'msg.deleted_n': '🗑 {{n}} pixels permanently deleted.',
+    'msg.delete_conn_error': '⚠ Connection error, pixel(s) could not be deleted.',
     'msg.bio_saved': '✓ Bio saved',
-    'msg.faction_name_required': 'Enter a faction name!',
-    'msg.faction_tag_short': 'Tag must be at least 2 characters!',
-    'msg.faction_tag_taken': 'This tag is already taken!',
+    'msg.faction_name_required': '⚠ Enter a faction name!',
+    'msg.faction_tag_short': '⚠ Tag must be at least 2 characters!',
+    'msg.faction_tag_taken': '⚠ This tag is already taken!',
     'msg.faction_created': '✦ {{name}} was created!',
-    'msg.faction_not_found': 'Faction not found!',
+    'msg.faction_not_found': '⚠ Faction not found!',
     'msg.faction_already_in': "You're already in this faction!",
     'msg.faction_joined': '✦ Joined faction {{name}}!',
-    'msg.invite_code_required': 'Enter a code!',
-    'msg.invite_code_invalid': 'Invalid invite code!',
+    'msg.invite_code_required': '⚠ Enter a code!',
+    'msg.invite_code_invalid': '⚠ Invalid invite code!',
     'msg.code_copied': '✓ Code copied!',
-    'msg.faction_disbanded': 'Faction disbanded.',
+    'msg.faction_disbanded': '⚑ Faction disbanded.',
     'msg.faction_left': '🚪 You left the faction.',
     'msg.member_kicked': '✓ {{name}} was removed from the faction.',
     'msg.member_promoted': '✓ {{name}} was made an officer.',
@@ -5426,22 +5455,22 @@ const I18N = {
     'msg.new_invite_code': '✓ New invite code: {{code}}',
     'msg.logo_updated': '✓ Faction logo updated!',
     'msg.color_updated': '✓ Faction color updated.',
-    'msg.invalid_username': 'Name can only contain letters, numbers, spaces, "-" and "_" (2-20 characters).',
+    'msg.invalid_username': '⚠ Name can only contain letters, numbers, spaces, "-" and "_" (2-20 characters).',
     'msg.username_updated': '✓ Name updated: {{name}}',
-    'msg.join_faction_first': 'Join a faction first!',
-    'msg.join_faction_short': 'Join a faction!',
+    'msg.join_faction_first': '⚑ Join a faction first!',
+    'msg.join_faction_short': '⚑ Join a faction!',
     'msg.event_refreshed': '🔄 Event duration refreshed — {{n}}min!',
-    'msg.event_started': 'Pixel Event STARTED! 6 pixels per minute for {{n}} minutes.',
-    'msg.event_stopped': 'Pixel Event stopped.',
-    'msg.event_ended': 'Pixel Event ended — back to normal rate.',
-    'msg.went_to_moment': 'Jumped to {{label}}',
+    'msg.event_started': '⚡ Pixel Event STARTED! 6 pixels per minute for {{n}} minutes.',
+    'msg.event_stopped': '⚡ Pixel Event stopped.',
+    'msg.event_ended': '⚡ Pixel Event ended — back to normal rate.',
+    'msg.went_to_moment': '🕰 Jumped to {{label}}',
     'msg.back_to_live': '✓ Back to live view',
-    'msg.in_history_mode': "You're in history mode — you can't place pixels",
-    'msg.rollback_tool_on': 'Rollback tool active — drag to select an area on the map',
-    'msg.area_too_small': 'Area too small — drag a larger area',
-    'msg.selection_outside': 'Selection is outside the map — try again',
-    'msg.rollback_done': 'Selected area PERMANENTLY reverted to {{label}} ({{n}} pixels changed)',
-    'msg.rollback_save_failed': 'Could not save rollback to the server: {{err}}',
+    'msg.in_history_mode': "🕰 You're in history mode — you can't place pixels",
+    'msg.rollback_tool_on': '🕰 Rollback tool active — drag to select an area on the map',
+    'msg.area_too_small': '⚠ Area too small — drag a larger area',
+    'msg.selection_outside': '⚠ Selection is outside the map — try again',
+    'msg.rollback_done': '🕰 Selected area PERMANENTLY reverted to {{label}} ({{n}} pixels changed)',
+    'msg.rollback_save_failed': '⚠ Could not save rollback to the server: {{err}}',
     'msg.unknown_error': 'unknown error',
     'msg.rollback_reverted': '✓ Rollback undone — PERMANENTLY back to live view',
     'msg.confirm_yes': 'Yes',
@@ -5489,7 +5518,7 @@ const I18N = {
     // ── History modal ──
     'hm.title': 'Look Back in History',
     'hm.desc': "Travel to a moment in the map's past and see how it looked.",
-    'hm.info': 'The map snapshot for your selected date will be loaded. <b>Read-only mode</b> — you cannot place pixels. Press ✕ in the banner to exit.',
+    'hm.info': '📌 The map snapshot for your selected date will be loaded. <b>Read-only mode</b> — you cannot place pixels. Press ✕ in the banner to exit.',
     'hm.date_label': 'Select Date & Time',
     'hm.quick_label': 'Quick Select',
     'hm.q_1h': '1 hour ago',
@@ -5498,17 +5527,17 @@ const I18N = {
     'hm.q_1d': '1 day ago',
     'hm.q_3d': '3 days ago',
     'hm.q_7d': '7 days ago',
-    'hm.go_btn': 'Go to That Moment',
+    'hm.go_btn': '🕰 Go to That Moment',
     'hm.loading': '⏳ Loading...',
-    'hm.err_no_date': 'Please select a date.',
-    'hm.err_invalid': 'Invalid date.',
-    'hm.err_future': 'You cannot select a future date.',
-    'hm.err_no_data': 'No pixel data found for this date.',
-    'hm.err_generic': 'Error: ',
+    'hm.err_no_date': '⚠ Please select a date.',
+    'hm.err_invalid': '⚠ Invalid date.',
+    'hm.err_future': '⚠ You cannot select a future date.',
+    'hm.err_no_data': '⚠ No pixel data found for this date.',
+    'hm.err_generic': '⚠ Error: ',
 
     // ── Rollback modal ──
-    'rb.title': 'Area Rollback',
-    'rb.info': 'Only the <b>selected area</b> will be reverted to the state at the chosen time. Other regions are untouched. This action is <b>permanent</b> — it changes the real server data, visible to all users even after a page refresh (F5).',
+    'rb.title': '🕰 Area Rollback',
+    'rb.info': '📌 Only the <b>selected area</b> will be reverted to the state at the chosen time. Other regions are untouched. This action is <b>permanent</b> — it changes the real server data, visible to all users even after a page refresh (F5).',
     'rb.time_label': 'Roll Back to When?',
     'rb.quick_label': 'Quick Select',
     'rb.q_30m': '30 min ago',
@@ -5517,22 +5546,22 @@ const I18N = {
     'rb.q_1d': '1 day ago',
     'rb.q_3d': '3 days ago',
     'rb.q_7d': '7 days ago',
-    'rb.go_btn': 'Run Rollback',
+    'rb.go_btn': '🕰 Run Rollback',
     'rb.calculating': '⏳ Calculating...',
     'rb.applying': '⏳ Applying...',
      'rb.undo_btn': '↩ Undo Previous Rollback',
     'rb.undo_short': '↩ Undo',
     'rb.cancel': '✕ Cancel',
-    'rb.confirm_yes': 'Confirm & Apply',
-    'rb.confirm_msg': 'The area will be reverted to <b>{{label}}</b>.<br><b>{{changed}}</b> pixels will actually change (selected area: {{total}} pixels).<br><br>This action is <b>PERMANENT</b> — all users will see the change and it will persist after a page refresh (F5).<br><br>Are you sure you want to apply this rollback?',
-    'rb.banner_label': 'Selected area: {{label}}',
-    'rb.banner_applied': 'Selected area reverted to history',
-    'rb.err_no_date': 'Please select a date and time.',
-    'rb.err_invalid': 'Invalid date.',
-    'rb.err_future': 'You cannot select a future date.',
-    'rb.err_no_pixels': 'No pixels in this area (may be sea/border).',
-    'rb.err_write': 'Could not write to server: ',
-    'rb.err_generic': 'Error: ',
+    'rb.confirm_yes': '✅ Confirm & Apply',
+    'rb.confirm_msg': '⚠️ The area will be reverted to <b>{{label}}</b>.<br><b>{{changed}}</b> pixels will actually change (selected area: {{total}} pixels).<br><br>This action is <b>PERMANENT</b> — all users will see the change and it will persist after a page refresh (F5).<br><br>Are you sure you want to apply this rollback?',
+    'rb.banner_label': '🕰 Selected area: {{label}}',
+    'rb.banner_applied': '🕰 Selected area reverted to history',
+    'rb.err_no_date': '⚠ Please select a date and time.',
+    'rb.err_invalid': '⚠ Invalid date.',
+    'rb.err_future': '⚠ You cannot select a future date.',
+    'rb.err_no_pixels': '⚠ No pixels in this area (may be sea/border).',
+    'rb.err_write': '⚠ Could not write to server: ',
+    'rb.err_generic': '⚠ Error: ',
   }
 };
 
@@ -5920,7 +5949,7 @@ let scale=1,ox=0,oy=0,panning=false,panSt={x:0,y:0};
 
 const mapImg=new Image();
 mapImg.crossOrigin='anonymous';
-mapImg.src='https://pwpnjjfeojebqzhduqsc.supabase.co/storage/v1/object/public/maps/MALHARITA.png';
+mapImg.src='https://files.catbox.moe/bkbbmq.png';
 
 let baseCanvas=null,pixelCanvas=null;
 let labelEls=[];
@@ -6788,7 +6817,7 @@ async function initMapData(){
 let _pendingClickMx=null, _pendingClickMy=null;
 function showRegisterPrompt(mx, my){
   _pendingClickMx=mx; _pendingClickMy=my;
-  document.getElementById('login-title').textContent='Hesabına Giriş Yap';
+  document.getElementById('login-title').textContent='✏ Hesabına Giriş Yap';
   document.getElementById('login-desc').innerHTML='Piksel basmak için email ile kayıt ol veya giriş yap.';
   document.getElementById('login-err').textContent='';
   document.getElementById('login').style.display='flex';
@@ -6798,7 +6827,7 @@ function showRegisterPrompt(mx, my){
 function _activateUser(v){
   username=v;
   document.getElementById('login').style.display='none';
-  document.getElementById('ubadge').textContent=''+username;
+  document.getElementById('ubadge').textContent='👤 '+username;
   startRealtimeSync();
   loadCD(); updateDots();
   loadProfile();
@@ -6851,7 +6880,7 @@ async function signInWithGoogle(){
     }
   });
   if(error){
-    errEl.textContent='Google ile giriş başlatılamadı: '+error.message;
+    errEl.textContent='⚠ Google ile giriş başlatılamadı: '+error.message;
   }
   // Hata yoksa tarayıcı Google'a yönlendirilir, bu fonksiyonun devamı çalışmaz.
 }
@@ -6864,17 +6893,17 @@ async function startGame(){
   errEl.textContent='';
 
   if(!email || !password){
-    errEl.textContent='Email ve şifre gerekli.';
+    errEl.textContent='⚠ Email ve şifre gerekli.';
     return;
   }
   if(password.length < 6){
-    errEl.textContent='Şifre en az 6 karakter olmalı.';
+    errEl.textContent='⚠ Şifre en az 6 karakter olmalı.';
     return;
   }
 
   if(_authMode === 'signup'){
     const v=document.getElementById('uname').value.trim();
-    if(!v){document.getElementById('uname').style.borderColor='#e63946';errEl.textContent='Kullanıcı adı gerekli.';return;}
+    if(!v){document.getElementById('uname').style.borderColor='#e63946';errEl.textContent='⚠ Kullanıcı adı gerekli.';return;}
 
     // ── GÜVENLİK: kullanıcı adı validasyonu ──────────────────────────
     // Daha sonra faction üye listesi, liderlik tablosu, sohbet gibi pek
@@ -6882,7 +6911,7 @@ async function startGame(){
     // karakteri içeremesin diye (stored XSS önleme) kısıtlanıyor.
     const NAME_RE = /^[\p{L}\p{N} _\-]{2,20}$/u;
     if(!NAME_RE.test(v)){
-      errEl.textContent='Kullanıcı adı sadece harf, rakam, boşluk, "-" ve "_" içerebilir (2-20 karakter).';
+      errEl.textContent='⚠ Kullanıcı adı sadece harf, rakam, boşluk, "-" ve "_" içerebilir (2-20 karakter).';
       document.getElementById('uname').style.borderColor='#e63946';
       return;
     }
@@ -6895,7 +6924,7 @@ async function startGame(){
     btn.disabled=false; btn.textContent='Kayıt Ol ve Haritaya Gir →';
 
     if(error){
-      errEl.textContent=''+(error.message==='User already registered' ? 'Bu email zaten kayıtlı, "Giriş Yap" sekmesini kullan.' : error.message);
+      errEl.textContent='⚠ '+(error.message==='User already registered' ? 'Bu email zaten kayıtlı, "Giriş Yap" sekmesini kullan.' : error.message);
       return;
     }
     if(!data.session){
@@ -6909,7 +6938,7 @@ async function startGame(){
     btn.disabled=false; btn.textContent='Giriş Yap →';
 
     if(error){
-      errEl.textContent='Email veya şifre hatalı.';
+      errEl.textContent='⚠ Email veya şifre hatalı.';
       return;
     }
     const displayName = data.user?.user_metadata?.display_name || data.user?.user_metadata?.full_name || data.user?.email || 'Oyuncu';
@@ -6945,7 +6974,7 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
     // Gerçek bir oturum var — otomatik giriş yap
     const displayName = session.user.user_metadata?.display_name || session.user.user_metadata?.full_name || session.user.email || 'Oyuncu';
     username=displayName;
-    document.getElementById('ubadge').textContent=''+username;
+    document.getElementById('ubadge').textContent='👤 '+username;
     document.getElementById('uname').value=displayName;
     (async()=>{
       await loadData(); updateSidebar();
@@ -6986,7 +7015,7 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
     })();
   } else {
     // Misafir olarak haritayı göster
-    document.getElementById('ubadge').textContent='Misafir';
+    document.getElementById('ubadge').textContent='👤 Misafir';
     (async()=>{
       await loadData(); updateSidebar();
       await initMapData();
@@ -7001,7 +7030,7 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
   supabase.auth.onAuthStateChange((event, newSession) => {
     if(event === 'SIGNED_OUT'){
       username = '';
-      document.getElementById('ubadge').textContent='Misafir';
+      document.getElementById('ubadge').textContent='👤 Misafir';
       // GÜVENLİK: çıkış yapınca admin/owner durumunu ve butonlarını da sıfırla
       _isAdmin = false; _isOwner = false; adminMode = false;
       document.getElementById('adminbtn').style.display='none';
@@ -7097,7 +7126,7 @@ async function refreshOwnerAdminList(){
     listEl.innerHTML = data.map(row=>{
       const safeName = _esc(row.display_name||'?');
       const roleColor = row.role==='owner' ? '#f5a623' : 'var(--accent)';
-      const roleLabel = row.role==='owner' ? 'Owner' : 'Admin';
+      const roleLabel = row.role==='owner' ? '👑 Owner' : '🛡 Admin';
       return `<div style="display:flex;align-items:center;justify-content:space-between;background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;padding:.5rem .7rem;">
         <span style="font-size:.78rem;font-weight:600;">${safeName}</span>
         <span style="font-size:.62rem;font-weight:700;color:${roleColor};font-family:'Space Mono',monospace;">${roleLabel}</span>
@@ -7112,7 +7141,7 @@ async function ownerAssignRole(role){
   const emailEl = document.getElementById('owner-add-email');
   const msgEl = document.getElementById('owner-form-msg');
   const email = emailEl.value.trim();
-  if(!email){ msgEl.style.color='#f04a4a'; msgEl.textContent='Email gerekli.'; return; }
+  if(!email){ msgEl.style.color='#f04a4a'; msgEl.textContent='⚠ Email gerekli.'; return; }
   msgEl.style.color='var(--muted)'; msgEl.textContent='İşleniyor...';
   try{
     const {data,error} = await supabase.rpc('make_admin_by_email',{p_email:email,p_role:role});
@@ -7120,7 +7149,7 @@ async function ownerAssignRole(role){
       const errMsg = data && data.error==='user_not_found' ? 'Bu email ile kayıtlı kullanıcı bulunamadı.'
         : data && data.error==='not_owner' ? 'Bu işlem için owner yetkisi gerekli.'
         : 'İşlem başarısız.';
-      msgEl.style.color='#f04a4a'; msgEl.textContent=''+errMsg;
+      msgEl.style.color='#f04a4a'; msgEl.textContent='⚠ '+errMsg;
       return;
     }
     msgEl.style.color='#00d4a0'; msgEl.textContent='✓ Yetki verildi: '+(role==='owner'?'Owner':'Admin');
@@ -7128,14 +7157,14 @@ async function ownerAssignRole(role){
     await refreshOwnerAdminList();
   }catch(e){
     console.error('make_admin_by_email hatası:', e);
-    msgEl.style.color='#f04a4a'; msgEl.textContent='Bağlantı hatası.';
+    msgEl.style.color='#f04a4a'; msgEl.textContent='⚠ Bağlantı hatası.';
   }
 }
 async function ownerRevoke(){
   const emailEl = document.getElementById('owner-add-email');
   const msgEl = document.getElementById('owner-form-msg');
   const email = emailEl.value.trim();
-  if(!email){ msgEl.style.color='#f04a4a'; msgEl.textContent='Email gerekli.'; return; }
+  if(!email){ msgEl.style.color='#f04a4a'; msgEl.textContent='⚠ Email gerekli.'; return; }
   msgEl.style.color='var(--muted)'; msgEl.textContent='İşleniyor...';
   try{
     const {data,error} = await supabase.rpc('revoke_admin_by_email',{p_email:email});
@@ -7144,7 +7173,7 @@ async function ownerRevoke(){
         : data && data.error==='user_not_found' ? 'Bu email ile kayıtlı kullanıcı bulunamadı.'
         : data && data.error==='not_owner' ? 'Bu işlem için owner yetkisi gerekli.'
         : 'İşlem başarısız.';
-      msgEl.style.color='#f04a4a'; msgEl.textContent=''+errMsg;
+      msgEl.style.color='#f04a4a'; msgEl.textContent='⚠ '+errMsg;
       return;
     }
     msgEl.style.color='#00d4a0'; msgEl.textContent='✓ Yetki kaldırıldı.';
@@ -7152,7 +7181,7 @@ async function ownerRevoke(){
     await refreshOwnerAdminList();
   }catch(e){
     console.error('revoke_admin_by_email hatası:', e);
-    msgEl.style.color='#f04a4a'; msgEl.textContent='Bağlantı hatası.';
+    msgEl.style.color='#f04a4a'; msgEl.textContent='⚠ Bağlantı hatası.';
   }
 }
 
@@ -7337,7 +7366,7 @@ const XP_LEVEL_TITLES = {
 };
 
 // ═══════════════════════════════════════════════════════
-// GÜNLÜK SERİ (STREAK) SİSTEMİ
+// 🔥 GÜNLÜK SERİ (STREAK) SİSTEMİ
 // Oyuncu üst üste her gün girdikçe seri sayacı artar; her gün
 // farklı ve gittikçe büyüyen bir ödül verilir (XP + bonus piksel,
 // 7. günde ekstra büyük ödül). Bir gün atlanırsa seri 1'e döner.
@@ -7349,22 +7378,22 @@ const XP_LEVEL_TITLES = {
 // kademeli artmaya devam eder (STREAK_XP_BASE + gün*artış formülüyle).
 const STREAK_REWARDS = {
   tr: {
-    1: { icon:'', xp:5,  pixels:2,  label:'Seriye başladın!' },
-    2: { icon:'', xp:8,  pixels:3,  label:'İkinci gün!' },
-    3: { icon:'', xp:12, pixels:4,  label:'Üç gün üst üste!' },
+    1: { icon:'🔥', xp:5,  pixels:2,  label:'Seriye başladın!' },
+    2: { icon:'⚡', xp:8,  pixels:3,  label:'İkinci gün!' },
+    3: { icon:'✨', xp:12, pixels:4,  label:'Üç gün üst üste!' },
     4: { icon:'💪', xp:16, pixels:5,  label:'Dört gün — harika gidiyorsun!' },
     5: { icon:'🌟', xp:22, pixels:6,  label:'Beş gün! Az kaldı...' },
-    6: { icon:'', xp:28, pixels:7,  label:'Altı gün — son düzlük!' },
-    7: { icon:'', xp:50, pixels:12, label:'7 GÜN TAM SERİ! Büyük ödül!' }
+    6: { icon:'🚀', xp:28, pixels:7,  label:'Altı gün — son düzlük!' },
+    7: { icon:'👑', xp:50, pixels:12, label:'7 GÜN TAM SERİ! Büyük ödül!' }
   },
   en: {
-    1: { icon:'', xp:5,  pixels:2,  label:'Streak started!' },
-    2: { icon:'', xp:8,  pixels:3,  label:'Second day!' },
-    3: { icon:'', xp:12, pixels:4,  label:'Three days in a row!' },
+    1: { icon:'🔥', xp:5,  pixels:2,  label:'Streak started!' },
+    2: { icon:'⚡', xp:8,  pixels:3,  label:'Second day!' },
+    3: { icon:'✨', xp:12, pixels:4,  label:'Three days in a row!' },
     4: { icon:'💪', xp:16, pixels:5,  label:"Four days — you're crushing it!" },
     5: { icon:'🌟', xp:22, pixels:6,  label:'Five days! Almost there...' },
-    6: { icon:'', xp:28, pixels:7,  label:'Six days — final stretch!' },
-    7: { icon:'', xp:50, pixels:12, label:'FULL 7-DAY STREAK! Big reward!' }
+    6: { icon:'🚀', xp:28, pixels:7,  label:'Six days — final stretch!' },
+    7: { icon:'👑', xp:50, pixels:12, label:'FULL 7-DAY STREAK! Big reward!' }
   }
 };
 function getStreakRewardBase(cyclePos){
@@ -7388,17 +7417,17 @@ function getStreakReward(day){
 const XP_REWARDS = {
   tr: {
     5:  { icon: '🖼️', name: 'Özel Avatar Çerçevesi (Altın Halkası)', frame: 'gold' },
-    10: { icon: '', name: 'Yeni Profil Rozeti (Piksel Madalyası)', badge: 'pixel_medal' },
-    15: { icon: '', name: 'Özel İsim Rengi (Mor Gradyan)', nameColor: 'purple' },
-    20: { icon: '', name: 'Nadir Avatar Çerçevesi (Gökkuşağı)', frame: 'rainbow' },
-    25: { icon: '', name: 'Özel Unvan: "Piksel Efendisi"', title: 'Piksel Efendisi' }
+    10: { icon: '🏅', name: 'Yeni Profil Rozeti (Piksel Madalyası)', badge: 'pixel_medal' },
+    15: { icon: '✨', name: 'Özel İsim Rengi (Mor Gradyan)', nameColor: 'purple' },
+    20: { icon: '💎', name: 'Nadir Avatar Çerçevesi (Gökkuşağı)', frame: 'rainbow' },
+    25: { icon: '👑', name: 'Özel Unvan: "Piksel Efendisi"', title: 'Piksel Efendisi' }
   },
   en: {
     5:  { icon: '🖼️', name: 'Exclusive Avatar Frame (Golden Ring)', frame: 'gold' },
-    10: { icon: '', name: 'New Profile Badge (Pixel Medal)', badge: 'pixel_medal' },
-    15: { icon: '', name: 'Custom Name Color (Purple Gradient)', nameColor: 'purple' },
-    20: { icon: '', name: 'Rare Avatar Frame (Rainbow)', frame: 'rainbow' },
-    25: { icon: '', name: 'Exclusive Title: "Pixel Master"', title: 'Pixel Master' }
+    10: { icon: '🏅', name: 'New Profile Badge (Pixel Medal)', badge: 'pixel_medal' },
+    15: { icon: '✨', name: 'Custom Name Color (Purple Gradient)', nameColor: 'purple' },
+    20: { icon: '💎', name: 'Rare Avatar Frame (Rainbow)', frame: 'rainbow' },
+    25: { icon: '👑', name: 'Exclusive Title: "Pixel Master"', title: 'Pixel Master' }
   }
 };
 function getXPReward(lvl){
@@ -7541,7 +7570,7 @@ function gainXP(amount){
 }
 
 // ═══════════════════════════════════════════════════════
-// GÜNLÜK SERİ (STREAK) KONTROLÜ
+// 🔥 GÜNLÜK SERİ (STREAK) KONTROLÜ
 // Oturum açılışında (her gerçek girişte, sayfa yenilemede değil)
 // bir kez çağrılır. Kullanıcının yerel tarihine göre:
 //  - Bugün zaten sayıldıysa  → hiçbir şey yapma
@@ -7620,7 +7649,7 @@ function updateStreakUI(){
   if(badge){
     if(streak > 0){
       badge.style.display = 'inline-flex';
-      badge.textContent = '' + streak;
+      badge.textContent = '🔥 ' + streak;
     } else {
       badge.style.display = 'none';
     }
@@ -7697,7 +7726,7 @@ function renderStreakPanel(){
   document.getElementById('pc-streak-card').innerHTML = `
     <div class="pc-streak-header">
       <div>
-        <div class="pc-streak-num">${streak}</div>
+        <div class="pc-streak-num">🔥 ${streak}</div>
         <div class="pc-streak-title">${t('streak.title')}</div>
       </div>
       <div style="text-align:right">
@@ -7825,7 +7854,7 @@ async function renderLevelLeaderboard(){
     }
     el.innerHTML = data.map((row, i) => {
       const pos = i + 1;
-      const posIcon = pos === 1 ? '' : pos === 2 ? '' : pos === 3 ? '' : pos;
+      const posIcon = pos === 1 ? '🥇' : pos === 2 ? '🥈' : pos === 3 ? '🥉' : pos;
       // GÜVENLİK: row.username Supabase'den geliyor ama yine de kullanıcı
       // tarafından kayıt sırasında serbestçe belirlenmiş bir alan — herkesin
       // gördüğü liderlik tablosuna gömülmeden önce kaçışlanmalı (stored XSS önleme).
@@ -7967,17 +7996,17 @@ function renderProfileStats(){
       <div class="pcs-card-lbl">${t('stats.total_pixel')}</div>
     </div>
     <div class="pcs-card">
-      <div class="pcs-card-icon"></div>
+      <div class="pcs-card-icon">⚡</div>
       <div class="pcs-card-val">${_getPixLeft()}</div>
       <div class="pcs-card-lbl">${t('stats.current_pixel')}</div>
     </div>
     <div class="pcs-card">
-      <div class="pcs-card-icon"></div>
+      <div class="pcs-card-icon">🔥</div>
       <div class="pcs-card-val">${streak}</div>
       <div class="pcs-card-lbl">${t('stats.day_streak')}</div>
     </div>
     <div class="pcs-card">
-      <div class="pcs-card-icon"></div>
+      <div class="pcs-card-icon">🏆</div>
       <div class="pcs-card-val">${bestDay}</div>
       <div class="pcs-card-lbl">${t('stats.best_day')}</div>
     </div>
@@ -8144,7 +8173,7 @@ function openProfileModal(){
     if(isLocked){
       const lockSpan=document.createElement('span');
       lockSpan.className='pc-frame-lock-icon';
-      lockSpan.textContent='';
+      lockSpan.textContent='🔒';
       el.appendChild(lockSpan);
       const lvSpan=document.createElement('span');
       lvSpan.className='pc-frame-lvreq';
@@ -8176,7 +8205,7 @@ const FC_COLORS = [
   '#3b82f6','#6366f1','#9b7fff','#a855f7','#ec4899',
   '#f43f5e','#ffffff','#94a3b8','#64748b','#1e293b',
 ];
-const FC_EMOJIS = ['','','','','','','','','','','','','','',''];
+const FC_EMOJIS = ['⚑','🏴','🔥','⚔️','🛡️','👑','🌙','⭐','🦅','🐉','🌊','🏔️','🎯','💎','🚀'];
 
 function loadFactions(){
   try{
@@ -8230,7 +8259,7 @@ function renderFactionCreate(body){
   });
 
   function renderFactionList(list){
-    if(!list.length) return `<div class="fc-empty" style="padding:.8rem"><strong></strong>${t('faction.no_results')}</div>`;
+    if(!list.length) return `<div class="fc-empty" style="padding:.8rem"><strong>🔍</strong>${t('faction.no_results')}</div>`;
     return list.map((f,idx)=>{
       // GÜVENLİK: faction adı, tag'i ve logo URL'i kullanıcı tarafından
       // belirleniyor; bu liste herkesin göreceği bir tarama ekranı olduğu
@@ -8241,7 +8270,7 @@ function renderFactionCreate(body){
       const logoEl = safeLogo
         ? `<img src="${safeLogo}" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0;">`
         : `<div style="width:36px;height:36px;border-radius:8px;background:${f.color}33;color:${f.color};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">${f.emoji}</div>`;
-      const medal = idx===0?'':idx===1?'':idx===2?'':'';
+      const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':'';
       return `<div class="fc-browse-row" onclick="joinFactionByTag('${safeTag}')">
         ${logoEl}
         <div style="flex:1;min-width:0;">
@@ -8251,7 +8280,7 @@ function renderFactionCreate(body){
             <span style="font-family:'Space Mono',monospace;font-size:.58rem;color:${f.color}">[${safeTag}]</span>
           </div>
           <div style="display:flex;gap:.6rem;margin-top:2px;">
-            <span style="font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted)">${f.members.length}${t('faction.members_unit')}</span>
+            <span style="font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted)">👥 ${f.members.length}${t('faction.members_unit')}</span>
             ${(f.totalPixels||0)>0?`<span style="font-family:'Space Mono',monospace;font-size:.6rem;color:var(--accent)">🟣 ${f.totalPixels||0} px</span>`:''}
           </div>
         </div>
@@ -8261,7 +8290,7 @@ function renderFactionCreate(body){
   }
 
   body.innerHTML = `
-    <div class="fc-empty"><strong></strong>${t('faction.no_faction_yet')}</div>
+    <div class="fc-empty"><strong>⚑</strong>${t('faction.no_faction_yet')}</div>
 
     <!-- Create -->
     <div style="display:flex;flex-direction:column;gap:.7rem;">
@@ -8285,14 +8314,14 @@ function renderFactionCreate(body){
         <span style="font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted)">${sorted.length} faction</span>
       </div>
       <div style="position:relative;">
-        <input class="pc-input" id="fc-search-in" placeholder="${t('faction.search_ph')}" maxlength="30"
+        <input class="pc-input" id="fc-search-in" placeholder="🔍 ${t('faction.search_ph')}" maxlength="30"
           oninput="filterFactionBrowse()" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search"
           style="padding-left:1.8rem"/>
-        <span style="position:absolute;left:.6rem;top:50%;transform:translateY(-50%);font-size:.75rem;pointer-events:none"></span>
+        <span style="position:absolute;left:.6rem;top:50%;transform:translateY(-50%);font-size:.75rem;pointer-events:none">🔍</span>
       </div>
       <div id="fc-browse-list" style="display:flex;flex-direction:column;gap:.4rem;max-height:220px;overflow-y:auto;padding-right:2px;">
         ${sorted.length===0
-          ? `<div class="fc-empty" style="padding:.8rem"><strong></strong>${t('faction.none_exist')}<br>${t('faction.be_first')}</div>`
+          ? `<div class="fc-empty" style="padding:.8rem"><strong>🌐</strong>${t('faction.none_exist')}<br>${t('faction.be_first')}</div>`
           : renderFactionList(sorted)
         }
       </div>
@@ -8399,10 +8428,10 @@ function pickFcColor(el, col){
 function renderFactionStatsPanel(f){
   const sortedMembers = (f.members||[]).slice().sort((a,b)=>(b.contributed||0)-(a.contributed||0));
   if(sortedMembers.length===0){
-    return `<div class="fc-empty"><strong></strong>${t('stats.no_pixels')}</div>`;
+    return `<div class="fc-empty"><strong>📊</strong>${t('stats.no_pixels')}</div>`;
   }
   return sortedMembers.map((m,idx)=>{
-    const medal = idx===0?'':idx===1?'':idx===2?'':('#'+(idx+1));
+    const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':('#'+(idx+1));
     const safeName = _esc(m.name);
     const contributed = m.contributed||0;
     return `<div class="fc-member">
@@ -8453,19 +8482,19 @@ function renderFactionHome(body){
         <div class="fc-banner-role" style="background:${roleBg};color:${roleColor}">${roleLabel}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:2px;font-family:'Space Mono',monospace;font-size:.6rem;color:var(--muted);text-align:center;">
-        <div style="color:#00d4a0;font-weight:700;">${allies}</div>
-        <div style="color:#f04a4a;font-weight:700;">${wars}</div>
+        <div style="color:#00d4a0;font-weight:700;">${allies}🤝</div>
+        <div style="color:#f04a4a;font-weight:700;">${wars}⚔️</div>
       </div>
     </div>
 
     <!-- Tabs -->
     <div class="fc-tabs" style="flex-wrap:wrap;">
-      <button class="fc-tab${fcActiveTab==='info'?' active':''}" onclick="switchFcTab('info')">${t('faction.tabs_info')}</button>
-      <button class="fc-tab${fcActiveTab==='members'?' active':''}" onclick="switchFcTab('members')">${t('faction.members_title')}</button>
-      <button class="fc-tab${fcActiveTab==='chat'?' active':''}" onclick="switchFcTab('chat')">${t('faction.tabs_chat')}</button>
-      <button class="fc-tab${fcActiveTab==='diplomacy'?' active':''}" onclick="switchFcTab('diplomacy')">${t('faction.tabs_diplomacy')}</button>
-      <button class="fc-tab${fcActiveTab==='stats'?' active':''}" onclick="switchFcTab('stats')">${t('faction.tabs_stats')}</button>
-      ${isLeader?`<button class="fc-tab${fcActiveTab==='settings'?' active':''}" onclick="switchFcTab('settings')">${t('faction.tabs_settings')}</button>`:''}
+      <button class="fc-tab${fcActiveTab==='info'?' active':''}" onclick="switchFcTab('info')">📋 ${t('faction.tabs_info')}</button>
+      <button class="fc-tab${fcActiveTab==='members'?' active':''}" onclick="switchFcTab('members')">👥 ${t('faction.members_title')}</button>
+      <button class="fc-tab${fcActiveTab==='chat'?' active':''}" onclick="switchFcTab('chat')">💬 ${t('faction.tabs_chat')}</button>
+      <button class="fc-tab${fcActiveTab==='diplomacy'?' active':''}" onclick="switchFcTab('diplomacy')">🤝 ${t('faction.tabs_diplomacy')}</button>
+      <button class="fc-tab${fcActiveTab==='stats'?' active':''}" onclick="switchFcTab('stats')">📊 ${t('faction.tabs_stats')}</button>
+      ${isLeader?`<button class="fc-tab${fcActiveTab==='settings'?' active':''}" onclick="switchFcTab('settings')">⚙ ${t('faction.tabs_settings')}</button>`:''}
     </div>
 
     <!-- INFO PANEL -->
@@ -8533,10 +8562,10 @@ function renderFactionHome(body){
     <!-- DIPLOMACY PANEL -->
     <div class="fc-panel${fcActiveTab==='diplomacy'?' active':''}" id="fc-panel-diplomacy">
       ${Object.keys(allFactions).filter(tg=>tg!==f.tag).length===0
-        ? `<div class="fc-empty"><strong></strong>${t('faction.no_other_factions')}</div>`
+        ? `<div class="fc-empty"><strong>🤝</strong>${t('faction.no_other_factions')}</div>`
         : Object.entries(allFactions).filter(([tg])=>tg!==f.tag).map(([tag,of])=>{
           const status = (f.diplomacy||{})[tag] || 'neutral';
-          const statusLabel = status==='ally'?'İttifak':status==='war'?'Savaş':'Nötr';
+          const statusLabel = status==='ally'?'🤝 İttifak':status==='war'?'⚔️ Savaş':'☮️ Nötr';
           const statusGlow = status==='war'
             ? 'box-shadow:0 0 0 2px rgba(240,74,74,.5),0 0 12px rgba(240,74,74,.25);border-color:rgba(240,74,74,.4);'
             : status==='ally'
@@ -8551,7 +8580,7 @@ function renderFactionHome(body){
           const pendingInvite = hasPendingAllyInvite(f.tag, tag);
           return `<div class="fc-diplo-item" style="${cardBg}${statusGlow}transition:all .2s;">
             <div class="fc-diplo-icon" style="width:36px;height:36px;border-radius:10px;background:${of.color}22;border:1px solid ${of.color}44;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">
-              ${of.logo?`<img src="${of.logo}" style="width:28px;height:28px;border-radius:6px;object-fit:cover">`:of.emoji||''}
+              ${of.logo?`<img src="${of.logo}" style="width:28px;height:28px;border-radius:6px;object-fit:cover">`:of.emoji||'⚑'}
             </div>
             <div style="flex:1;min-width:0;">
               <div style="font-size:.78rem;font-weight:800;color:${of.color};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${_esc(of.name)}</div>
@@ -8560,13 +8589,13 @@ function renderFactionHome(body){
             <div class="fc-diplo-status ${status}" style="white-space:nowrap;">${statusLabel}</div>
             ${isLeader?`<div class="fc-diplo-actions" style="display:flex;gap:.25rem;flex-shrink:0;">
               ${status==='ally'
-                ? `<button class="fc-diplo-btn" onclick="setDiplomacy('${tag}','neutral')" title="İttifakı Boz" style="border-color:var(--muted);color:var(--muted);"></button>`
+                ? `<button class="fc-diplo-btn" onclick="setDiplomacy('${tag}','neutral')" title="İttifakı Boz" style="border-color:var(--muted);color:var(--muted);">☮️</button>`
                 : pendingInvite
                 ? `<button class="fc-diplo-btn" disabled title="Davet gönderildi" style="opacity:.5;cursor:not-allowed;">⏳</button>`
-                : `<button class="fc-diplo-btn ally-btn" onclick="sendAllyInvite('${tag}')" title="İttifak Daveti Gönder"></button>`
+                : `<button class="fc-diplo-btn ally-btn" onclick="sendAllyInvite('${tag}')" title="İttifak Daveti Gönder">🤝</button>`
               }
-              <button class="fc-diplo-btn" onclick="setDiplomacy('${tag}','neutral')" title="Nötr" style="${status==='neutral'?'border-color:var(--accent);color:var(--accent);':''}"></button>
-              <button class="fc-diplo-btn war-btn" onclick="declareWarChecked('${tag}')" title="Savaş İlan Et" style="${status==='war'?'border-color:#f04a4a;color:#f04a4a;background:rgba(240,74,74,.12);':''}"></button>
+              <button class="fc-diplo-btn" onclick="setDiplomacy('${tag}','neutral')" title="Nötr" style="${status==='neutral'?'border-color:var(--accent);color:var(--accent);':''}">☮️</button>
+              <button class="fc-diplo-btn war-btn" onclick="declareWarChecked('${tag}')" title="Savaş İlan Et" style="${status==='war'?'border-color:#f04a4a;color:#f04a4a;background:rgba(240,74,74,.12);':''}">⚔️</button>
             </div>`:''}
           </div>`;
         }).join('')
@@ -8708,22 +8737,22 @@ function renderMailbox(){
     const time = new Date(m.ts).toLocaleString('tr-TR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
     let icon='📩', title='', body='', actions='';
     if(m.type==='ally_invite'){
-      icon=''; title=`<b>${_esc(m.from)}</b> [${_esc(m.fromTag)}] İttifak Daveti`;
+      icon='🤝'; title=`<b>${_esc(m.from)}</b> [${_esc(m.fromTag)}] İttifak Daveti`;
       body=`<b>${_esc(m.from)}</b> fraksiyonu sizi ittifaka davet ediyor.`;
       if(m.pending!==false){
-        actions=`<button class="mail-accept-btn" onclick="acceptAllyInvite('${m.id}','${m.fromTag}')">Kabul Et</button>
-                 <button class="mail-reject-btn" onclick="rejectAllyInvite('${m.id}','${m.fromTag}')">Reddet</button>`;
+        actions=`<button class="mail-accept-btn" onclick="acceptAllyInvite('${m.id}','${m.fromTag}')">✅ Kabul Et</button>
+                 <button class="mail-reject-btn" onclick="rejectAllyInvite('${m.id}','${m.fromTag}')">❌ Reddet</button>`;
       } else {
-        actions=`<span style="font-size:.62rem;color:var(--muted);">${m.resolved==='accepted'?'Kabul edildi':'Reddedildi'}</span>`;
+        actions=`<span style="font-size:.62rem;color:var(--muted);">${m.resolved==='accepted'?'✅ Kabul edildi':'❌ Reddedildi'}</span>`;
       }
     } else if(m.type==='ally_accept'){
-      icon=''; title=`<b>${_esc(m.from)}</b> İttifak Davetini Kabul Etti`;
+      icon='🎉'; title=`<b>${_esc(m.from)}</b> İttifak Davetini Kabul Etti`;
       body=`<b>${_esc(m.from)}</b> fraksiyonu ittifak davetinizi kabul etti! Artık müttefiksiniz.`;
     } else if(m.type==='ally_reject'){
       icon='💔'; title=`<b>${_esc(m.from)}</b> İttifak Davetini Reddetti`;
       body=`<b>${_esc(m.from)}</b> fraksiyonu ittifak davetinizi reddetti.`;
     } else if(m.type==='war_declared'){
-      icon=''; title=`<b>${_esc(m.from)}</b> Size Savaş İlan Etti!`;
+      icon='⚔️'; title=`<b>${_esc(m.from)}</b> Size Savaş İlan Etti!`;
       body=`<b>${_esc(m.from)}</b> [${_esc(m.fromTag)}] fraksiyonunuza savaş ilan etti!`;
     } else if(m.type==='war_info'){
       icon='📢'; title=m.subject||'Savaş Bildirimi';
@@ -8767,12 +8796,12 @@ function sendAllyInvite(targetTag){
   try{
     getWarChannel().send({ type:'broadcast', event:'ally_invite', payload:{
       from: factionData.name, fromTag: factionData.tag,
-      fromColor: factionData.color, fromEmoji: factionData.emoji||'',
+      fromColor: factionData.color, fromEmoji: factionData.emoji||'⚑',
       to: targetFaction.name, toTag: targetTag,
       ts: Date.now()
     }});
   }catch(e){}
-  showPopup(`${targetFaction.name} fraksiyonuna ittifak daveti gönderildi!`);
+  showPopup(`🤝 ${targetFaction.name} fraksiyonuna ittifak daveti gönderildi!`);
   renderFactionModal();
 }
 
@@ -8802,13 +8831,13 @@ function acceptAllyInvite(mailId, fromTag){
     }});
   }catch(e){}
   showAllyBanner({
-    f1Name: factionData.name, f1Color: factionData.color, f1Emoji: factionData.emoji||'',
+    f1Name: factionData.name, f1Color: factionData.color, f1Emoji: factionData.emoji||'⚑',
     f2Name: fromFaction?fromFaction.name:fromTag, f2Color: fromFaction?fromFaction.color:'#6c5ce7'
   });
   if(typeof SFX!=='undefined') SFX.ally();
   renderMailbox();
   renderFactionModal();
-  showPopup('İttifak kuruldu!');
+  showPopup('✅ İttifak kuruldu!');
 }
 
 function rejectAllyInvite(mailId, fromTag){
@@ -8829,7 +8858,7 @@ function rejectAllyInvite(mailId, fromTag){
     }});
   }catch(e){}
   renderMailbox();
-  showPopup('Davet reddedildi.');
+  showPopup('❌ Davet reddedildi.');
 }
 
 // ── SAVAŞ LİMİTİ KONTROLÜ ──────────────────────────────────────────────
@@ -8850,10 +8879,10 @@ function declareWarChecked(targetTag){
   }
   const warCount = getActiveWarCount();
   if(warCount >= MAX_WARS){
-    showPopup(`Maksimum ${MAX_WARS} fraksiyona aynı anda savaş açabilirsiniz!`);
+    showPopup(`⚠️ Maksimum ${MAX_WARS} fraksiyona aynı anda savaş açabilirsiniz!`);
     return;
   }
-  if(!confirm(`${allFactions[targetTag]?.name||targetTag} fraksiyonuna savaş ilan etmek istiyor musunuz?`)) return;
+  if(!confirm(`⚔️ ${allFactions[targetTag]?.name||targetTag} fraksiyonuna savaş ilan etmek istiyor musunuz?`)) return;
   setDiplomacy(targetTag, 'war');
 }
 
@@ -8874,7 +8903,7 @@ function setupMailboxListeners(){
       fromColor: p.fromColor, fromEmoji: p.fromEmoji,
       pending: true
     });
-    showPopup(`${p.from} fraksiyonundan ittifak daveti aldınız!`);
+    showPopup(`🤝 ${p.from} fraksiyonundan ittifak daveti aldınız!`);
   });
   ch.on('broadcast', { event:'ally_accept' }, (payload)=>{
     const p = payload && payload.payload;
@@ -8889,7 +8918,7 @@ function setupMailboxListeners(){
     const invites = getAllyInvites().filter(i=>!(i.fromTag===factionData.tag && i.toTag===p.fromTag));
     saveAllyInvites(invites);
     addMail({ type:'ally_accept', from: p.from, fromTag: p.fromTag });
-    showPopup(`${p.from} ittifak davetinizi kabul etti!`);
+    showPopup(`🎉 ${p.from} ittifak davetinizi kabul etti!`);
     renderFactionModal();
   });
   ch.on('broadcast', { event:'ally_reject' }, (payload)=>{
@@ -8924,14 +8953,14 @@ function setDiplomacy(targetTag, status){
   const targetFaction = allFactions[targetTag];
   const targetName = targetFaction ? targetFaction.name : targetTag;
   const targetColor = targetFaction ? targetFaction.color : '#f04a4a';
-  const targetEmoji = targetFaction ? (targetFaction.emoji || '') : '';
+  const targetEmoji = targetFaction ? (targetFaction.emoji || '⚑') : '⚑';
 
   if(status === 'war'){
     // Savaş bildirimi banner'ı
     showWarBanner({
       attackerName: factionData.name,
       attackerColor: factionData.color,
-      attackerEmoji: factionData.emoji || '',
+      attackerEmoji: factionData.emoji || '⚑',
       defenderName: targetName,
       defenderColor: targetColor,
       defenderEmoji: targetEmoji
@@ -8941,7 +8970,7 @@ function setDiplomacy(targetTag, status){
   } else if(status === 'ally'){
     if(typeof SFX !== 'undefined') SFX.ally();
     showAllyBanner({
-      f1Name: factionData.name, f1Color: factionData.color, f1Emoji: factionData.emoji || '',
+      f1Name: factionData.name, f1Color: factionData.color, f1Emoji: factionData.emoji || '⚑',
       f2Name: targetName, f2Color: targetColor, f2Emoji: targetEmoji
     });
     broadcastAllyDeclaration(factionData, targetFaction || {name:targetTag, color:targetColor, emoji:targetEmoji, tag:targetTag});
@@ -9378,10 +9407,10 @@ async function renderChatMessages(){
   } else {
     _chatRendering=false;
     // Faction chat - localStorage'da kalsın
-    if(!factionData){ box.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.75rem">Faction\'a katıl</div>'; return; }
+    if(!factionData){ box.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.75rem">⚑ Faction\'a katıl</div>'; return; }
     let log=[];
     try{ const r=localStorage.getItem('pv_fc_chat_'+factionData.tag); if(r) log=JSON.parse(r); }catch(e){}
-    if(!log.length){ box.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.75rem">Henüz mesaj yok.<br><span style="font-size:.65rem;opacity:.6">[${factionData.tag}] kanalı</span></div>`; return; }
+    if(!log.length){ box.innerHTML=`<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.75rem">💬 Henüz mesaj yok.<br><span style="font-size:.65rem;opacity:.6">[${factionData.tag}] kanalı</span></div>`; return; }
     log.slice(-40).forEach(entry=>{
       const isMe=entry.user===uname;
       let memberProf={};
@@ -9480,11 +9509,11 @@ function updateChatFactionTab(){
   const fBtn=document.getElementById('ch-tab-faction');
   if(!fBtn) return;
   if(factionData){
-    fBtn.textContent=''+factionData.name;
+    fBtn.textContent='⚑ '+factionData.name;
     fBtn.style.opacity='1';
     fBtn.style.cursor='pointer';
   } else {
-    fBtn.textContent='Faction';
+    fBtn.textContent='⚑ Faction';
     fBtn.style.opacity='.4';
     fBtn.style.cursor='default';
   }
@@ -9575,7 +9604,7 @@ canvas.addEventListener('mouseleave',()=>{
 });
 
 // ══════════════════════════════════════════════════════
-// PIXEL EVENT SYSTEM (süreli, hız artıran etkinlik)
+// ⚡ PIXEL EVENT SYSTEM (süreli, hız artıran etkinlik)
 // ══════════════════════════════════════════════════════
 let pixelEventActive = false;
 let pixelEventEndTime = 0; // ms epoch — etkinliğin biteceği an
@@ -9657,13 +9686,13 @@ function applyPixelEventState(){
   if(pixelEventActive){
     banner.classList.add('active');
     rc.classList.add('active');
-    if(btn){ btn.textContent='Pixel Event: ON'; btn.classList.add('event-on'); }
+    if(btn){ btn.textContent='⚡ Pixel Event: ON'; btn.classList.add('event-on'); }
   } else {
     banner.classList.remove('active');
     rc.classList.remove('active');
     activeRipples = [];
     if(rctx) rctx.clearRect(0,0,rippleCanvas.width,rippleCanvas.height);
-    if(btn){ btn.textContent='Pixel Event: OFF'; btn.classList.remove('event-on'); }
+    if(btn){ btn.textContent='⚡ Pixel Event: OFF'; btn.classList.remove('event-on'); }
   }
   updatePixelEventModalView();
 }
@@ -9968,7 +9997,7 @@ function checkTLDailyLimit() {
   } else {
     infoEl.style.background = 'linear-gradient(135deg,rgba(59,130,246,.12),rgba(139,92,246,.08))';
     infoEl.style.borderColor = 'rgba(139,92,246,.3)';
-    infoEl.innerHTML = 'Timelapse oluşturmak <b>günde 1 kez</b> kullanılabilir — haritanın yoğun hesaplama gerektiren bir özelliğidir.';
+    infoEl.innerHTML = '📅 Timelapse oluşturmak <b>günde 1 kez</b> kullanılabilir — haritanın yoğun hesaplama gerektiren bir özelliğidir.';
     startBtn.disabled = false;
     startBtn.style.opacity = '1';
     startBtn.style.cursor = 'pointer';
@@ -9999,7 +10028,7 @@ function updateTLPreviewInfo() {
   const estSec = Math.ceil(frameCount / fps);
   const rangeLabels = {1:'Son 1 saat',6:'Son 6 saat',24:'Bugün (24s)',72:'Son 3 gün',168:'Son 7 gün'};
   const speedLabels = {2:'Yavaş',5:'Normal',12:'Hızlı'};
-  preview.innerHTML = `⏱ Aralık: <b style="color:var(--txt)">${rangeLabels[hours]||hours+'s'}</b><br>🎞 Hız: <b style="color:var(--txt)">${speedLabels[fps]||fps} FPS</b><br>📐 Tahmini kare: ~${frameCount}<br>Tahmini süre: ~${estSec} saniye`;
+  preview.innerHTML = `⏱ Aralık: <b style="color:var(--txt)">${rangeLabels[hours]||hours+'s'}</b><br>🎞 Hız: <b style="color:var(--txt)">${speedLabels[fps]||fps} FPS</b><br>📐 Tahmini kare: ~${frameCount}<br>🎬 Tahmini süre: ~${estSec} saniye`;
 }
 
 async function startTimelapse() {
@@ -10040,7 +10069,7 @@ async function startTimelapse() {
     if (error) throw error;
 
     if (!pixelHistory || pixelHistory.length === 0) {
-      statusEl.textContent = 'Bu zaman aralığında hiç piksel bulunamadı.';
+      statusEl.textContent = '⚠ Bu zaman aralığında hiç piksel bulunamadı.';
       barEl.style.width = '100%';
       barEl.style.background = '#f04a4a';
       try { localStorage.removeItem(TL_DAILY_KEY); } catch(e) {}
@@ -10167,12 +10196,12 @@ async function startTimelapse() {
     link.download = `pixelfront_timelapse_${dateStr}_${tlSelectedHours}s.webm`;
 
     barEl.style.width = '100%';
-    statusEl.textContent = 'Video hazır, indirebilirsin!';
+    statusEl.textContent = '✅ Video hazır, indirebilirsin!';
     document.getElementById('tl-download-wrap').style.display = 'flex';
 
   } catch(err) {
     console.error('Timelapse hatası:', err);
-    statusEl.textContent = 'Hata: ' + (err.message || 'Bilinmeyen hata');
+    statusEl.textContent = '⚠ Hata: ' + (err.message || 'Bilinmeyen hata');
     barEl.style.background = '#f04a4a';
     try { localStorage.removeItem(TL_DAILY_KEY); } catch(e) {}
   }
@@ -10250,7 +10279,7 @@ async function loadHistoryView() {
     return;
   }
   if (targetDate > new Date()) {
-    errEl.textContent = 'Gelecek bir tarih seçemezsin.';
+    errEl.textContent = '⚠ Gelecek bir tarih seçemezsin.';
     errEl.style.display = 'block';
     return;
   }
@@ -10339,7 +10368,7 @@ async function loadHistoryView() {
 
   } catch(err) {
     console.error('Geçmiş yükleme hatası:', err);
-    errEl.textContent = 'Hata: ' + (err.message || 'Bilinmeyen hata');
+    errEl.textContent = '⚠ Hata: ' + (err.message || 'Bilinmeyen hata');
     errEl.style.display = 'block';
     btn.disabled = false;
     btn.style.opacity = '1';
@@ -10488,7 +10517,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ═══════════════════════════════════════════════════
-// ROLLBACK SİSTEMİ (admin — belirli alanı geçmişe döndür)
+// 🕰 ROLLBACK SİSTEMİ (admin — belirli alanı geçmişe döndür)
 // ═══════════════════════════════════════════════════
 // Mantık: admin haritada bir dikdörtgen alan seçer, o alanın
 // ortasına denk gelen saat/tarihi belirler. Tarihi seçip "Rollback At"
@@ -10534,13 +10563,13 @@ function toggleRollbackTool(){
   rollbackToolActive = !rollbackToolActive;
   const btn = document.getElementById('pt-rollback-toggle');
   if(rollbackToolActive){
-    btn.textContent = 'Rollback Aracı: ON';
+    btn.textContent = '🕰 Rollback Aracı: ON';
     btn.classList.add('event-on');
     rbCanvas.classList.add('active');
     resizeRollbackCanvas();
     showPopup(t('msg.rollback_tool_on'));
   } else {
-    btn.textContent = 'Rollback Aracı: OFF';
+    btn.textContent = '🕰 Rollback Aracı: OFF';
     btn.classList.remove('event-on');
     rbCanvas.classList.remove('active');
     rbSelecting = false;
@@ -10829,7 +10858,7 @@ async function runRollback(){
 
   } catch(err){
     console.error('Rollback hesaplama hatası:', err);
-    errEl.textContent = 'Hata: ' + (err.message || 'Bilinmeyen hata');
+    errEl.textContent = '⚠ Hata: ' + (err.message || 'Bilinmeyen hata');
     errEl.style.display = 'block';
     btn.disabled = false; btn.style.opacity = '1'; btn.textContent = t('rb.go_btn');
   }
@@ -11403,7 +11432,7 @@ window.toggleAdmin = function(){
 
 <script>
 // ══════════════════════════════════════════════════════════
-// GÖREV (QUEST) SİSTEMİ
+// 📋 GÖREV (QUEST) SİSTEMİ
 // Günlük, Haftalık ve Kilometre Taşı görevleri.
 // Veriler localStorage'da tutulur. Piksel basıldığında,
 // streak kazanıldığında ve fraksiyon kurulduğunda güncellenir.
@@ -11412,30 +11441,30 @@ window.toggleAdmin = function(){
 /* ── Görev Tanımları ── */
 const QUEST_DEFS = {
   daily: [
-    { id:'d_place5',    icon:'', name:'İlk Adım',        desc:'Bugün 5 piksel bas.',                          type:'place',  target:5,  xp:8,   pixels:2 },
-    { id:'d_place20',   icon:'',  name:'Çizici',          desc:'Bugün 20 piksel bas.',                         type:'place',  target:20, xp:18,  pixels:4 },
-    { id:'d_place50',   icon:'',  name:'Fırtına',         desc:'Bugün 50 piksel bas.',                         type:'place',  target:50, xp:35,  pixels:7 },
-    { id:'d_login',     icon:'',  name:'Günlük Giriş',    desc:'Bugün giriş yaparak haritayı ziyaret et.',     type:'login',  target:1,  xp:5,   pixels:1 },
-    { id:'d_3prov',     icon:'', name:'Gezgin',           desc:'Bugün 3 farklı ile piksel bas.',               type:'provinces', target:3, xp:12, pixels:3 },
+    { id:'d_place5',    icon:'🎯', name:'İlk Adım',        desc:'Bugün 5 piksel bas.',                          type:'place',  target:5,  xp:8,   pixels:2 },
+    { id:'d_place20',   icon:'🖌',  name:'Çizici',          desc:'Bugün 20 piksel bas.',                         type:'place',  target:20, xp:18,  pixels:4 },
+    { id:'d_place50',   icon:'⚡',  name:'Fırtına',         desc:'Bugün 50 piksel bas.',                         type:'place',  target:50, xp:35,  pixels:7 },
+    { id:'d_login',     icon:'🔥',  name:'Günlük Giriş',    desc:'Bugün giriş yaparak haritayı ziyaret et.',     type:'login',  target:1,  xp:5,   pixels:1 },
+    { id:'d_3prov',     icon:'🗺', name:'Gezgin',           desc:'Bugün 3 farklı ile piksel bas.',               type:'provinces', target:3, xp:12, pixels:3 },
   ],
   weekly: [
     { id:'w_place100',  icon:'🌟', name:'Haftalık Çizici',  desc:'Bu hafta 100 piksel bas.',                     type:'place',  target:100, xp:40,  pixels:8  },
-    { id:'w_place300',  icon:'', name:'Piksel Ustası',    desc:'Bu hafta 300 piksel bas.',                     type:'place',  target:300, xp:90,  pixels:18 },
-    { id:'w_streak3',   icon:'', name:'3 Günlük Seri',    desc:'3 gün üst üste giriş yap.',                   type:'streak', target:3,  xp:30,  pixels:6  },
-    { id:'w_streak7',   icon:'', name:'Tam Seri',          desc:'7 gün üst üste giriş yap.',                   type:'streak', target:7,  xp:70,  pixels:14 },
-    { id:'w_5prov',     icon:'', name:'Harita Gezgini',   desc:'Bu hafta 5 farklı ile piksel bas.',            type:'provinces', target:5, xp:25, pixels:5 },
-    { id:'w_faction',   icon:'', name:'Fraksiyoncu',      desc:'Bir fraksiyona katıl veya kur.',               type:'faction', target:1, xp:20,  pixels:4  },
+    { id:'w_place300',  icon:'💎', name:'Piksel Ustası',    desc:'Bu hafta 300 piksel bas.',                     type:'place',  target:300, xp:90,  pixels:18 },
+    { id:'w_streak3',   icon:'🔥', name:'3 Günlük Seri',    desc:'3 gün üst üste giriş yap.',                   type:'streak', target:3,  xp:30,  pixels:6  },
+    { id:'w_streak7',   icon:'👑', name:'Tam Seri',          desc:'7 gün üst üste giriş yap.',                   type:'streak', target:7,  xp:70,  pixels:14 },
+    { id:'w_5prov',     icon:'🗺', name:'Harita Gezgini',   desc:'Bu hafta 5 farklı ile piksel bas.',            type:'provinces', target:5, xp:25, pixels:5 },
+    { id:'w_faction',   icon:'🏴', name:'Fraksiyoncu',      desc:'Bir fraksiyona katıl veya kur.',               type:'faction', target:1, xp:20,  pixels:4  },
   ],
   milestone: [
     { id:'m_place10',   icon:'🌱', name:'Başlangıç',        desc:'Toplamda 10 piksel bas.',                      type:'total_place', target:10,   xp:15,  pixels:3  },
     { id:'m_place50',   icon:'🌿', name:'Büyüyor',          desc:'Toplamda 50 piksel bas.',                      type:'total_place', target:50,   xp:30,  pixels:6  },
     { id:'m_place200',  icon:'🌳', name:'Kök Saldı',        desc:'Toplamda 200 piksel bas.',                     type:'total_place', target:200,  xp:60,  pixels:12 },
-    { id:'m_place500',  icon:'', name:'Deneyimli',        desc:'Toplamda 500 piksel bas.',                     type:'total_place', target:500,  xp:100, pixels:20 },
-    { id:'m_place1000', icon:'', name:'Efsane Pikselci',  desc:'Toplamda 1000 piksel bas.',                    type:'total_place', target:1000, xp:200, pixels:35 },
-    { id:'m_place5000', icon:'', name:'Haritanın Efendisi',desc:'Toplamda 5000 piksel bas.',                   type:'total_place', target:5000, xp:500, pixels:80 },
-    { id:'m_lv5',       icon:'', name:'Seviye 5',          desc:'5. seviyeye ulaş.',                            type:'level',  target:5,   xp:25,  pixels:5  },
-    { id:'m_lv10',      icon:'', name:'Seviye 10',         desc:'10. seviyeye ulaş.',                           type:'level',  target:10,  xp:50,  pixels:10 },
-    { id:'m_streak7',   icon:'', name:'Haftalık Seri',    desc:'İlk 7 gün serisini tamamla.',                  type:'streak', target:7,   xp:40,  pixels:8  },
+    { id:'m_place500',  icon:'🏅', name:'Deneyimli',        desc:'Toplamda 500 piksel bas.',                     type:'total_place', target:500,  xp:100, pixels:20 },
+    { id:'m_place1000', icon:'🥇', name:'Efsane Pikselci',  desc:'Toplamda 1000 piksel bas.',                    type:'total_place', target:1000, xp:200, pixels:35 },
+    { id:'m_place5000', icon:'👑', name:'Haritanın Efendisi',desc:'Toplamda 5000 piksel bas.',                   type:'total_place', target:5000, xp:500, pixels:80 },
+    { id:'m_lv5',       icon:'⭐', name:'Seviye 5',          desc:'5. seviyeye ulaş.',                            type:'level',  target:5,   xp:25,  pixels:5  },
+    { id:'m_lv10',      icon:'💫', name:'Seviye 10',         desc:'10. seviyeye ulaş.',                           type:'level',  target:10,  xp:50,  pixels:10 },
+    { id:'m_streak7',   icon:'🔥', name:'Haftalık Seri',    desc:'İlk 7 gün serisini tamamla.',                  type:'streak', target:7,   xp:40,  pixels:8  },
   ]
 };
 
@@ -11889,7 +11918,7 @@ window.syncTbSheet = function(){
         <label style="font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);">Video Hızı</label>
         <div style="display:flex;gap:.5rem;">
           <button class="tl-speed-btn tl-ssel" onclick="selectTLSpeed(this,2)"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M10 2h4"/><path d="M12 14v-4"/><path d="M4 13a8 8 0 0 1 8-7 8 8 0 0 1 8 7 8 8 0 0 1-8 7 8 8 0 0 1-8-7"/></svg> Yavaş</button>
-          <button class="tl-speed-btn" onclick="selectTLSpeed(this,5)">Normal</button>
+          <button class="tl-speed-btn" onclick="selectTLSpeed(this,5)">▶ Normal</button>
           <button class="tl-speed-btn" onclick="selectTLSpeed(this,12)"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg> Hızlı</button>
         </div>
       </div>
@@ -11909,7 +11938,7 @@ window.syncTbSheet = function(){
       <canvas id="tl-canvas" style="width:100%;border-radius:10px;border:1px solid var(--bdr);background:#06060f;display:none;image-rendering:pixelated;"></canvas>
       <div id="tl-download-wrap" style="display:none;flex-direction:column;gap:.5rem;align-items:stretch;">
         <div style="font-size:.75rem;color:#00d4a0;text-align:center;font-weight:700;"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg> Video hazır!</div>
-        <a id="tl-download-link" style="background:linear-gradient(135deg,#00b888,#00d4a0);color:#fff;border:none;border-radius:10px;padding:.7rem 1rem;font-family:'Outfit',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;text-align:center;text-decoration:none;display:block;">Videoyu İndir (.webm)</a>
+        <a id="tl-download-link" style="background:linear-gradient(135deg,#00b888,#00d4a0);color:#fff;border:none;border-radius:10px;padding:.7rem 1rem;font-family:'Outfit',sans-serif;font-weight:800;font-size:.88rem;cursor:pointer;text-align:center;text-decoration:none;display:block;">⬇ Videoyu İndir (.webm)</a>
       </div>
       <button onclick="resetTimelapse()" style="background:var(--surf2);border:1px solid var(--bdr);color:var(--muted);border-radius:8px;padding:.5rem 1rem;font-size:.75rem;font-family:'Outfit',sans-serif;cursor:pointer;">← Yeniden Ayarla</button>
     </div>
@@ -12143,7 +12172,7 @@ const SFX = (()=>{
         {freq:1318, start:0.12, dur:0.22, type:'sine', gain:0.22}
       ]);
     },
-    // SAVAŞ İLANI — Derin, sert, adrenalin yükseltici fanfar
+    // ⚔️ SAVAŞ İLANI — Derin, sert, adrenalin yükseltici fanfar
     war(){
       if(muted) return;
       const c = ensureRunning();
@@ -12199,7 +12228,7 @@ const SFX = (()=>{
       brass(392, 1.50, 0.55, 0.30, 1.0);
       alarm(220, 1.55, 0.40, 0.12);
     },
-    // İTTİFAK sesi — sıcak, zafer notalı
+    // 🤝 İTTİFAK sesi — sıcak, zafer notalı
     ally(){
       tone([
         {freq:392, start:0,    dur:0.12, type:'sine', gain:0.18},
@@ -12208,7 +12237,7 @@ const SFX = (()=>{
         {freq:784, start:0.38, dur:0.28, type:'sine', gain:0.20}
       ]);
     },
-    // BARIŞ / nötr sesi
+    // ☮️ BARIŞ / nötr sesi
     peace(){
       tone([
         {freq:523, start:0,    dur:0.14, type:'sine', gain:0.14},
@@ -12292,7 +12321,7 @@ async function sendAnnouncement(){
   const inp = document.getElementById('announce-text-input');
   const msgEl = document.getElementById('announce-form-msg');
   const text = inp.value.trim();
-  if(!text){ msgEl.style.color='#f04a4a'; msgEl.textContent='Duyuru metni boş olamaz.'; return; }
+  if(!text){ msgEl.style.color='#f04a4a'; msgEl.textContent='⚠ Duyuru metni boş olamaz.'; return; }
   const btn = document.getElementById('announce-send-btn');
   btn.disabled = true; btn.style.opacity='.6';
   msgEl.style.color='var(--muted)'; msgEl.textContent='Yayınlanıyor...';
@@ -12303,7 +12332,7 @@ async function sendAnnouncement(){
     setTimeout(()=>{ closeAnnounceModal(); }, 600);
   }catch(e){
     console.error('Duyuru yayınlama hatası:', e);
-    msgEl.style.color='#f04a4a'; msgEl.textContent='Yayınlanamadı, bağlantını kontrol et.';
+    msgEl.style.color='#f04a4a'; msgEl.textContent='⚠ Yayınlanamadı, bağlantını kontrol et.';
   }finally{
     btn.disabled = false; btn.style.opacity='1';
   }
@@ -12446,7 +12475,7 @@ function syncTbSheetAdminState(){
   const icon = sh.querySelector('.tb-sheet-item-icon');
   if(icon) icon.style.background = isOn ? '#16a34a' : '#dc2626';
   const name = sh.querySelector('.tb-sheet-item-name');
-  if(name) name.textContent = isOn ? (window.t ? t('topbar.admin_on') : 'Admin ON') : (window.t ? t('topbar.admin') : 'Admin');
+  if(name) name.textContent = isOn ? (window.t ? t('topbar.admin_on') : '⚙ Admin ON') : (window.t ? t('topbar.admin') : '⚙ Admin');
 }
 
 /* toggleAdmin her çağrıldığında sheet senkronize olsun */
@@ -12743,7 +12772,7 @@ body.war-shake{animation:war-screen-shake .5s ease-in-out;}
 
 <script>
 // ══════════════════════════════════════════════════════════
-// SAVAŞ & İTTİFAK BİLDİRİM SİSTEMİ
+// ⚔️ SAVAŞ & İTTİFAK BİLDİRİM SİSTEMİ
 // setDiplomacy'den tetiklenir; Supabase broadcast ile tüm
 // oyunculara iletilir. Ekran titrer, kıvılcımlar uçar,
 // savaş müziği çalar.
@@ -12840,10 +12869,10 @@ function getWarChannel(){
     showWarBanner({
       attackerName: p.attackerName || '?',
       attackerColor: p.attackerColor || '#f04a4a',
-      attackerEmoji: p.attackerEmoji || '',
+      attackerEmoji: p.attackerEmoji || '⚑',
       defenderName: p.defenderName || '?',
       defenderColor: p.defenderColor || '#6366f1',
-      defenderEmoji: p.defenderEmoji || ''
+      defenderEmoji: p.defenderEmoji || '⚑'
     });
   });
   _warChannel.on('broadcast', { event:'ally' }, (payload)=>{
@@ -12864,8 +12893,8 @@ getWarChannel();
 function broadcastWarDeclaration(attacker, defender){
   try{
     getWarChannel().send({ type:'broadcast', event:'war', payload:{
-      attackerName: attacker.name, attackerColor: attacker.color, attackerEmoji: attacker.emoji||'',
-      defenderName: defender.name, defenderColor: defender.color, defenderEmoji: defender.emoji||''
+      attackerName: attacker.name, attackerColor: attacker.color, attackerEmoji: attacker.emoji||'⚑',
+      defenderName: defender.name, defenderColor: defender.color, defenderEmoji: defender.emoji||'⚑'
     }});
   }catch(e){}
 }
@@ -12886,6 +12915,351 @@ document.addEventListener('keydown', e => {
     closeAllyBanner();
   }
 });
+</script>
+
+<!-- ═══════════════════════════════════════════════════════
+     ŞABLON ARACI — CSS
+════════════════════════════════════════════════════════ -->
+<style>
+#template-toolbar {
+  position: fixed;
+  top: 64px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 800;
+  display: none;
+  align-items: center;
+  gap: .45rem;
+  background: rgba(15,12,28,0.92);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(124,58,237,.45);
+  border-radius: 14px;
+  padding: .45rem .7rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(124,58,237,.15);
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 96vw;
+}
+#template-toolbar.active { display: flex; }
+.tpl-sep { width:1px; height:24px; background:rgba(255,255,255,.1); margin:0 .1rem; flex-shrink:0; }
+#tpl-color-btn {
+  width:28px; height:28px; border-radius:8px;
+  border:2px solid rgba(255,255,255,.35);
+  cursor:pointer; padding:0; flex-shrink:0; transition:border-color .15s;
+}
+#tpl-color-btn:hover { border-color:rgba(255,255,255,.7); }
+#tpl-color-input { display:none; }
+.tpl-tool-btn {
+  display:flex; align-items:center; justify-content:center; gap:.3rem;
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
+  border-radius:8px; color:rgba(255,255,255,.7);
+  font-family:var(--font-ui,'Inter',sans-serif); font-size:.7rem; font-weight:600;
+  cursor:pointer; padding:.3rem .55rem; transition:all .15s; white-space:nowrap; flex-shrink:0;
+}
+.tpl-tool-btn:hover { background:rgba(255,255,255,.14); color:#fff; border-color:rgba(255,255,255,.25); }
+.tpl-tool-btn.active { background:rgba(124,58,237,.3); border-color:#7c3aed; color:#c4aaff; }
+#tpl-size-slider {
+  -webkit-appearance:none; width:70px; height:4px;
+  background:rgba(255,255,255,.2); border-radius:2px; outline:none; cursor:pointer;
+}
+#tpl-size-slider::-webkit-slider-thumb {
+  -webkit-appearance:none; width:14px; height:14px;
+  border-radius:50%; background:#7c3aed; cursor:pointer;
+}
+#tpl-done-btn {
+  background:linear-gradient(135deg,#7c3aed,#c026d3);
+  border:none; border-radius:8px; color:#fff;
+  font-family:var(--font-display,'Space Grotesk',sans-serif);
+  font-size:.75rem; font-weight:700; cursor:pointer;
+  padding:.38rem .8rem; transition:opacity .15s; flex-shrink:0;
+}
+#tpl-done-btn:hover { opacity:.88; }
+#tpl-done-btn:disabled { opacity:.45; cursor:not-allowed; }
+#template-canvas {
+  position:fixed; z-index:799; cursor:crosshair;
+  touch-action:none; display:none; pointer-events:none;
+}
+#template-canvas.active { display:block; pointer-events:all; }
+#tpl-result-popup {
+  display:none; position:fixed; inset:0; z-index:1000;
+  background:rgba(0,0,0,.78); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center;
+}
+#tpl-result-popup.show { display:flex; }
+#tpl-result-box {
+  background:var(--surf,#1a1a2e); border:1px solid rgba(124,58,237,.4);
+  border-radius:18px; padding:1.8rem; width:380px; max-width:94vw;
+  display:flex; flex-direction:column; gap:1rem;
+  box-shadow:0 24px 64px rgba(0,0,0,.8);
+}
+#tpl-result-title {
+  font-family:var(--font-display,'Space Grotesk',sans-serif);
+  font-size:1.05rem; font-weight:700;
+  background:linear-gradient(135deg,#a78bfa,#e879f9);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+}
+#tpl-result-preview {
+  width:100%; border-radius:10px; border:1px solid rgba(255,255,255,.1);
+  max-height:200px; object-fit:contain; background:#0a0a14;
+}
+.tpl-dl-btn {
+  display:flex; align-items:center; justify-content:center; gap:.5rem;
+  background:linear-gradient(135deg,#7c3aed,#c026d3);
+  color:#fff; text-decoration:none; border:none;
+  border-radius:10px; padding:.75rem 1rem;
+  font-family:var(--font-display,'Space Grotesk',sans-serif);
+  font-size:.88rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+}
+.tpl-dl-btn:hover { opacity:.88; }
+.tpl-dl-btn.secondary {
+  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.8); font-size:.78rem; padding:.55rem 1rem;
+}
+#tpl-upload-status {
+  font-size:.72rem; font-family:var(--font-mono,'JetBrains Mono',monospace);
+  color:rgba(255,255,255,.5); text-align:center; min-height:1rem;
+}
+#tpl-upload-status.ok  { color:#00d4a0; }
+#tpl-upload-status.err { color:#f04a4a; }
+</style>
+
+<!-- ═══════════════════════════════════════════════════════
+     ŞABLON ARACI — TOOLBAR HTML
+════════════════════════════════════════════════════════ -->
+<div id="template-toolbar">
+  <button id="tpl-color-btn" title="Renk seç" onclick="document.getElementById('tpl-color-input').click()"></button>
+  <input type="color" id="tpl-color-input" value="#e30a17">
+  <div class="tpl-sep"></div>
+  <button class="tpl-tool-btn active" id="tpl-brush-btn" onclick="tplSetTool('brush')">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    Fırça
+  </button>
+  <button class="tpl-tool-btn" id="tpl-eraser-btn" onclick="tplSetTool('eraser')">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+    Silgi
+  </button>
+  <div class="tpl-sep"></div>
+  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="12" r="4"/></svg>
+  <input type="range" id="tpl-size-slider" min="2" max="40" value="10" oninput="tplSetSize(this.value)">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="12" r="8"/></svg>
+  <div class="tpl-sep"></div>
+  <button class="tpl-tool-btn" onclick="tplClear()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+    Temizle
+  </button>
+  <button class="tpl-tool-btn" onclick="closeTemplateEditor()">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+    Kapat
+  </button>
+  <div class="tpl-sep"></div>
+  <button id="tpl-done-btn" onclick="tplHandleDone()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block;vertical-align:-.1em"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Bitti & İndir
+  </button>
+</div>
+
+<canvas id="template-canvas"></canvas>
+
+<!-- ═══════════════════════════════════════════════════════
+     ŞABLON SONUÇ POPUP
+════════════════════════════════════════════════════════ -->
+<div id="tpl-result-popup">
+  <div id="tpl-result-box">
+    <div id="tpl-result-title">✦ Şablonun Hazır!</div>
+    <img id="tpl-result-preview" src="" alt="Şablon önizleme">
+    <a id="tpl-dl-link" class="tpl-dl-btn" download="sablonun.png" href="#">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Şablonu İndir (PNG)
+    </a>
+    <button class="tpl-dl-btn secondary" id="tpl-upload-btn" onclick="tplUploadToSupabase()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+      Supabase'e Yükle (Sadece Sen Görebilirsin)
+    </button>
+    <div id="tpl-upload-status"></div>
+    <button class="tpl-dl-btn secondary" onclick="closeTplResultPopup()">Kapat</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ŞABLON ARACI — JavaScript
+════════════════════════════════════════════════════════ -->
+<script>
+let _tplActive=false, _tplDrawing=false, _tplTool='brush';
+let _tplColor='#e30a17', _tplSize=10, _tplLastBlob=null;
+
+function openTemplateEditor(){
+  if(!username){ showPopup('Şablon aracı için giriş yapman gerekiyor.'); return; }
+  if(_tplActive) return;
+  _tplActive=true;
+  const mapCanvas=document.getElementById('c');
+  if(!mapCanvas){ showPopup('Harita henüz yüklenmedi.'); _tplActive=false; return; }
+  const tc=document.getElementById('template-canvas');
+  tc.width=mapCanvas.width; tc.height=mapCanvas.height;
+  _syncTplPos();
+  tc.classList.add('active');
+  document.getElementById('template-toolbar').classList.add('active');
+  document.getElementById('tpl-color-btn').style.background=_tplColor;
+  _tplBindEvents();
+  showPopup('Şablon aracı açıldı — çiz, bitince "Bitti & İndir" e bas.');
+}
+
+function _syncTplPos(){
+  const mc=document.getElementById('c'), tc=document.getElementById('template-canvas');
+  if(!mc||!tc) return;
+  const r=mc.getBoundingClientRect();
+  Object.assign(tc.style,{position:'fixed',left:r.left+'px',top:r.top+'px',width:r.width+'px',height:r.height+'px'});
+}
+window.addEventListener('resize',()=>{ if(_tplActive) _syncTplPos(); });
+
+function tplSetTool(t){
+  _tplTool=t;
+  document.getElementById('tpl-brush-btn').classList.toggle('active',t==='brush');
+  document.getElementById('tpl-eraser-btn').classList.toggle('active',t==='eraser');
+  document.getElementById('template-canvas').style.cursor=t==='eraser'?'cell':'crosshair';
+}
+function tplSetSize(v){ _tplSize=parseInt(v); }
+function tplClear(){
+  const tc=document.getElementById('template-canvas');
+  tc.getContext('2d').clearRect(0,0,tc.width,tc.height);
+}
+
+function _tplBindEvents(){
+  const old=document.getElementById('template-canvas');
+  const fresh=old.cloneNode(true);
+  old.parentNode.replaceChild(fresh,old);
+  const tc=document.getElementById('template-canvas');
+
+  const pos=(e)=>{
+    const r=tc.getBoundingClientRect(), src=e.touches?.[0]??e;
+    return{x:(src.clientX-r.left)*(tc.width/r.width),y:(src.clientY-r.top)*(tc.height/r.height)};
+  };
+  const paint=(e)=>{
+    if(!_tplDrawing) return;
+    const{x,y}=pos(e), ctx=tc.getContext('2d');
+    ctx.globalCompositeOperation=_tplTool==='eraser'?'destination-out':'source-over';
+    ctx.fillStyle=_tplColor;
+    ctx.beginPath(); ctx.arc(x,y,_tplSize,0,Math.PI*2); ctx.fill();
+  };
+  tc.addEventListener('pointerdown',(e)=>{_tplDrawing=true;paint(e);e.preventDefault();},{passive:false});
+  tc.addEventListener('pointermove',(e)=>{paint(e);e.preventDefault();},{passive:false});
+  tc.addEventListener('pointerup',()=>_tplDrawing=false);
+  tc.addEventListener('pointerleave',()=>_tplDrawing=false);
+  tc.addEventListener('touchstart',(e)=>{_tplDrawing=true;paint(e);e.preventDefault();},{passive:false});
+  tc.addEventListener('touchmove',(e)=>{paint(e);e.preventDefault();},{passive:false});
+  tc.addEventListener('touchend',()=>_tplDrawing=false);
+
+  const ci=document.getElementById('tpl-color-input');
+  ci.oninput=(e)=>{ _tplColor=e.target.value; document.getElementById('tpl-color-btn').style.background=_tplColor; };
+}
+
+function closeTemplateEditor(){
+  _tplActive=false; _tplDrawing=false;
+  const tc=document.getElementById('template-canvas');
+  tc.classList.remove('active');
+  tc.getContext('2d').clearRect(0,0,tc.width,tc.height);
+  document.getElementById('template-toolbar').classList.remove('active');
+}
+
+async function tplHandleDone(){
+  const btn=document.getElementById('tpl-done-btn');
+  btn.disabled=true; btn.textContent='⏳ Hazırlanıyor...';
+  try{
+    const blob=await _tplExportPNG();
+    _tplLastBlob=blob;
+    const url=URL.createObjectURL(blob);
+    document.getElementById('tpl-result-preview').src=url;
+    document.getElementById('tpl-dl-link').href=url;
+    document.getElementById('tpl-dl-link').download='sablon_'+Date.now()+'.png';
+    document.getElementById('tpl-upload-status').textContent='';
+    document.getElementById('tpl-upload-status').className='';
+    document.getElementById('tpl-result-popup').classList.add('show');
+  }catch(err){
+    showPopup('Export hatası: '+(err.message||'bilinmiyor'));
+  }finally{
+    btn.disabled=false;
+    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block;vertical-align:-.1em"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Bitti & İndir';
+  }
+}
+
+async function _tplExportPNG(){
+  const mc=document.getElementById('c'), tc=document.getElementById('template-canvas');
+  if(!mc) throw new Error('Harita canvas bulunamadı');
+  const merged=document.createElement('canvas');
+  merged.width=mc.width; merged.height=mc.height;
+  const ctx=merged.getContext('2d');
+  ctx.drawImage(mc,0,0);
+  if(tc.width>0&&tc.height>0) ctx.drawImage(tc,0,0);
+  return new Promise((resolve,reject)=>{
+    merged.toBlob(b=>b?resolve(b):reject(new Error('toBlob başarısız')),'image/png');
+  });
+}
+
+async function tplUploadToSupabase(){
+  if(!_tplLastBlob){ showPopup('Önce "Bitti & İndir"e bas.'); return; }
+  if(typeof supabase==='undefined'){ showPopup('Supabase bağlantısı yok.'); return; }
+  const statusEl=document.getElementById('tpl-upload-status');
+  const uploadBtn=document.getElementById('tpl-upload-btn');
+  statusEl.className=''; statusEl.textContent='⏳ Yükleniyor...';
+  uploadBtn.disabled=true;
+  try{
+    const{data:{user},error:authErr}=await supabase.auth.getUser();
+    if(authErr||!user) throw new Error('Oturum bulunamadı, tekrar giriş yap.');
+    const uid=user.id, fileName=crypto.randomUUID()+'.png', path=uid+'/'+fileName;
+    const{error:upErr}=await supabase.storage.from('player-templates').upload(path,_tplLastBlob,{contentType:'image/png',upsert:false});
+    if(upErr) throw upErr;
+    const{data:sd,error:signErr}=await supabase.storage.from('player-templates').createSignedUrl(path,3600);
+    if(signErr) throw signErr;
+    statusEl.className='ok'; statusEl.textContent='✓ Yüklendi! Signed URL (1 saat geçerli):';
+    const a=document.createElement('a');
+    a.href=sd.signedUrl; a.target='_blank'; a.rel='noopener';
+    a.textContent='🔗 Şablonumu Aç';
+    a.style.cssText='display:block;margin-top:.35rem;color:#a78bfa;font-size:.68rem;word-break:break-all;';
+    statusEl.appendChild(a);
+  }catch(err){
+    statusEl.className='err'; statusEl.textContent='✗ Yükleme başarısız: '+(err.message||'bilinmiyor');
+  }finally{
+    uploadBtn.disabled=false;
+  }
+}
+
+function closeTplResultPopup(){
+  document.getElementById('tpl-result-popup').classList.remove('show');
+  const prev=document.getElementById('tpl-result-preview');
+  if(prev.src) URL.revokeObjectURL(prev.src);
+}
+
+/* Giriş yapılınca butonları göster */
+(function(){
+  const origActivate=window._activateUser;
+  if(origActivate){
+    window._activateUser=function(v){
+      origActivate.apply(this,arguments);
+      const tb=document.getElementById('template-btn'); if(tb) tb.style.display='';
+      const ts=document.getElementById('ts-templatebtn'); if(ts) ts.style.display='';
+    };
+  }
+  const origCheck=window.checkAdminStatus;
+  if(origCheck){
+    window.checkAdminStatus=async function(){
+      await origCheck.apply(this,arguments);
+      if(typeof username!=='undefined'&&username){
+        const tb=document.getElementById('template-btn'); if(tb) tb.style.display='';
+        const ts=document.getElementById('ts-templatebtn'); if(ts) ts.style.display='';
+      }
+    };
+  }
+})();
+
+/* syncTbSheet'e template ekle */
+(function(){
+  const _orig=window.syncTbSheet;
+  window.syncTbSheet=function(){
+    if(typeof _orig==='function') _orig.apply(this,arguments);
+    const tb=document.getElementById('template-btn');
+    const ts=document.getElementById('ts-templatebtn');
+    if(tb&&ts) ts.style.display=tb.style.display==='none'?'none':'';
+  };
+})();
 </script>
 </body>
 </html>
