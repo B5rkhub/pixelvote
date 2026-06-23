@@ -15046,9 +15046,9 @@ window._tplRegionConfirm=_tplRegionConfirm;
 
 /* Gerçek editör açma — bölge bilgisiyle */
 function _openTemplateEditorWithRegion(rx,ry,rw,rh){
-  if(!window.username){showPopup&&showPopup('Şablon aracı için giriş yapman gerekiyor.'); return;}
-  if(window._tplActive) return;
-  if(typeof IMG_W==='undefined'||!window.canvas){showPopup&&showPopup('Harita henüz yüklenmedi.'); return;}
+  if(typeof username==='undefined'||!username){if(typeof showPopup==='function')showPopup('Şablon aracı için giriş yapman gerekiyor.'); return;}
+  if(typeof _tplActive!=='undefined'&&_tplActive) return;
+  if(typeof IMG_W==='undefined'||!canvas){if(typeof showPopup==='function')showPopup('Harita henüz yüklenmedi.'); return;}
 
   // Bölge bilgisini state'e kaydet
   window._tplRegion={x:rx,y:ry,w:rw,h:rh};
@@ -15133,9 +15133,9 @@ function _onPointerUp(e){
 /* openTemplateEditor patch — önce bölge seç */
 const _origOpenEditor=window.openTemplateEditor;
 window.openTemplateEditor=function(){
-  if(!window.username){showPopup&&showPopup('Şablon aracı için giriş yapman gerekiyor.'); return;}
-  if(window._tplActive) return;
-  if(typeof IMG_W==='undefined'){showPopup&&showPopup('Harita henüz yüklenmedi.'); return;}
+  if(typeof username==='undefined'||!username){if(typeof showPopup==='function')showPopup('Şablon aracı için giriş yapman gerekiyor.'); return;}
+  if(typeof _tplActive!=='undefined'&&_tplActive) return;
+  if(typeof IMG_W==='undefined'){if(typeof showPopup==='function')showPopup('Harita henüz yüklenmedi.'); return;}
 
   // Overlay'i aç
   const ov=document.getElementById('tpl-region-overlay');
