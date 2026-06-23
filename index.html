@@ -13066,223 +13066,745 @@ document.addEventListener('keydown', e => {
 });
 </script>
 
+
 <!-- ═══════════════════════════════════════════════════════
-     ŞABLON ARACI — CSS
+     ŞABLON EDİTÖRÜ — PİXİLART TARZI FULL-SCREEN MODAL CSS
 ════════════════════════════════════════════════════════ -->
 <style>
-#template-toolbar {
-  position: fixed;
-  top: 64px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 800;
+/* ── FULL SCREEN MODAL OVERLAY ── */
+#tpl-editor-modal {
   display: none;
-  align-items: center;
-  gap: .45rem;
-  background: rgba(15,12,28,0.92);
-  backdrop-filter: blur(14px);
-  border: 1px solid rgba(124,58,237,.45);
-  border-radius: 14px;
-  padding: .45rem .7rem;
-  box-shadow: 0 8px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(124,58,237,.15);
-  flex-wrap: wrap;
-  justify-content: center;
-  max-width: 96vw;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: #1a1a2a;
+  flex-direction: column;
 }
-#template-toolbar.active { display: flex; }
-.tpl-sep { width:1px; height:24px; background:rgba(255,255,255,.1); margin:0 .1rem; flex-shrink:0; }
-.tpl-tool-btn {
-  display:flex; align-items:center; justify-content:center; gap:.3rem;
-  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12);
-  border-radius:8px; color:rgba(255,255,255,.7);
-  font-family:var(--font-ui,'Inter',sans-serif); font-size:.7rem; font-weight:600;
-  cursor:pointer; padding:.3rem .55rem; transition:all .15s; white-space:nowrap; flex-shrink:0;
-}
-.tpl-tool-btn:hover { background:rgba(255,255,255,.14); color:#fff; border-color:rgba(255,255,255,.25); }
-.tpl-tool-btn.active { background:rgba(124,58,237,.3); border-color:#7c3aed; color:#c4aaff; }
-#tpl-done-btn {
-  background:linear-gradient(135deg,#7c3aed,#c026d3);
-  border:none; border-radius:8px; color:#fff;
-  font-family:var(--font-display,'Space Grotesk',sans-serif);
-  font-size:.75rem; font-weight:700; cursor:pointer;
-  padding:.38rem .8rem; transition:opacity .15s; flex-shrink:0;
-}
-#tpl-done-btn:hover { opacity:.88; }
-#tpl-done-btn:disabled { opacity:.45; cursor:not-allowed; }
-#template-canvas {
-  position:absolute; inset:0; z-index:18; cursor:crosshair;
-  touch-action:none; display:none; pointer-events:none;
-}
-#template-canvas.active { display:block; pointer-events:none; }
+#tpl-editor-modal.active { display: flex; }
 
-/* ── ŞABLON RENK PALETİ — oyundaki #ptoolbar ile birebir aynı ── */
-#tpl-palette-wrap { position:relative; flex-shrink:0; }
+/* ── TOP MENUBAR ── */
+#tpl-menubar {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  background: #111120;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 0 .75rem;
+  gap: .5rem;
+  flex-shrink: 0;
+  user-select: none;
+}
+#tpl-menubar .tpl-logo {
+  display: flex; align-items: center; gap: .4rem;
+  font-family: var(--font-display,'Space Grotesk',sans-serif);
+  font-size: .8rem; font-weight: 700;
+  color: #a78bfa;
+  letter-spacing: -.01em;
+  margin-right: .5rem;
+}
+#tpl-menubar .tpl-logo svg { flex-shrink: 0; }
+.tpl-menu-btn {
+  height: 28px; padding: 0 .6rem;
+  background: transparent; border: none;
+  border-radius: 6px; color: rgba(255,255,255,.7);
+  font-family: var(--font-ui,'Inter',sans-serif);
+  font-size: .72rem; font-weight: 600;
+  cursor: pointer; transition: background .12s, color .12s;
+  white-space: nowrap; letter-spacing: .01em;
+}
+.tpl-menu-btn:hover { background: rgba(255,255,255,.08); color: #fff; }
+.tpl-menu-btn.danger { color: #f04a4a; }
+.tpl-menu-btn.danger:hover { background: rgba(240,74,74,.12); }
+#tpl-menubar-spacer { flex: 1; }
+#tpl-done-btn {
+  height: 28px; padding: 0 1rem;
+  background: linear-gradient(135deg, #7c3aed, #c026d3);
+  border: none; border-radius: 7px; color: #fff;
+  font-family: var(--font-display,'Space Grotesk',sans-serif);
+  font-size: .75rem; font-weight: 700;
+  cursor: pointer; transition: opacity .15s;
+  display: flex; align-items: center; gap: .35rem;
+  letter-spacing: .02em;
+}
+#tpl-done-btn:hover { opacity: .88; }
+#tpl-done-btn:disabled { opacity: .4; cursor: not-allowed; }
+#tpl-close-btn {
+  width: 28px; height: 28px; padding: 0;
+  background: transparent; border: none;
+  border-radius: 6px; color: rgba(255,255,255,.5);
+  font-size: 1rem; cursor: pointer; line-height: 1;
+  transition: background .12s, color .12s;
+  display: flex; align-items: center; justify-content: center;
+}
+#tpl-close-btn:hover { background: rgba(240,74,74,.18); color: #f04a4a; }
+
+/* ── SECONDARY TOOLBAR (tool options) ── */
+#tpl-options-bar {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  background: #14141f;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  padding: 0 .5rem;
+  gap: .5rem;
+  flex-shrink: 0;
+}
+.tpl-opt-label {
+  font-size: .6rem; font-weight: 700; color: rgba(255,255,255,.38);
+  text-transform: uppercase; letter-spacing: .08em; white-space: nowrap;
+}
+.tpl-opt-sep { width: 1px; height: 20px; background: rgba(255,255,255,.08); margin: 0 .2rem; flex-shrink: 0; }
+.tpl-opt-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 80px; height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,.15); outline: none; cursor: pointer;
+}
+.tpl-opt-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 12px; height: 12px;
+  border-radius: 50%; background: #a78bfa; cursor: pointer;
+  border: 2px solid rgba(255,255,255,.25);
+}
+.tpl-opt-slider::-moz-range-thumb {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: #a78bfa; cursor: pointer; border: 2px solid rgba(255,255,255,.25);
+}
+.tpl-opt-val {
+  font-size: .65rem; font-family: var(--font-mono,'JetBrains Mono',monospace);
+  color: rgba(255,255,255,.55); min-width: 2rem; text-align: left;
+}
+.tpl-opt-check {
+  display: flex; align-items: center; gap: .3rem;
+  font-size: .68rem; color: rgba(255,255,255,.6);
+  cursor: pointer; font-weight: 500; user-select: none;
+}
+.tpl-opt-check input { accent-color: #a78bfa; width: 12px; height: 12px; cursor: pointer; }
+.tpl-opt-check:hover { color: #fff; }
+
+/* ── MAIN EDITOR AREA ── */
+#tpl-editor-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── LEFT TOOLS PANEL ── */
+#tpl-left-panel {
+  width: 48px;
+  background: #111120;
+  border-right: 1px solid rgba(255,255,255,.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: .4rem 0;
+  gap: .15rem;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#tpl-left-panel::-webkit-scrollbar { width: 0; }
+
+.tpl-tool {
+  width: 36px; height: 36px;
+  background: transparent; border: 1px solid transparent;
+  border-radius: 7px; color: rgba(255,255,255,.55);
+  cursor: pointer; transition: all .12s;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px;
+  flex-shrink: 0;
+}
+.tpl-tool:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+.tpl-tool.active {
+  background: rgba(124,58,237,.25);
+  border-color: #7c3aed;
+  color: #c4aaff;
+}
+.tpl-tool-label {
+  font-size: .38rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .04em;
+  line-height: 1; opacity: .7;
+}
+.tpl-tool-sep {
+  width: 28px; height: 1px;
+  background: rgba(255,255,255,.07);
+  margin: .2rem 0; flex-shrink: 0;
+}
+
+/* Active color swatch in left panel */
+#tpl-active-color-swatch {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  border: 2px solid rgba(255,255,255,.25);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: .3rem;
+  transition: border-color .12s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.4);
+}
+#tpl-active-color-swatch:hover { border-color: rgba(255,255,255,.55); }
+
+/* ── CENTER: CANVAS AREA ── */
+#tpl-canvas-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #1a1a2a;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  overflow: hidden;
+  position: relative;
+  min-width: 0;
+}
+#tpl-canvas-wrap {
+  position: relative;
+  image-rendering: pixelated;
+}
+#tpl-checkerboard {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(45deg, #2a2a3a 25%, transparent 25%),
+    linear-gradient(-45deg, #2a2a3a 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #2a2a3a 75%),
+    linear-gradient(-45deg, transparent 75%, #2a2a3a 75%);
+  background-size: 12px 12px;
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0px;
+  pointer-events: none;
+}
+/* The actual drawing canvas inside the editor */
+#tpl-draw-canvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: crosshair;
+  position: relative;
+  z-index: 2;
+}
+#tpl-grid-overlay {
+  position: absolute; inset: 0; z-index: 3;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .2s;
+}
+#tpl-grid-overlay.visible { opacity: 1; }
+
+/* Canvas controls */
+#tpl-canvas-controls {
+  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: .4rem;
+  background: rgba(10,10,20,.8); backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.1); border-radius: 20px;
+  padding: .25rem .6rem;
+}
+.tpl-zoom-btn {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,.08); border: none;
+  color: rgba(255,255,255,.7); cursor: pointer; font-size: .85rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .12s;
+}
+.tpl-zoom-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
+#tpl-zoom-label {
+  font-size: .65rem; font-family: var(--font-mono,'JetBrains Mono',monospace);
+  color: rgba(255,255,255,.6); min-width: 3rem; text-align: center;
+}
+#tpl-coords-label {
+  font-size: .6rem; font-family: var(--font-mono,'JetBrains Mono',monospace);
+  color: rgba(255,255,255,.4); min-width: 6rem; text-align: center;
+}
+
+/* ── RIGHT PANEL ── */
+#tpl-right-panel {
+  width: 220px;
+  background: #111120;
+  border-left: 1px solid rgba(255,255,255,.06);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* Right panel sections */
+.tpl-rpanel-section {
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  flex-shrink: 0;
+}
+.tpl-rpanel-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .45rem .65rem .35rem;
+  cursor: pointer; user-select: none;
+}
+.tpl-rpanel-hdr-title {
+  font-size: .58rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: rgba(255,255,255,.4);
+}
+.tpl-rpanel-hdr-arrow {
+  font-size: .55rem; color: rgba(255,255,255,.3);
+  transition: transform .15s;
+}
+.tpl-rpanel-hdr-arrow.open { transform: rotate(90deg); }
+.tpl-rpanel-body { padding: 0 .65rem .6rem; }
+
+/* Navigation preview */
+#tpl-nav-preview-wrap {
+  width: 100%; aspect-ratio: 1;
+  background: #0a0a14;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255,255,255,.07);
+  margin-top: .35rem;
+}
+#tpl-nav-canvas {
+  width: 100%; height: 100%;
+  image-rendering: pixelated;
+  display: block;
+}
+#tpl-nav-viewport {
+  position: absolute; border: 1px solid #a78bfa;
+  background: rgba(167,139,250,.08);
+  pointer-events: none;
+}
+
+/* Color palette */
+#tpl-palette-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 3px;
+  margin-top: .4rem;
+}
 .tpl-psw {
-  width:18px; height:18px; border-radius:5px; cursor:pointer;
-  border:2px solid transparent; box-shadow:0 0 0 1px rgba(255,255,255,.18) inset;
-  flex-shrink:0; transition:transform .12s, border-color .12s;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.12) inset;
+  transition: transform .1s, border-color .1s;
 }
-.tpl-psw:hover { transform:scale(1.18); }
-.tpl-psw.sel { border-color:#fff; transform:scale(1.2); box-shadow:0 0 0 1px rgba(0,0,0,.35) inset, 0 0 6px rgba(255,255,255,.5); }
-#tpl-palette-toggle {
-  width:26px; height:26px; border-radius:8px; cursor:pointer; flex-shrink:0;
-  border:2px solid rgba(255,255,255,.35);
+.tpl-psw:hover { transform: scale(1.15); }
+.tpl-psw.sel {
+  border-color: #fff;
+  transform: scale(1.15);
+  box-shadow: 0 0 0 1px rgba(0,0,0,.3) inset, 0 0 6px rgba(255,255,255,.4);
 }
-#tpl-palette-popout {
-  position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
-  background:rgba(15,12,28,.96); backdrop-filter:blur(14px);
-  border:1px solid rgba(124,58,237,.45); border-radius:12px;
-  padding:.5rem; display:none; grid-template-columns:repeat(8,18px); gap:.3rem;
-  box-shadow:0 8px 32px rgba(0,0,0,.6);
-  z-index:850;
+
+/* Brush preview */
+#tpl-brush-preview-wrap {
+  margin-top: .4rem;
+  display: flex; align-items: center; gap: .6rem;
 }
-#tpl-palette-popout.open { display:grid; }
+#tpl-brush-preview {
+  width: 36px; height: 36px;
+  background: #0a0a14; border-radius: 6px;
+  border: 1px solid rgba(255,255,255,.1);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+#tpl-brush-preview-dot {
+  border-radius: 2px;
+  transition: all .15s;
+}
+.tpl-brush-info {
+  font-size: .65rem; color: rgba(255,255,255,.5);
+  font-family: var(--font-mono,'JetBrains Mono',monospace);
+  line-height: 1.6;
+}
+
+/* Layers */
+#tpl-layer-list { margin-top: .35rem; display: flex; flex-direction: column; gap: 3px; }
+.tpl-layer-row {
+  display: flex; align-items: center; gap: .4rem;
+  padding: .35rem .4rem; border-radius: 6px;
+  background: rgba(124,58,237,.18); border: 1px solid rgba(124,58,237,.35);
+  cursor: pointer;
+}
+.tpl-layer-thumb {
+  width: 24px; height: 24px; border-radius: 4px;
+  background: #0a0a14; border: 1px solid rgba(255,255,255,.1);
+  image-rendering: pixelated; flex-shrink: 0;
+}
+.tpl-layer-name {
+  font-size: .72rem; font-weight: 600; color: #c4aaff;
+  flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tpl-layer-vis {
+  width: 16px; height: 16px; color: rgba(255,255,255,.5);
+  cursor: pointer; flex-shrink: 0;
+}
+
+/* Stats section */
+#tpl-stats-wrap { margin-top: .35rem; display: flex; flex-direction: column; gap: .3rem; }
+.tpl-stat-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.tpl-stat-lbl { font-size: .62rem; color: rgba(255,255,255,.4); }
+.tpl-stat-val {
+  font-size: .65rem; font-weight: 600;
+  font-family: var(--font-mono,'JetBrains Mono',monospace);
+  color: rgba(255,255,255,.75);
+}
+
+/* Scrollable colors section */
+#tpl-right-colors-scroll {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+#tpl-right-colors-scroll::-webkit-scrollbar { width: 4px; }
+#tpl-right-colors-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+
+/* ── RESULT POPUP (kept from original but restyled) ── */
 #tpl-result-popup {
-  display:none; position:fixed; inset:0; z-index:1000;
-  background:rgba(0,0,0,.78); backdrop-filter:blur(8px);
-  align-items:center; justify-content:center;
+  display: none; position: fixed; inset: 0; z-index: 3000;
+  background: rgba(0,0,0,.78); backdrop-filter: blur(8px);
+  align-items: center; justify-content: center;
 }
-#tpl-result-popup.show { display:flex; }
+#tpl-result-popup.show { display: flex; }
 #tpl-result-box {
-  background:var(--surf,#1a1a2e); border:1px solid rgba(124,58,237,.4);
-  border-radius:18px; padding:1.8rem; width:380px; max-width:94vw;
-  display:flex; flex-direction:column; gap:1rem;
-  box-shadow:0 24px 64px rgba(0,0,0,.8);
+  background: #1a1a2e; border: 1px solid rgba(124,58,237,.4);
+  border-radius: 18px; padding: 1.8rem; width: 380px; max-width: 94vw;
+  display: flex; flex-direction: column; gap: 1rem;
+  box-shadow: 0 24px 64px rgba(0,0,0,.8);
 }
 #tpl-result-title {
-  font-family:var(--font-display,'Space Grotesk',sans-serif);
-  font-size:1.05rem; font-weight:700;
-  background:linear-gradient(135deg,#a78bfa,#e879f9);
-  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  font-family: var(--font-display,'Space Grotesk',sans-serif);
+  font-size: 1.05rem; font-weight: 700;
+  background: linear-gradient(135deg,#a78bfa,#e879f9);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
 #tpl-result-preview {
-  width:100%; border-radius:10px; border:1px solid rgba(255,255,255,.1);
-  max-height:200px; object-fit:contain; background:#0a0a14;
+  width: 100%; border-radius: 10px; border: 1px solid rgba(255,255,255,.1);
+  max-height: 200px; object-fit: contain; background: #0a0a14;
 }
 .tpl-dl-btn {
-  display:flex; align-items:center; justify-content:center; gap:.5rem;
-  background:linear-gradient(135deg,#7c3aed,#c026d3);
-  color:#fff; text-decoration:none; border:none;
-  border-radius:10px; padding:.75rem 1rem;
-  font-family:var(--font-display,'Space Grotesk',sans-serif);
-  font-size:.88rem; font-weight:700; cursor:pointer; transition:opacity .15s;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  background: linear-gradient(135deg,#7c3aed,#c026d3);
+  color: #fff; text-decoration: none; border: none;
+  border-radius: 10px; padding: .75rem 1rem;
+  font-family: var(--font-display,'Space Grotesk',sans-serif);
+  font-size: .88rem; font-weight: 700; cursor: pointer; transition: opacity .15s;
 }
-.tpl-dl-btn:hover { opacity:.88; }
+.tpl-dl-btn:hover { opacity: .88; }
 .tpl-dl-btn.secondary {
-  background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.15);
-  color:rgba(255,255,255,.8); font-size:.78rem; padding:.55rem 1rem;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15);
+  color: rgba(255,255,255,.8); font-size: .78rem; padding: .55rem 1rem;
 }
 #tpl-upload-status {
-  font-size:.72rem; font-family:var(--font-mono,'JetBrains Mono',monospace);
-  color:rgba(255,255,255,.5); text-align:center; min-height:1rem;
+  font-size: .72rem; font-family: var(--font-mono,'JetBrains Mono',monospace);
+  color: rgba(255,255,255,.5); text-align: center; min-height: 1rem;
 }
-#tpl-upload-status.ok  { color:#00d4a0; }
-#tpl-upload-status.err { color:#f04a4a; }
+#tpl-upload-status.ok  { color: #00d4a0; }
+#tpl-upload-status.err { color: #f04a4a; }
 
-/* ── BRUSH KONTROLLERI ── */
-.tpl-slider-wrap {
-  display:flex; align-items:center; gap:.35rem; flex-shrink:0;
+/* ── CANVAS.rclick-erase cursor ── */
+#tpl-draw-canvas.rclick-erase { cursor: cell; }
+
+/* ── Mobile ── */
+@media (max-width: 600px) {
+  #tpl-right-panel { width: 160px; }
+  #tpl-left-panel { width: 40px; }
+  .tpl-tool { width: 32px; height: 32px; }
+  #tpl-options-bar { overflow-x: auto; }
 }
-.tpl-slider-label {
-  font-size:.6rem; font-weight:700; color:rgba(255,255,255,.5);
-  text-transform:uppercase; letter-spacing:.06em; white-space:nowrap;
+@media (max-width: 480px) {
+  #tpl-right-panel { display: none; }
 }
-.tpl-slider {
-  -webkit-appearance:none; appearance:none;
-  width:64px; height:3px; border-radius:2px;
-  background:rgba(255,255,255,.15); outline:none; cursor:pointer;
-}
-.tpl-slider::-webkit-slider-thumb {
-  -webkit-appearance:none; width:13px; height:13px;
-  border-radius:50%; background:#a78bfa; cursor:pointer;
-  border:2px solid rgba(255,255,255,.3); transition:transform .1s;
-}
-.tpl-slider::-webkit-slider-thumb:hover { transform:scale(1.2); }
-.tpl-slider::-moz-range-thumb {
-  width:13px; height:13px; border-radius:50%;
-  background:#a78bfa; cursor:pointer; border:2px solid rgba(255,255,255,.3);
-}
-.tpl-slider-val {
-  font-size:.62rem; font-family:var(--font-mono,'JetBrains Mono',monospace);
-  color:rgba(255,255,255,.6); min-width:1.8rem; text-align:right;
-}
-/* Sağ tık silme aktifken cursor */
-#template-canvas.rclick-erase { cursor:cell; }
 </style>
 
 <!-- ═══════════════════════════════════════════════════════
-     ŞABLON ARACI — TOOLBAR HTML
+     ŞABLON EDİTÖRÜ — PIXILART TARZI FULL-SCREEN MODAL HTML
 ════════════════════════════════════════════════════════ -->
-<div id="template-toolbar">
-  <div id="tpl-palette-wrap">
-    <div id="tpl-palette-toggle" style="background:#e30a17" onclick="tplTogglePalette()" title="Renk seç"></div>
-    <div id="tpl-palette-popout"></div>
+<div id="tpl-editor-modal">
+
+  <!-- ── TOP MENUBAR ── -->
+  <div id="tpl-menubar">
+    <div class="tpl-logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5">
+        <rect x="3" y="3" width="5" height="5" rx="1"/><rect x="10" y="3" width="5" height="5" rx="1"/>
+        <rect x="17" y="3" width="4" height="4" rx="1"/><rect x="3" y="10" width="5" height="5" rx="1"/>
+        <rect x="10" y="10" width="5" height="5" rx="1"/><rect x="3" y="17" width="5" height="5" rx="1"/>
+        <rect x="10" y="17" width="5" height="5" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/>
+      </svg>
+      Şablon Editörü
+    </div>
+
+    <button class="tpl-menu-btn" onclick="tplMenuNew()">Yeni</button>
+    <button class="tpl-menu-btn" onclick="tplMenuImport()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-.1em;margin-right:.2rem"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      PNG Yükle
+    </button>
+    <button class="tpl-menu-btn" onclick="tplMenuExportPng()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-.1em;margin-right:.2rem"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      İndir
+    </button>
+    <button class="tpl-menu-btn" onclick="tplToggleGrid()">Izgara</button>
+
+    <div id="tpl-menubar-spacer"></div>
+
+    <button id="tpl-done-btn" onclick="tplHandleDone()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Bitti & İndir
+    </button>
+
+    <button id="tpl-close-btn" onclick="closeTemplateEditor()" title="Kapat (Esc)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
+    </button>
   </div>
-  <div class="tpl-sep"></div>
-  <!-- Brush Size -->
-  <div class="tpl-slider-wrap" title="Brush Boyutu">
-    <span class="tpl-slider-label">B</span>
-    <input class="tpl-slider" id="tpl-size-slider" type="range" min="1" max="9" step="2" value="1"
-      oninput="tplSetBrushSize(+this.value)">
-    <span class="tpl-slider-val" id="tpl-size-val">1</span>
+
+  <!-- ── SECONDARY OPTIONS BAR ── -->
+  <div id="tpl-options-bar">
+    <!-- Tool name -->
+    <span id="tpl-current-tool-label" class="tpl-opt-label" style="color:rgba(167,139,250,.8);min-width:3.5rem">PİKSEL</span>
+    <div class="tpl-opt-sep"></div>
+
+    <!-- Brush Size -->
+    <span class="tpl-opt-label">Boyut</span>
+    <input class="tpl-opt-slider" id="tpl-size-slider" type="range" min="1" max="9" step="2" value="1"
+      oninput="tplSetBrushSize(+this.value); tplUpdateBrushPreview()">
+    <span class="tpl-opt-val" id="tpl-size-val">1px</span>
+    <div class="tpl-opt-sep"></div>
+
+    <!-- Opacity -->
+    <span class="tpl-opt-label">Opaklık</span>
+    <input class="tpl-opt-slider" id="tpl-opacity-slider" type="range" min="10" max="100" step="5" value="100"
+      oninput="tplSetOpacity(+this.value); tplUpdateBrushPreview()">
+    <span class="tpl-opt-val" id="tpl-opacity-val">100%</span>
+    <div class="tpl-opt-sep"></div>
+
+    <!-- Mirror checkboxes -->
+    <label class="tpl-opt-check" title="Yatay Simetri">
+      <input type="checkbox" id="tpl-mirrorx-check" onchange="tplToggleMirror('x')"> ↔ X
+    </label>
+    <label class="tpl-opt-check" title="Dikey Simetri">
+      <input type="checkbox" id="tpl-mirrory-check" onchange="tplToggleMirror('y')"> ↕ Y
+    </label>
+    <div class="tpl-opt-sep"></div>
+
+    <!-- Sağ tık silgi -->
+    <label class="tpl-opt-check" title="Sağ Tık = Silgi">
+      <input type="checkbox" id="tpl-rclick-check" checked onchange="tplToggleRightClickErase()"> ⌥ Sağ=Silgi
+    </label>
+    <div class="tpl-opt-sep"></div>
+
+    <!-- Undo/Redo -->
+    <button class="tpl-menu-btn" id="tpl-undo-btn" onclick="tplUndo()" title="Geri Al (Ctrl+Z)" disabled>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-.1em"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+      Geri
+    </button>
+    <button class="tpl-menu-btn" id="tpl-redo-btn" onclick="tplRedo()" title="İleri Al (Ctrl+Y)" disabled>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-.1em"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+      İleri
+    </button>
   </div>
-  <!-- Opacity -->
-  <div class="tpl-slider-wrap" title="Opacity (Şeffaflık)">
-    <span class="tpl-slider-label">O</span>
-    <input class="tpl-slider" id="tpl-opacity-slider" type="range" min="10" max="100" step="5" value="100"
-      oninput="tplSetOpacity(+this.value)">
-    <span class="tpl-slider-val" id="tpl-opacity-val">100%</span>
+
+  <!-- ── MAIN BODY ── -->
+  <div id="tpl-editor-body">
+
+    <!-- LEFT TOOLS PANEL -->
+    <div id="tpl-left-panel">
+      <!-- Active Color -->
+      <div id="tpl-active-color-swatch" style="background:#e50000" onclick="tplOpenColorPicker()" title="Renk seç"></div>
+
+      <div class="tpl-tool-sep"></div>
+
+      <!-- Pencil / Brush -->
+      <button class="tpl-tool active" id="tplb-brush" onclick="tplEditorSetTool('brush')" title="Piksel Fırçası (B)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="4" y="4" width="5" height="5" rx="1"/><rect x="15" y="15" width="5" height="5" rx="1"/>
+          <rect x="9.5" y="9.5" width="5" height="5" rx="1"/>
+        </svg>
+        <span class="tpl-tool-label">piksel</span>
+      </button>
+
+      <!-- Eraser -->
+      <button class="tpl-tool" id="tplb-eraser" onclick="tplEditorSetTool('eraser')" title="Silgi (E)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/>
+          <path d="M22 21H7"/><path d="m5 11 9 9"/>
+        </svg>
+        <span class="tpl-tool-label">silgi</span>
+      </button>
+
+      <!-- Fill -->
+      <button class="tpl-tool" id="tplb-fill" onclick="tplEditorSetTool('fill')" title="Doldur / Bucket (G)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2a2 2 0 0 0 2.8 0L19 11Z"/>
+          <path d="m5 2 5 5"/><path d="M2 13h15"/>
+          <path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-3 2-3s2 1.4 2 3Z"/>
+        </svg>
+        <span class="tpl-tool-label">doldur</span>
+      </button>
+
+      <!-- Line -->
+      <button class="tpl-tool" id="tplb-line" onclick="tplEditorSetTool('line')" title="Çizgi (L)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="19" x2="19" y2="5"/>
+        </svg>
+        <span class="tpl-tool-label">çizgi</span>
+      </button>
+
+      <!-- Rectangle -->
+      <button class="tpl-tool" id="tplb-rect" onclick="tplEditorSetTool('rect')" title="Dikdörtgen (R)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="5" width="18" height="14" rx="1"/>
+        </svg>
+        <span class="tpl-tool-label">kare</span>
+      </button>
+
+      <!-- Filled Rect -->
+      <button class="tpl-tool" id="tplb-rectfill" onclick="tplEditorSetTool('rectfill')" title="Dolu Dikdörtgen (F)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <rect x="3" y="5" width="18" height="14" rx="1"/>
+        </svg>
+        <span class="tpl-tool-label">dolu</span>
+      </button>
+
+      <div class="tpl-tool-sep"></div>
+
+      <!-- Eyedropper -->
+      <button class="tpl-tool" id="tplb-picker" onclick="tplEditorSetTool('picker')" title="Renk Al (I)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/>
+          <path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8Z"/>
+        </svg>
+        <span class="tpl-tool-label">damlalık</span>
+      </button>
+
+      <div class="tpl-tool-sep"></div>
+
+      <!-- Clear -->
+      <button class="tpl-tool" onclick="tplEditorClear()" title="Tümünü Temizle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+          <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+        </svg>
+        <span class="tpl-tool-label">temizle</span>
+      </button>
+    </div>
+
+    <!-- CENTER CANVAS AREA -->
+    <div id="tpl-canvas-area">
+      <div id="tpl-canvas-wrap">
+        <div id="tpl-checkerboard"></div>
+        <canvas id="tpl-draw-canvas"></canvas>
+        <canvas id="tpl-grid-overlay"></canvas>
+      </div>
+
+      <!-- Zoom controls -->
+      <div id="tpl-canvas-controls">
+        <button class="tpl-zoom-btn" onclick="tplZoomOut()" title="Uzaklaştır (-)">−</button>
+        <span id="tpl-zoom-label">1×</span>
+        <button class="tpl-zoom-btn" onclick="tplZoomIn()" title="Yaklaştır (+)">+</button>
+        <div style="width:1px;height:14px;background:rgba(255,255,255,.1)"></div>
+        <span id="tpl-coords-label">x:— y:—</span>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div id="tpl-right-panel">
+      <div id="tpl-right-colors-scroll">
+
+        <!-- Navigation -->
+        <div class="tpl-rpanel-section">
+          <div class="tpl-rpanel-hdr" onclick="tplToggleSection('nav')">
+            <span class="tpl-rpanel-hdr-title">Navigasyon</span>
+            <span class="tpl-rpanel-hdr-arrow open" id="tpl-nav-arrow">▶</span>
+          </div>
+          <div class="tpl-rpanel-body" id="tpl-section-nav">
+            <div id="tpl-nav-preview-wrap">
+              <canvas id="tpl-nav-canvas"></canvas>
+              <div id="tpl-nav-viewport"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layers -->
+        <div class="tpl-rpanel-section">
+          <div class="tpl-rpanel-hdr" onclick="tplToggleSection('layers')">
+            <span class="tpl-rpanel-hdr-title">Katmanlar</span>
+            <span class="tpl-rpanel-hdr-arrow open" id="tpl-layers-arrow">▶</span>
+          </div>
+          <div class="tpl-rpanel-body" id="tpl-section-layers">
+            <div id="tpl-layer-list">
+              <div class="tpl-layer-row">
+                <canvas class="tpl-layer-thumb" id="tpl-layer-thumb-1" width="24" height="24"></canvas>
+                <span class="tpl-layer-name">Şablon</span>
+                <svg class="tpl-layer-vis" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Colors -->
+        <div class="tpl-rpanel-section">
+          <div class="tpl-rpanel-hdr" onclick="tplToggleSection('colors')">
+            <span class="tpl-rpanel-hdr-title">Renkler</span>
+            <span class="tpl-rpanel-hdr-arrow open" id="tpl-colors-arrow">▶</span>
+          </div>
+          <div class="tpl-rpanel-body" id="tpl-section-colors">
+            <!-- Brush preview -->
+            <div id="tpl-brush-preview-wrap">
+              <div id="tpl-brush-preview">
+                <div id="tpl-brush-preview-dot" style="width:8px;height:8px;background:#e50000;border-radius:1px"></div>
+              </div>
+              <div class="tpl-brush-info">
+                <div id="tpl-brush-info-size">Boyut: 1px</div>
+                <div id="tpl-brush-info-opacity">Opaklık: 100%</div>
+                <div id="tpl-brush-info-color" style="color:#e50000;font-weight:700">#e50000</div>
+              </div>
+            </div>
+            <!-- Palette -->
+            <div id="tpl-palette-grid"></div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="tpl-rpanel-section">
+          <div class="tpl-rpanel-hdr" onclick="tplToggleSection('stats')">
+            <span class="tpl-rpanel-hdr-title">Bilgi</span>
+            <span class="tpl-rpanel-hdr-arrow open" id="tpl-stats-arrow">▶</span>
+          </div>
+          <div class="tpl-rpanel-body" id="tpl-section-stats">
+            <div id="tpl-stats-wrap">
+              <div class="tpl-stat-row">
+                <span class="tpl-stat-lbl">Harita boyutu</span>
+                <span class="tpl-stat-val" id="tpl-stat-size">—</span>
+              </div>
+              <div class="tpl-stat-row">
+                <span class="tpl-stat-lbl">Piksel sayısı</span>
+                <span class="tpl-stat-val" id="tpl-stat-pixels">0</span>
+              </div>
+              <div class="tpl-stat-row">
+                <span class="tpl-stat-lbl">Zoom</span>
+                <span class="tpl-stat-val" id="tpl-stat-zoom">1×</span>
+              </div>
+              <div class="tpl-stat-row">
+                <span class="tpl-stat-lbl">İmleç</span>
+                <span class="tpl-stat-val" id="tpl-stat-cursor">—</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <!-- end right panel -->
+
   </div>
-  <div class="tpl-sep"></div>
-  <button class="tpl-tool-btn active" id="tpl-brush-btn" onclick="tplSetTool('brush')">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="14" width="6" height="6"/></svg>
-    Piksel
-  </button>
-  <button class="tpl-tool-btn" id="tpl-eraser-btn" onclick="tplSetTool('eraser')">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
-    Silgi
-  </button>
-  <button class="tpl-tool-btn" id="tpl-fill-btn" onclick="tplSetTool('fill')" title="Doldur (Bucket Fill)">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2a2 2 0 0 0 2.8 0L19 11Z"/><path d="m5 2 5 5"/><path d="M2 13h15"/><path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-3 2-3s2 1.4 2 3Z"/></svg>
-    Doldur
-  </button>
-  <button class="tpl-tool-btn active" id="tpl-rclick-btn" onclick="tplToggleRightClickErase()" title="Sağ Tık = Silgi (aç/kapa)">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 3h6v10a3 3 0 0 1-6 0V3z"/><path d="M14 3h6v10a3 3 0 0 1-6 0V3z"/><path d="M12 3v5"/><line x1="4" y1="21" x2="20" y2="21"/></svg>
-    ⌥ Sağ
-  </button>
-  <div class="tpl-sep"></div>
-  <button class="tpl-tool-btn" id="tpl-undo-btn" onclick="tplUndo()" title="Geri Al (Ctrl+Z)" disabled>
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
-    Geri
-  </button>
-  <button class="tpl-tool-btn" id="tpl-redo-btn" onclick="tplRedo()" title="İleri Al (Ctrl+Y)" disabled>
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
-    İleri
-  </button>
-  <div class="tpl-sep"></div>
-  <button class="tpl-tool-btn" id="tpl-mirrorx-btn" onclick="tplToggleMirror('x')" title="Yatay Simetri (Mirror X)">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 3v18"/><path d="M4 7l4 5-4 5"/><path d="M20 7l-4 5 4 5"/></svg>
-    ↔ X
-  </button>
-  <button class="tpl-tool-btn" id="tpl-mirrory-btn" onclick="tplToggleMirror('y')" title="Dikey Simetri (Mirror Y)">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h18"/><path d="M7 4l5 4 5-4"/><path d="M7 20l5-4 5 4"/></svg>
-    ↕ Y
-  </button>
-  <div class="tpl-sep"></div>
-  <button class="tpl-tool-btn" onclick="tplClear()">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-    Temizle
-  </button>
-  <button class="tpl-tool-btn" onclick="closeTemplateEditor()">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg>
-    Kapat
-  </button>
-  <div class="tpl-sep"></div>
-  <button id="tpl-done-btn" onclick="tplHandleDone()">
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block;vertical-align:-.1em"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-    Bitti & İndir
-  </button>
+  <!-- end editor body -->
+
 </div>
+<!-- end #tpl-editor-modal -->
+
+<!-- Hidden file input for PNG import -->
+<input type="file" id="tpl-file-input" accept="image/png,image/jpeg,image/gif" style="display:none" onchange="tplHandleImport(this)">
 
 <!-- ═══════════════════════════════════════════════════════
      ŞABLON SONUÇ POPUP
@@ -13304,26 +13826,38 @@ document.addEventListener('keydown', e => {
   </div>
 </div>
 
+
 <!-- ═══════════════════════════════════════════════════════
-     ŞABLON ARACI — JavaScript
+     ŞABLON EDİTÖRÜ — PIXILART TARZI JS (mevcut _tpl* sistemiyle entegre)
 ════════════════════════════════════════════════════════ -->
 <script>
-/* ── ŞABLON ARACI — oyun haritasıyla TAM senkron piksel-grid sistemi ──
-   Mantık: Harita nasıl IMG_W×IMG_H boyutunda flat-indexli bir grid'e
-   pikselleri basıyorsa (bkz. PARTIES[].color + pixelCanvas), şablon da
-   AYNI flat-index sistemini kullanan kendi offscreen bitmap'ine (_tplBitmap)
-   piksel basar. Ekrana basılırken haritanın kendi draw() fonksiyonundaki
-   ox/oy/scale değerleriyle ÇİZİLİR — yani zoom/pan harita ile bire bir
-   senkron kalır, ayrı bir konum/boyut hesaplama hilesine gerek kalmaz.
-   Tıklama/sürükleme, haritanın zaten pan/zoom'u tıklamadan ayırt eden
-   window.handleClick() zincirine eklenerek yakalanır — böylece mevcut
-   pan/zoom/pinch mantığı hiç bozulmaz. */
+/* ══════════════════════════════════════════════════════════
+   ŞABLON ARACI — oyun haritasıyla TAM senkron piksel-grid sistemi
+   Mantık: Harita IMG_W×IMG_H boyutunda flat-indexli grid kullanıyor.
+   Şablon da AYNI flat-index sistemini kullanan _tplBitmap'e piksel basar.
+   Yeni editör: kendi bağımsız canvas'ında render eder, bitince haritaya
+   overlay olarak yazar (eski _tplRenderOverlay() zinciriyle).
+══════════════════════════════════════════════════════════ */
 
-let _tplActive=false, _tplTool='brush', _tplLastBlob=null;
-let _tplDrawingNow=false, _tplLastFlat=-1;
+/* ── STATE ── */
+let _tplActive = false, _tplTool = 'brush', _tplLastBlob = null;
+let _tplDrawingNow = false, _tplLastFlat = -1;
 
-// Oyundaki gerçek piksel paleti (#ptoolbar sw0-sw29 ile birebir aynı)
-const TPL_PALETTE=[
+/* ── EDITOR-INTERNAL STATE ── */
+let _editorZoom = 4;       // current zoom level (pixels per grid cell)
+let _editorOffX = 0;       // pan offset x (canvas pixels)
+let _editorOffY = 0;       // pan offset y (canvas pixels)
+let _editorPanning = false;
+let _editorPanStartX = 0, _editorPanStartY = 0;
+let _editorPanOffX = 0, _editorPanOffY = 0;
+let _editorLineStart = null; // for line tool
+let _editorRectStart = null; // for rect tool
+let _editorGridVisible = false;
+let _editorW = 100, _editorH = 100; // grid dimensions (set from IMG_W/IMG_H)
+let _editorPreviewDirty = true;
+
+/* ── PALETTE (oyunla aynı) ── */
+const TPL_PALETTE = [
   {c:'#ffffff',n:'Beyaz'},{c:'#e4e4e4',n:'Açık Gri'},{c:'#c4c4c4',n:'Gri'},
   {c:'#888888',n:'Koyu Gri'},{c:'#4e4e4e',n:'Çok Koyu Gri'},{c:'#000000',n:'Siyah'},
   {c:'#f4b3ae',n:'Açık Pembe'},{c:'#ffa7d1',n:'Pembe'},{c:'#ff54b2',n:'Fuşya'},
@@ -13335,635 +13869,936 @@ const TPL_PALETTE=[
   {c:'#00d3dd',n:'Cyan'},{c:'#0083c7',n:'Mavi'},{c:'#0000ea',n:'Parlak Mavi'},
   {c:'#191973',n:'Lacivert'},{c:'#cf6ee4',n:'Lila'},{c:'#820080',n:'Mor'}
 ];
-let _tplColor=TPL_PALETTE[10].c; // varsayılan: Kırmızı
+let _tplColor = TPL_PALETTE[10].c;
 
-// Şablon verisi: flat-index -> hex renk. IMG_W/IMG_H ile haritayla aynı grid.
-let _tplData=new Map();
-// Offscreen bitmap: harita gibi 1px=1 grid hücresi, draw() içinde ölçeklenerek basılır.
-let _tplBitmap=null, _tplBitmapCtx=null;
+/* ── DATA ── */
+let _tplData = new Map();      // flat-index → hex color
+let _tplBitmap = null;
+let _tplBitmapCtx = null;
 
-// ── UNDO / REDO SİSTEMİ ─────────────────────────────────────────────────
-// Tüm canvas yerine sadece _tplData (Map<flat,color>) snapshot'ları tutulur.
-// Her çizim/silgi stroke sonunda (mouseup/pointerup) bir snapshot alınır.
-// Sürükleme sırasında anlık snapshot alınmaz → performanslı.
-const TPL_UNDO_LIMIT = 50; // maksimum kayıt sayısı
-let _tplUndoStack = [];    // geçmiş state'ler (en yeni = sonda)
-let _tplRedoStack = [];    // redo state'leri
-let _tplStrokeActive = false; // stroke başladı mı (ilk snapshot henüz alındı mı)
+/* ── UNDO/REDO ── */
+const TPL_UNDO_LIMIT = 50;
+let _tplUndoStack = [], _tplRedoStack = [];
+let _tplStrokeActive = false;
 
-// ── MIRROR SİSTEMİ ──────────────────────────────────────────────────────
-let _tplMirrorX = false; // yatay simetri (sol↔sağ)
-let _tplMirrorY = false; // dikey simetri (üst↔alt)
+/* ── MIRROR ── */
+let _tplMirrorX = false, _tplMirrorY = false;
 
-function tplToggleMirror(axis){
-  if(axis==='x'){
-    _tplMirrorX=!_tplMirrorX;
-    const btn=document.getElementById('tpl-mirrorx-btn');
-    if(btn) btn.classList.toggle('active',_tplMirrorX);
-    showPopup(_tplMirrorX ? '↔ Mirror X açık' : '↔ Mirror X kapalı');
-  } else {
-    _tplMirrorY=!_tplMirrorY;
-    const btn=document.getElementById('tpl-mirrory-btn');
-    if(btn) btn.classList.toggle('active',_tplMirrorY);
-    showPopup(_tplMirrorY ? '↕ Mirror Y açık' : '↕ Mirror Y kapalı');
-  }
-}
+/* ── BRUSH ── */
+let _tplBrushSize = 1;
+let _tplOpacity   = 1.0;
+let _tplRightClickErase = true;
+let _tplRightClickDown  = false;
 
-// ── BRUSH SIZE / OPACITY / SAĞ TIK SİLGİ ───────────────────────────────
-let _tplBrushSize = 1;    // 1,3,5,7,9 (tek sayı — merkez piksel dahil kare)
-let _tplOpacity   = 1.0;  // 0.1 – 1.0
-let _tplRightClickErase = true;  // varsayılan açık — sağ tık doğrudan silgi olarak çalışır
-let _tplRightClickDown  = false; // sağ tık basılı mı
+/* ══════════════════════════════════════════════════════════
+   OPEN / CLOSE
+══════════════════════════════════════════════════════════ */
+function openTemplateEditor() {
+  if (!username) { showPopup('Şablon aracı için giriş yapman gerekiyor.'); return; }
+  if (_tplActive) return;
+  if (typeof IMG_W === 'undefined' || !canvas) { showPopup('Harita henüz yüklenmedi.'); return; }
 
-function tplSetBrushSize(v){
-  _tplBrushSize = Math.max(1, Math.min(9, v));
-  const val=document.getElementById('tpl-size-val');
-  if(val) val.textContent=_tplBrushSize;
-}
+  _tplActive = true;
+  _editorW = IMG_W;
+  _editorH = IMG_H;
 
-function tplSetOpacity(v){
-  _tplOpacity = Math.round(v) / 100;
-  const val=document.getElementById('tpl-opacity-val');
-  if(val) val.textContent=Math.round(v)+'%';
-}
-
-function tplToggleRightClickErase(){
-  _tplRightClickErase=!_tplRightClickErase;
-  const btn=document.getElementById('tpl-rclick-btn');
-  if(btn) btn.classList.toggle('active',_tplRightClickErase);
-  const tc=document.getElementById('template-canvas');
-  if(tc) tc.classList.toggle('rclick-erase',_tplRightClickErase);
-  showPopup(_tplRightClickErase ? '⌥ Sağ tık silgi açık' : '⌥ Sağ tık silgi kapalı');
-}
-
-// Opacity'li renk oluştur — hex + alpha → rgba string
-function _tplColorWithOpacity(hex, alpha){
-  if(alpha>=1) return hex;
-  // hex → r,g,b
-  const h=hex.replace('#','');
-  const r=parseInt(h.substring(0,2),16);
-  const g=parseInt(h.substring(2,4),16);
-  const b=parseInt(h.substring(4,6),16);
-  return `rgba(${r},${g},${b},${alpha.toFixed(2)})`;
-}
-
-// Brush size'a göre çizilecek piksel offset listesini döner (kare brush)
-function _tplBrushOffsets(size){
-  if(size<=1) return [[0,0]];
-  const half=Math.floor(size/2);
-  const offs=[];
-  for(let dy=-half;dy<=half;dy++){
-    for(let dx=-half;dx<=half;dx++){
-      offs.push([dx,dy]);
-    }
-  }
-  return offs;
-}
-// ────────────────────────────────────────────────────────────────────────
-
-// Tek bir flat koordinatı için gerekli tüm mirror noktalarını döner
-// (kendisi dahil, 1–4 arası nokta)
-function _tplMirrorFlats(flat){
-  const ix=flat%IMG_W, iy=Math.floor(flat/IMG_W);
-  const mx=IMG_W-1-ix; // yansı X
-  const my=IMG_H-1-iy; // yansı Y
-  const pts=new Set();
-  pts.add(flat);
-  if(_tplMirrorX) pts.add(mx + iy*IMG_W);
-  if(_tplMirrorY) pts.add(ix + my*IMG_W);
-  if(_tplMirrorX && _tplMirrorY) pts.add(mx + my*IMG_W);
-  return pts;
-}
-// ────────────────────────────────────────────────────────────────────────
-
-// Mevcut _tplData'nın derin kopyasını al
-function _tplSnapshot(){
-  return new Map(_tplData);
-}
-
-// Stroke başlangıcında: o anki state'i undo stack'e it
-function _tplPushUndo(){
-  _tplUndoStack.push(_tplSnapshot());
-  if(_tplUndoStack.length > TPL_UNDO_LIMIT) _tplUndoStack.shift();
-  _tplRedoStack = []; // yeni eylem → redo temizlenir
+  _tplUndoStack = [];
+  _tplRedoStack = [];
+  _tplStrokeActive = false;
   _tplUpdateUndoButtons();
-}
 
-// Belirli bir state'i geri yükle
-function _tplRestoreState(state){
-  _tplData = new Map(state);
-  // Bitmap'i sıfırdan yeniden çiz
-  if(_tplBitmapCtx){
-    _tplBitmapCtx.clearRect(0,0,_tplBitmap.width,_tplBitmap.height);
-    for(const [flat,color] of _tplData){
-      const ix=flat%IMG_W, iy=Math.floor(flat/IMG_W);
-      _tplBitmapCtx.fillStyle=color;
-      _tplBitmapCtx.fillRect(ix,iy,1,1);
-    }
+  /* Offscreen bitmap (harita grid çözünürlüğünde) */
+  if (!_tplBitmap) {
+    _tplBitmap = document.createElement('canvas');
+    _tplBitmap.width = IMG_W;
+    _tplBitmap.height = IMG_H;
+    _tplBitmapCtx = _tplBitmap.getContext('2d');
+    _tplBitmapCtx.imageSmoothingEnabled = false;
   }
-  _tplRenderOverlay();
+
+  /* Modal aç */
+  document.getElementById('tpl-editor-modal').classList.add('active');
+
+  /* Editor canvas'ını hazırla */
+  _editorInitCanvas();
+
+  /* Palette oluştur */
+  _editorBuildPalette();
+  _editorSelectColor(_tplColor, false);
+
+  /* Mevcut _tplData varsa geri yükle */
+  _editorSyncFromBitmap();
+
+  /* Boyut bilgisi */
+  document.getElementById('tpl-stat-size').textContent = IMG_W + '×' + IMG_H;
+
+  /* Mirror checkbox sync */
+  document.getElementById('tpl-mirrorx-check').checked = _tplMirrorX;
+  document.getElementById('tpl-mirrory-check').checked = _tplMirrorY;
+  document.getElementById('tpl-rclick-check').checked = _tplRightClickErase;
+
+  /* İlk render */
+  _editorRender();
+  _editorUpdateNavPreview();
+
+  /* Esc tuşu */
+  document.addEventListener('keydown', _tplKeyboardHandler);
 }
 
-function tplUndo(){
-  if(_tplUndoStack.length===0) return;
-  _tplRedoStack.push(_tplSnapshot());     // mevcut state redo'ya
-  const prev=_tplUndoStack.pop();
-  _tplRestoreState(prev);
-  _tplUpdateUndoButtons();
-}
+function closeTemplateEditor() {
+  if (!_tplActive) return;
+  _tplActive = false;
+  _tplDrawingNow = false;
+  _tplRightClickDown = false;
+  _tplLastFlat = -1;
+  _editorPanning = false;
+  _tplMirrorX = false;
+  _tplMirrorY = false;
+  _editorLineStart = null;
+  _editorRectStart = null;
 
-function tplRedo(){
-  if(_tplRedoStack.length===0) return;
-  _tplUndoStack.push(_tplSnapshot());     // mevcut state undo'ya
-  const next=_tplRedoStack.pop();
-  _tplRestoreState(next);
-  _tplUpdateUndoButtons();
-}
+  document.getElementById('tpl-editor-modal').classList.remove('active');
+  document.removeEventListener('keydown', _tplKeyboardHandler);
 
-function _tplUpdateUndoButtons(){
-  const undoBtn=document.getElementById('tpl-undo-btn');
-  const redoBtn=document.getElementById('tpl-redo-btn');
-  if(undoBtn) undoBtn.disabled=_tplUndoStack.length===0;
-  if(redoBtn) redoBtn.disabled=_tplRedoStack.length===0;
-}
-
-// tplClear() undo'ya kaydedilmeli — orijinal fonksiyon override
-(function(){
-  const _origClear=window.tplClear;
-  window.tplClear=function(){
-    if(_tplData && _tplData.size>0) _tplPushUndo();
-    if(typeof _origClear==='function') _origClear.apply(this,arguments);
-  };
-})();
-
-// Klavye kısayolları: Ctrl+Z / Ctrl+Y (şablon aktifken)
-document.addEventListener('keydown',(e)=>{
-  if(!_tplActive) return;
-  // Input/textarea odaklanmışsa müdahale etme
-  const tag=(document.activeElement||{}).tagName||'';
-  if(tag==='INPUT'||tag==='TEXTAREA') return;
-  if(e.ctrlKey && !e.shiftKey && e.key==='z'){
-    e.preventDefault();
-    tplUndo();
-  } else if(e.ctrlKey && (e.key==='y' || (e.shiftKey && e.key==='z'))){
-    e.preventDefault();
-    tplRedo();
+  /* Harita overlay canvas'ını senkronla (haritada görünmesi için) */
+  const tc = document.getElementById('template-canvas');
+  if (tc && canvas) {
+    tc.width = canvas.width;
+    tc.height = canvas.height;
   }
-});
+  if (typeof _tplRenderOverlay === 'function') _tplRenderOverlay();
+}
 
-// Stroke tamamlandığında snapshot al (mouseup / pointerup)
-// pointerup zaten tanımlı — ona hook'lanıyoruz
-(function(){
-  const _origPointerUp=window.addEventListener;
-  // Var olan pointerup listener'ına eklemek yerine yenisini ekle
-  window.addEventListener('pointerup',()=>{
-    if(!_tplActive) return;
-    if(_tplStrokeActive){
-      _tplStrokeActive=false;
-      // Stroke sona erdi — eğer bir şey değiştiyse undo'ya kaydet
-      // (stroke başında alınan snapshot zaten stackte)
-    }
+/* ══════════════════════════════════════════════════════════
+   EDITOR CANVAS SETUP
+══════════════════════════════════════════════════════════ */
+function _editorInitCanvas() {
+  const area = document.getElementById('tpl-canvas-area');
+  const dc = document.getElementById('tpl-draw-canvas');
+  const gc = document.getElementById('tpl-grid-overlay');
+  const wrap = document.getElementById('tpl-canvas-wrap');
+
+  /* Auto-fit zoom */
+  const areaW = area.clientWidth - 40;
+  const areaH = area.clientHeight - 60;
+  const fitX = Math.floor(areaW / _editorW);
+  const fitY = Math.floor(areaH / _editorH);
+  _editorZoom = Math.max(1, Math.min(16, Math.min(fitX, fitY)));
+
+  const cw = _editorW * _editorZoom;
+  const ch = _editorH * _editorZoom;
+
+  dc.width = cw; dc.height = ch;
+  gc.width = cw; gc.height = ch;
+
+  wrap.style.width = cw + 'px';
+  wrap.style.height = ch + 'px';
+  document.getElementById('tpl-checkerboard').style.width = cw + 'px';
+  document.getElementById('tpl-checkerboard').style.height = ch + 'px';
+
+  _editorOffX = 0; _editorOffY = 0;
+  _editorUpdateZoomLabel();
+  _editorAttachEvents();
+
+  /* Grid overlay */
+  if (_editorGridVisible) _editorDrawGrid();
+  else gc.getContext('2d').clearRect(0, 0, gc.width, gc.height);
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════════════════ */
+function _editorRender() {
+  const dc = document.getElementById('tpl-draw-canvas');
+  if (!dc) return;
+  const ctx = dc.getContext('2d');
+  ctx.clearRect(0, 0, dc.width, dc.height);
+  ctx.imageSmoothingEnabled = false;
+
+  if (_tplBitmap) {
+    ctx.drawImage(_tplBitmap, 0, 0, _editorW * _editorZoom, _editorH * _editorZoom);
+  }
+
+  /* Grid */
+  if (_editorGridVisible) _editorDrawGrid();
+
+  _editorUpdateNavPreview();
+  _editorUpdateStats();
+}
+
+function _editorDrawGrid() {
+  const gc = document.getElementById('tpl-grid-overlay');
+  if (!gc) return;
+  const ctx = gc.getContext('2d');
+  ctx.clearRect(0, 0, gc.width, gc.height);
+  if (_editorZoom < 3) return; // too small to show grid
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.lineWidth = 1;
+  const z = _editorZoom;
+  for (let x = 0; x <= _editorW; x++) {
+    ctx.beginPath(); ctx.moveTo(x*z+.5, 0); ctx.lineTo(x*z+.5, gc.height); ctx.stroke();
+  }
+  for (let y = 0; y <= _editorH; y++) {
+    ctx.beginPath(); ctx.moveTo(0, y*z+.5); ctx.lineTo(gc.width, y*z+.5); ctx.stroke();
+  }
+  document.getElementById('tpl-grid-overlay').classList.toggle('visible', _editorGridVisible);
+}
+
+/* ══════════════════════════════════════════════════════════
+   NAVIGATION PREVIEW
+══════════════════════════════════════════════════════════ */
+function _editorUpdateNavPreview() {
+  const nc = document.getElementById('tpl-nav-canvas');
+  if (!nc || !_tplBitmap) return;
+  const wrap = document.getElementById('tpl-nav-preview-wrap');
+  const pw = wrap.clientWidth || 188;
+  nc.width = pw; nc.height = pw;
+  const ctx = nc.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  ctx.fillStyle = '#0a0a14';
+  ctx.fillRect(0, 0, pw, pw);
+  ctx.drawImage(_tplBitmap, 0, 0, pw, pw);
+
+  /* Layer thumb */
+  const lt = document.getElementById('tpl-layer-thumb-1');
+  if (lt) {
+    const ltx = lt.getContext('2d');
+    ltx.imageSmoothingEnabled = false;
+    ltx.clearRect(0, 0, 24, 24);
+    ltx.drawImage(_tplBitmap, 0, 0, 24, 24);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATS
+══════════════════════════════════════════════════════════ */
+function _editorUpdateStats() {
+  const ps = document.getElementById('tpl-stat-pixels');
+  const zs = document.getElementById('tpl-stat-zoom');
+  if (ps) ps.textContent = _tplData.size;
+  if (zs) zs.textContent = _editorZoom + '×';
+}
+
+/* ══════════════════════════════════════════════════════════
+   ZOOM
+══════════════════════════════════════════════════════════ */
+function tplZoomIn() {
+  const max = Math.max(1, Math.floor(800 / Math.min(_editorW, _editorH)));
+  _editorZoom = Math.min(max, _editorZoom + (_editorZoom < 4 ? 1 : _editorZoom < 8 ? 2 : 4));
+  _editorResizeCanvas();
+  _editorUpdateZoomLabel();
+  _editorRender();
+}
+function tplZoomOut() {
+  _editorZoom = Math.max(1, _editorZoom - (_editorZoom <= 4 ? 1 : _editorZoom <= 8 ? 2 : 4));
+  _editorResizeCanvas();
+  _editorUpdateZoomLabel();
+  _editorRender();
+}
+function _editorResizeCanvas() {
+  const dc = document.getElementById('tpl-draw-canvas');
+  const gc = document.getElementById('tpl-grid-overlay');
+  const wrap = document.getElementById('tpl-canvas-wrap');
+  const cw = _editorW * _editorZoom;
+  const ch = _editorH * _editorZoom;
+  dc.width = cw; dc.height = ch;
+  gc.width = cw; gc.height = ch;
+  wrap.style.width = cw + 'px';
+  wrap.style.height = ch + 'px';
+  document.getElementById('tpl-checkerboard').style.width = cw + 'px';
+  document.getElementById('tpl-checkerboard').style.height = ch + 'px';
+}
+function _editorUpdateZoomLabel() {
+  document.getElementById('tpl-zoom-label').textContent = _editorZoom + '×';
+  const ss = document.getElementById('tpl-stat-zoom');
+  if (ss) ss.textContent = _editorZoom + '×';
+}
+
+/* ══════════════════════════════════════════════════════════
+   PALETTE
+══════════════════════════════════════════════════════════ */
+function _editorBuildPalette() {
+  const grid = document.getElementById('tpl-palette-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  TPL_PALETTE.forEach(({c, n}) => {
+    const sw = document.createElement('div');
+    sw.className = 'tpl-psw';
+    sw.style.background = c;
+    sw.title = n + '\n' + c;
+    sw.dataset.color = c;
+    sw.onclick = () => _editorSelectColor(c, true);
+    grid.appendChild(sw);
   });
-})();
-// ────────────────────────────────────────────────────────────────────────
+}
 
-function _tplBuildPalette(){
-  const pop=document.getElementById('tpl-palette-popout');
-  pop.innerHTML=TPL_PALETTE.map((p,i)=>
-    `<div class="tpl-psw${p.c===_tplColor?' sel':''}" style="background:${p.c}" title="${p.n}" onclick="tplPickColor('${p.c}',this)"></div>`
-  ).join('');
+function _editorSelectColor(hex, updateTool) {
+  _tplColor = hex;
+  /* active color swatch (left panel) */
+  const sw = document.getElementById('tpl-active-color-swatch');
+  if (sw) sw.style.background = hex;
+  /* palette selection ring */
+  document.querySelectorAll('.tpl-psw').forEach(el => {
+    el.classList.toggle('sel', el.dataset.color === hex);
+  });
+  /* brush info */
+  const bi = document.getElementById('tpl-brush-info-color');
+  if (bi) { bi.textContent = hex; bi.style.color = hex; }
+  tplUpdateBrushPreview();
+
+  if (updateTool && _tplTool !== 'brush') tplEditorSetTool('brush');
 }
-function tplTogglePalette(){
-  const pop=document.getElementById('tpl-palette-popout');
-  pop.classList.toggle('open');
+
+function tplOpenColorPicker() {
+  /* Palette popout yoksa paleti göster */
+  const grid = document.getElementById('tpl-palette-grid');
+  if (grid) grid.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
-function tplPickColor(hex,el){
-  _tplColor=hex;
-  document.getElementById('tpl-palette-toggle').style.background=hex;
-  document.querySelectorAll('.tpl-psw').forEach(s=>s.classList.remove('sel'));
-  if(el) el.classList.add('sel');
-  document.getElementById('tpl-palette-popout').classList.remove('open');
-  // Renk seçince otomatik fırça moduna geç (silgide kalmasın)
-  tplSetTool('brush');
-}
-document.addEventListener('click',(e)=>{
-  const wrap=document.getElementById('tpl-palette-wrap');
-  if(wrap && !wrap.contains(e.target)){
-    document.getElementById('tpl-palette-popout')?.classList.remove('open');
+
+/* ══════════════════════════════════════════════════════════
+   TOOL SELECTION
+══════════════════════════════════════════════════════════ */
+const TPL_TOOL_LABELS = {
+  brush: 'PİKSEL', eraser: 'SİLGİ', fill: 'DOLDUR',
+  line: 'ÇİZGİ', rect: 'DİKDÖRTGEN', rectfill: 'DOLU',
+  picker: 'DAMLALIK'
+};
+
+function tplEditorSetTool(t) {
+  _tplTool = t;
+  document.querySelectorAll('.tpl-tool').forEach(el => el.classList.remove('active'));
+  const btn = document.getElementById('tplb-' + t);
+  if (btn) btn.classList.add('active');
+  const lbl = document.getElementById('tpl-current-tool-label');
+  if (lbl) lbl.textContent = TPL_TOOL_LABELS[t] || t.toUpperCase();
+  _editorLineStart = null;
+  _editorRectStart = null;
+
+  /* cursor */
+  const dc = document.getElementById('tpl-draw-canvas');
+  if (dc) {
+    dc.style.cursor = t === 'picker' ? 'crosshair' :
+                      t === 'fill'   ? 'cell' :
+                      t === 'eraser' ? 'cell' : 'crosshair';
   }
-});
+}
 
-function openTemplateEditor(){
-  if(!username){ showPopup('Şablon aracı için giriş yapman gerekiyor.'); return; }
-  if(_tplActive) return;
-  if(typeof IMG_W==='undefined' || !canvas){ showPopup('Harita henüz yüklenmedi.'); return; }
-  _tplActive=true;
-  // Undo/redo stack'lerini sıfırla
-  _tplUndoStack=[];
-  _tplRedoStack=[];
-  _tplStrokeActive=false;
-  _tplUpdateUndoButtons();
-  // Offscreen bitmap'i harita çözünürlüğünde kur (sadece ilk açılışta sıfırla, sonraki açılışlarda eski şablonu koru)
-  if(!_tplBitmap){
-    _tplBitmap=document.createElement('canvas');
-    _tplBitmap.width=IMG_W; _tplBitmap.height=IMG_H;
-    _tplBitmapCtx=_tplBitmap.getContext('2d');
-    _tplBitmapCtx.imageSmoothingEnabled=false;
+/* ══════════════════════════════════════════════════════════
+   BRUSH PREVIEW
+══════════════════════════════════════════════════════════ */
+function tplUpdateBrushPreview() {
+  const dot = document.getElementById('tpl-brush-preview-dot');
+  if (!dot) return;
+  const sz = Math.min(28, _tplBrushSize * 5 + 3);
+  dot.style.width = sz + 'px';
+  dot.style.height = sz + 'px';
+  dot.style.background = _tplColor;
+  dot.style.opacity = _tplOpacity;
+  dot.style.borderRadius = '1px';
+  const bi = document.getElementById('tpl-brush-info-size');
+  const bo = document.getElementById('tpl-brush-info-opacity');
+  if (bi) bi.textContent = 'Boyut: ' + _tplBrushSize + 'px';
+  if (bo) bo.textContent = 'Opaklık: ' + Math.round(_tplOpacity * 100) + '%';
+}
+
+/* ══════════════════════════════════════════════════════════
+   GRID TOGGLE
+══════════════════════════════════════════════════════════ */
+function tplToggleGrid() {
+  _editorGridVisible = !_editorGridVisible;
+  _editorRender();
+  if (!_editorGridVisible) {
+    const gc = document.getElementById('tpl-grid-overlay');
+    if (gc) gc.getContext('2d').clearRect(0, 0, gc.width, gc.height);
+    document.getElementById('tpl-grid-overlay').classList.remove('visible');
   }
-  const tc=document.getElementById('template-canvas');
-  tc.width=canvas.width; tc.height=canvas.height;
-  tc.classList.add('active');
-  document.getElementById('template-toolbar').classList.add('active');
-  _tplBuildPalette();
-  document.getElementById('tpl-palette-toggle').style.background=_tplColor;
-  tplSetTool('brush');
-  // Sağ-tık-silgi UI durumunu mevcut state ile senkronla (varsayılan: açık)
-  document.getElementById('tpl-rclick-btn')?.classList.toggle('active',_tplRightClickErase);
-  document.getElementById('template-canvas')?.classList.toggle('rclick-erase',_tplRightClickErase);
-  _tplRenderOverlay();
-  showPopup('Şablon aracı açıldı — haritayı normal şekilde zoomla/kaydır, durduğunda tıklayarak piksel bas.');
 }
 
-function tplSetTool(t){
-  _tplTool=t;
-  document.getElementById('tpl-brush-btn').classList.toggle('active',t==='brush');
-  document.getElementById('tpl-eraser-btn').classList.toggle('active',t==='eraser');
-  document.getElementById('tpl-fill-btn')?.classList.toggle('active',t==='fill');
-}
-function tplClear(){
-  if(!_tplBitmapCtx) return;
-  _tplBitmapCtx.clearRect(0,0,_tplBitmap.width,_tplBitmap.height);
-  _tplData.clear();
-  _tplRenderOverlay();
-}
-
-// Haritanın kendi canvasToFlat'ı ile AYNI mantık: ekran koordinatından flat index.
-function _tplCanvasToFlat(mx,my){
-  if(typeof canvasToFlat==='function') return canvasToFlat(mx,my);
-  const ix=Math.floor((mx-ox)/scale), iy=Math.floor((my-oy)/scale);
-  if(ix<0||ix>=IMG_W||iy<0||iy>=IMG_H) return -1;
-  return ix+iy*IMG_W;
+/* ══════════════════════════════════════════════════════════
+   SECTION COLLAPSE
+══════════════════════════════════════════════════════════ */
+function tplToggleSection(id) {
+  const body = document.getElementById('tpl-section-' + id);
+  const arrow = document.getElementById('tpl-' + id + '-arrow');
+  if (!body) return;
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? '' : 'none';
+  if (arrow) arrow.classList.toggle('open', hidden);
 }
 
-function _tplPaintAt(flat, forceErase){
-  if(flat<0) return;
-  // Stroke başlıyorsa (ilk piksel) → undo snapshot al
-  if(!_tplStrokeActive){
-    _tplStrokeActive=true;
-    _tplPushUndo();
-  }
-  const erasing=forceErase || _tplTool==='eraser';
-  const fillColor=_tplColorWithOpacity(_tplColor,_tplOpacity);
-  const cix=flat%IMG_W, ciy=Math.floor(flat/IMG_W);
-  // ── BRUSH SIZE: merkez piksel etrafında kare blok (offset listesi) ──
-  // Kare blok = pixel-perfect: yumuşatma/anti-alias yok, tam grid hücresi.
-  const offsets=_tplBrushOffsets(_tplBrushSize);
-  for(const [dx,dy] of offsets){
-    const bx=cix+dx, by=ciy+dy;
-    if(bx<0||bx>=IMG_W||by<0||by>=IMG_H) continue;
-    const baseFlat=bx+by*IMG_W;
-    // Mirror: çizilecek tüm noktalar (orijinal + yansılar)
-    const targets=_tplMirrorFlats(baseFlat);
-    for(const f of targets){
-      if(f<0||f>=IMG_W*IMG_H) continue;
-      const ix=f%IMG_W, iy=Math.floor(f/IMG_W);
-      if(erasing){
+/* ══════════════════════════════════════════════════════════
+   COORDS HELPER
+══════════════════════════════════════════════════════════ */
+function _editorEventToGrid(e) {
+  const dc = document.getElementById('tpl-draw-canvas');
+  if (!dc) return [-1, -1];
+  const r = dc.getBoundingClientRect();
+  const x = Math.floor((e.clientX - r.left) / _editorZoom);
+  const y = Math.floor((e.clientY - r.top) / _editorZoom);
+  return [x, y];
+}
+function _editorXYToFlat(x, y) {
+  if (x < 0 || x >= _editorW || y < 0 || y >= _editorH) return -1;
+  return x + y * _editorW;
+}
+
+/* ══════════════════════════════════════════════════════════
+   DRAWING PRIMITIVES (operate on _tplBitmap + _tplData)
+══════════════════════════════════════════════════════════ */
+function _tplColorWithOpacity(hex, alpha) {
+  const r = parseInt(hex.slice(1,3),16);
+  const g = parseInt(hex.slice(3,5),16);
+  const b = parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function _tplBrushOffsets(size) {
+  const half = Math.floor(size / 2);
+  const offsets = [];
+  for (let dx = -half; dx <= half; dx++)
+    for (let dy = -half; dy <= half; dy++)
+      offsets.push([dx, dy]);
+  return offsets;
+}
+
+function _tplMirrorFlats(flat) {
+  const x = flat % _editorW, y = Math.floor(flat / _editorW);
+  const pts = [[x, y]];
+  if (_tplMirrorX) pts.push([_editorW - 1 - x, y]);
+  if (_tplMirrorY) pts.push([x, _editorH - 1 - y]);
+  if (_tplMirrorX && _tplMirrorY) pts.push([_editorW - 1 - x, _editorH - 1 - y]);
+  return pts.map(([px, py]) => px + py * _editorW);
+}
+
+function _tplPaintAt(flat, forceErase) {
+  if (flat < 0) return;
+  if (!_tplStrokeActive) { _tplStrokeActive = true; _tplPushUndo(); }
+  const erasing = forceErase || _tplTool === 'eraser';
+  const fillColor = _tplColorWithOpacity(_tplColor, _tplOpacity);
+  const offsets = _tplBrushOffsets(_tplBrushSize);
+  const cix = flat % _editorW, ciy = Math.floor(flat / _editorW);
+  for (const [dx, dy] of offsets) {
+    const bx = cix + dx, by = ciy + dy;
+    if (bx < 0 || bx >= _editorW || by < 0 || by >= _editorH) continue;
+    const baseFlat = bx + by * _editorW;
+    const targets = _tplMirrorFlats(baseFlat);
+    for (const f of targets) {
+      if (f < 0 || f >= _editorW * _editorH) continue;
+      const ix = f % _editorW, iy = Math.floor(f / _editorW);
+      if (erasing) {
         _tplData.delete(f);
-        _tplBitmapCtx.clearRect(ix,iy,1,1);
+        _tplBitmapCtx.clearRect(ix, iy, 1, 1);
       } else {
-        _tplData.set(f,fillColor);
-        // Önce temizle, sonra bas — opacity her zaman tutarlı kalsın
-        // (aynı pikselin üst üste boyanmasıyla şeffaflık birikip
-        // beklenmedik şekilde koyulaşmasın; ayar her zaman net yansısın).
-        _tplBitmapCtx.clearRect(ix,iy,1,1);
-        _tplBitmapCtx.fillStyle=fillColor;
-        _tplBitmapCtx.fillRect(ix,iy,1,1);
+        _tplData.set(f, fillColor);
+        _tplBitmapCtx.clearRect(ix, iy, 1, 1);
+        _tplBitmapCtx.fillStyle = fillColor;
+        _tplBitmapCtx.fillRect(ix, iy, 1, 1);
       }
     }
   }
-  _tplRenderOverlay();
 }
 
-// ── PIXEL-PERFECT ÇİZİM: iki flat-index arasını Bresenham ile doldurur ──
-// Mouse/sürükleme hızlı hareket ettiğinde ardışık pointermove olayları
-// arasında piksel hücreleri atlanabilir (boşluklu çizgi). Bu fonksiyon
-// son nokta ile yeni nokta arasındaki TÜM hücreleri tek tek boyayarak
-// kesintisiz, gap'siz, tam piksel-ızgarasına oturan bir fırça izi garanti
-// eder — sürekli çizim + pixel-perfect davranış budur.
-function _tplPaintLine(fromFlat, toFlat, forceErase){
-  if(toFlat<0) return;
-  if(fromFlat<0 || fromFlat===toFlat){ _tplPaintAt(toFlat, forceErase); return; }
-  let x0=fromFlat%IMG_W, y0=Math.floor(fromFlat/IMG_W);
-  const x1=toFlat%IMG_W, y1=Math.floor(toFlat/IMG_W);
-  const dx=Math.abs(x1-x0), dy=Math.abs(y1-y0);
-  const sx=x1>=x0?1:-1, sy=y1>=y0?1:-1;
-  let err=dx-dy;
-  const maxSteps=IMG_W+IMG_H; // anormal uzun atlamalarda sonsuz döngüye karşı güvenlik
-  let steps=0;
-  while(true){
-    _tplPaintAt(y0*IMG_W+x0, forceErase);
-    if(x0===x1 && y0===y1) break;
-    if(++steps>maxSteps) break;
-    const e2=err*2;
-    if(e2>-dy){ err-=dy; x0+=sx; }
-    if(e2<dx){ err+=dx; y0+=sy; }
+function _tplPaintLine(fromFlat, toFlat, forceErase) {
+  if (toFlat < 0) return;
+  if (fromFlat < 0 || fromFlat === toFlat) { _tplPaintAt(toFlat, forceErase); return; }
+  let x0 = fromFlat % _editorW, y0 = Math.floor(fromFlat / _editorW);
+  const x1 = toFlat % _editorW, y1 = Math.floor(toFlat / _editorW);
+  const dx = Math.abs(x1-x0), dy = Math.abs(y1-y0);
+  const sx = x1 >= x0 ? 1 : -1, sy = y1 >= y0 ? 1 : -1;
+  let err = dx - dy, steps = 0;
+  const maxSteps = _editorW + _editorH;
+  while (true) {
+    _tplPaintAt(y0 * _editorW + x0, forceErase);
+    if (x0 === x1 && y0 === y1) break;
+    if (++steps > maxSteps) break;
+    const e2 = err * 2;
+    if (e2 > -dy) { err -= dy; x0 += sx; }
+    if (e2 < dx)  { err += dx; y0 += sy; }
   }
 }
 
-// ── BUCKET (FİLL) TOOL — performanslı, iteratif flood fill ──────────────
-// ÖNEMLİ: recursion KULLANILMAZ — özyinelemeli bir flood fill büyük
-// haritalarda (binlerce piksel) çağrı yığını taşmasına (stack overflow)
-// yol açabilir. Bunun yerine düz dizi tabanlı bir "stack" ile iteratif
-// gezilir. visited/stack buffer'ları IMG_W×IMG_H boyutunda LAZY olarak
-// bir kez ayrılır ve her doldurma çağrısında sadece sıfırlanıp yeniden
-// kullanılır (tekrar tekrar bellek ayırmak yerine) — büyük canvas'larda
-// da performanslı kalır, GC baskısı oluşmaz.
-let _tplFillVisited=null, _tplFillStack=null;
-function _tplEnsureFillBuffers(){
-  const total=IMG_W*IMG_H;
-  if(!_tplFillVisited || _tplFillVisited.length!==total){
-    _tplFillVisited=new Uint8Array(total);
-    _tplFillStack=new Int32Array(total);
-  } else {
-    _tplFillVisited.fill(0);
-  }
-}
-
-// 4-yönlü (yukarı/aşağı/sol/sağ) flood fill: startFlat'teki MEVCUT renkle
-// eşleşen, birbirine bağlı (komşu) TÜM hücreleri fillColor ile değiştirir.
-// fillColor=null verilirse o bölge tamamen silinir (transparan yapılır).
-// Sadece eşleşen-ve-komşu hücreler ziyaret edilir (canvas boyutunda değil,
-// doldurulan ALAN boyutunda iş yapılır) — bu yüzden büyük haritalarda da hızlıdır.
-function _tplFloodFillFrom(startFlat, fillColor){
-  if(startFlat<0 || startFlat>=IMG_W*IMG_H) return false;
-  const targetColor=_tplData.get(startFlat) ?? null;
-  if(targetColor===fillColor) return false; // zaten aynı renk/aynı boşluk — iş yok
-  _tplEnsureFillBuffers();
-  const visited=_tplFillVisited, stack=_tplFillStack;
-  const sameAsTarget=(f)=>(_tplData.get(f) ?? null)===targetColor;
-  let sp=0;
-  stack[sp++]=startFlat; visited[startFlat]=1;
-  let painted=false;
-  while(sp>0){
-    const f=stack[--sp];
-    const ix=f%IMG_W, iy=Math.floor(f/IMG_W);
-    if(fillColor===null){
-      _tplData.delete(f);
-      _tplBitmapCtx.clearRect(ix,iy,1,1);
-    } else {
-      _tplData.set(f,fillColor);
-      _tplBitmapCtx.clearRect(ix,iy,1,1);
-      _tplBitmapCtx.fillStyle=fillColor;
-      _tplBitmapCtx.fillRect(ix,iy,1,1);
-    }
-    painted=true;
-    // 4 komşu hücre — sadece hedef renkle eşleşen VE henüz ziyaret edilmemiş
-    // olanlar yığına eklenir (eşleşmeyenler hiç işlenmez → bölge dışına taşmaz).
-    if(ix>0){ const n=f-1; if(!visited[n] && sameAsTarget(n)){ visited[n]=1; stack[sp++]=n; } }
-    if(ix<IMG_W-1){ const n=f+1; if(!visited[n] && sameAsTarget(n)){ visited[n]=1; stack[sp++]=n; } }
-    if(iy>0){ const n=f-IMG_W; if(!visited[n] && sameAsTarget(n)){ visited[n]=1; stack[sp++]=n; } }
-    if(iy<IMG_H-1){ const n=f+IMG_W; if(!visited[n] && sameAsTarget(n)){ visited[n]=1; stack[sp++]=n; } }
-  }
-  return painted;
-}
-
-// Bucket tool'un tıklama girişi: TEK tıkla doldurur (sürüklemede tekrar
-// tekrar TAŞMAZ — bkz. aşağıdaki pointermove'daki "_tplTool!=='fill'" kontrolü).
-// Mirror açıksa, her yansı noktasındaki bölge BAĞIMSIZ olarak da doldurulur
-// (simetrik şablonlarda iki taraf da aynı işlemi görür).
-function _tplDoFill(flat){
-  if(flat<0) return;
-  const fillColor=_tplColorWithOpacity(_tplColor,_tplOpacity);
-  const starts=_tplMirrorFlats(flat);
-  // Önce gerçekten bir değişiklik olacak mı kontrol et — hiçbir şey
-  // değişmeyecekse boş bir undo kaydı oluşturmayalım.
-  let willChange=false;
-  for(const s of starts){
-    if(s<0||s>=IMG_W*IMG_H) continue;
-    if((_tplData.get(s) ?? null)!==fillColor){ willChange=true; break; }
-  }
-  if(!willChange) return;
+/* Rectangle outline */
+function _tplPaintRect(x0, y0, x1, y1, filled) {
   _tplPushUndo();
-  for(const s of starts){
-    if(s<0||s>=IMG_W*IMG_H) continue;
-    _tplFloodFillFrom(s,fillColor);
-  }
-  _tplRenderOverlay();
-}
-
-// Ekrandaki şablon overlay'ini haritanın o anki ox/oy/scale'iyle çiz —
-// draw() her zoom/pan/resize sonrası tekrar çağrıldığı için bu fonksiyon
-// da draw()'a hook'lanarak her zaman senkron kalır (bkz. dosya altı).
-function _tplRenderOverlay(){
-  if(!_tplActive) return;
-  const tc=document.getElementById('template-canvas');
-  if(!tc) return;
-  if(tc.width!==canvas.width||tc.height!==canvas.height){
-    tc.width=canvas.width; tc.height=canvas.height;
-  }
-  const tctx=tc.getContext('2d');
-  tctx.clearRect(0,0,tc.width,tc.height);
-  if(!_tplBitmap) return;
-  tctx.imageSmoothingEnabled=false;
-  const iw=IMG_W*scale, ih=IMG_H*scale;
-  tctx.drawImage(_tplBitmap,ox,oy,iw,ih);
-}
-
-// ── Tıklama/sürükleme yakalama — haritanın zaten pan/zoom'u tıklamadan
-// ayırt ettiği window.handleClick() zincirine eklenir. Pan/zoom/pinch
-// mantığına HİÇ dokunulmaz; sadece "bu bir tıklamaydı" anına müdahale edilir.
-(function(){
-  const _origHandleClick=window.handleClick;
-  window.handleClick=function(mx,my){
-    if(_tplActive){
-      const flat=_tplCanvasToFlat(mx,my);
-      if(_tplTool==='fill'){
-        _tplDoFill(flat);
-      } else {
-        _tplPaintAt(flat);
+  const mx = Math.min(x0, x1), MX = Math.max(x0, x1);
+  const my = Math.min(y0, y1), MY = Math.max(y0, y1);
+  const fillColor = _tplColorWithOpacity(_tplColor, _tplOpacity);
+  for (let x = mx; x <= MX; x++) {
+    for (let y = my; y <= MY; y++) {
+      if (filled || x === mx || x === MX || y === my || y === MY) {
+        const flat = x + y * _editorW;
+        if (flat < 0 || flat >= _editorW * _editorH) continue;
+        _tplData.set(flat, fillColor);
+        _tplBitmapCtx.clearRect(x, y, 1, 1);
+        _tplBitmapCtx.fillStyle = fillColor;
+        _tplBitmapCtx.fillRect(x, y, 1, 1);
       }
-      return;
     }
-    if(typeof _origHandleClick==='function') return _origHandleClick(mx,my);
+  }
+}
+
+/* ── Flood fill (bucket) ── */
+let _tplFillVisited = null, _tplFillStack = null;
+function _tplFloodFillFrom(startFlat, fillColor) {
+  if (startFlat < 0 || startFlat >= _editorW * _editorH) return;
+  const targetColor = _tplData.get(startFlat) ?? null;
+  if (targetColor === fillColor) return;
+  const total = _editorW * _editorH;
+  if (!_tplFillVisited || _tplFillVisited.length !== total) {
+    _tplFillVisited = new Uint8Array(total);
+    _tplFillStack   = new Int32Array(total);
+  } else { _tplFillVisited.fill(0); }
+  const v = _tplFillVisited, st = _tplFillStack;
+  const sameAsTarget = f => (_tplData.get(f) ?? null) === targetColor;
+  let sp = 0;
+  st[sp++] = startFlat; v[startFlat] = 1;
+  while (sp > 0) {
+    const f = st[--sp];
+    const ix = f % _editorW, iy = Math.floor(f / _editorW);
+    if (fillColor === null) { _tplData.delete(f); _tplBitmapCtx.clearRect(ix, iy, 1, 1); }
+    else {
+      _tplData.set(f, fillColor);
+      _tplBitmapCtx.clearRect(ix, iy, 1, 1);
+      _tplBitmapCtx.fillStyle = fillColor;
+      _tplBitmapCtx.fillRect(ix, iy, 1, 1);
+    }
+    if (ix > 0)          { const n=f-1;        if(!v[n]&&sameAsTarget(n)){v[n]=1;st[sp++]=n;} }
+    if (ix < _editorW-1) { const n=f+1;        if(!v[n]&&sameAsTarget(n)){v[n]=1;st[sp++]=n;} }
+    if (iy > 0)          { const n=f-_editorW; if(!v[n]&&sameAsTarget(n)){v[n]=1;st[sp++]=n;} }
+    if (iy < _editorH-1) { const n=f+_editorW; if(!v[n]&&sameAsTarget(n)){v[n]=1;st[sp++]=n;} }
+  }
+}
+
+/* ── Eyedropper ── */
+function _tplPickColor(flat) {
+  if (flat < 0) return;
+  const c = _tplData.get(flat);
+  if (!c) return;
+  /* rgba → hex */
+  const m = c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (!m) return;
+  const hex = '#' + [m[1],m[2],m[3]].map(v=>parseInt(v).toString(16).padStart(2,'0')).join('');
+  _editorSelectColor(hex, false);
+  tplEditorSetTool('brush');
+}
+
+/* ══════════════════════════════════════════════════════════
+   UNDO / REDO
+══════════════════════════════════════════════════════════ */
+function _tplPushUndo() {
+  _tplUndoStack.push(new Map(_tplData));
+  if (_tplUndoStack.length > TPL_UNDO_LIMIT) _tplUndoStack.shift();
+  _tplRedoStack = [];
+  _tplUpdateUndoButtons();
+}
+function tplUndo() {
+  if (!_tplUndoStack.length) return;
+  _tplRedoStack.push(new Map(_tplData));
+  _tplData = _tplUndoStack.pop();
+  _tplRebuildBitmap();
+  _tplUpdateUndoButtons();
+  _editorRender();
+}
+function tplRedo() {
+  if (!_tplRedoStack.length) return;
+  _tplUndoStack.push(new Map(_tplData));
+  _tplData = _tplRedoStack.pop();
+  _tplRebuildBitmap();
+  _tplUpdateUndoButtons();
+  _editorRender();
+}
+function _tplRebuildBitmap() {
+  if (!_tplBitmap) return;
+  _tplBitmapCtx.clearRect(0, 0, _editorW, _editorH);
+  for (const [f, color] of _tplData) {
+    const ix = f % _editorW, iy = Math.floor(f / _editorW);
+    _tplBitmapCtx.fillStyle = color;
+    _tplBitmapCtx.fillRect(ix, iy, 1, 1);
+  }
+}
+function _tplUpdateUndoButtons() {
+  const u = document.getElementById('tpl-undo-btn');
+  const r = document.getElementById('tpl-redo-btn');
+  if (u) u.disabled = !_tplUndoStack.length;
+  if (r) r.disabled = !_tplRedoStack.length;
+}
+
+/* Sync from existing bitmap (editing session restore) */
+function _editorSyncFromBitmap() {
+  if (!_tplBitmap || _tplData.size > 0) return;
+  const imgData = _tplBitmapCtx.getImageData(0, 0, _editorW, _editorH);
+  for (let i = 0; i < imgData.data.length; i += 4) {
+    const a = imgData.data[i+3];
+    if (a > 0) {
+      const flat = i / 4;
+      const r = imgData.data[i], g = imgData.data[i+1], b = imgData.data[i+2];
+      _tplData.set(flat, `rgba(${r},${g},${b},${(a/255).toFixed(2)})`);
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   MIRROR
+══════════════════════════════════════════════════════════ */
+function tplToggleMirror(axis) {
+  if (axis === 'x') {
+    _tplMirrorX = !_tplMirrorX;
+    document.getElementById('tpl-mirrorx-check').checked = _tplMirrorX;
+  } else {
+    _tplMirrorY = !_tplMirrorY;
+    document.getElementById('tpl-mirrory-check').checked = _tplMirrorY;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   BRUSH SIZE / OPACITY / RIGHT CLICK
+══════════════════════════════════════════════════════════ */
+function tplSetBrushSize(v) {
+  _tplBrushSize = Math.max(1, Math.min(9, v));
+  const val = document.getElementById('tpl-size-val');
+  if (val) val.textContent = _tplBrushSize + 'px';
+}
+function tplSetOpacity(v) {
+  _tplOpacity = Math.round(v) / 100;
+  const val = document.getElementById('tpl-opacity-val');
+  if (val) val.textContent = Math.round(v) + '%';
+}
+function tplToggleRightClickErase() {
+  _tplRightClickErase = document.getElementById('tpl-rclick-check')?.checked ?? !_tplRightClickErase;
+  const dc = document.getElementById('tpl-draw-canvas');
+  if (dc) dc.classList.toggle('rclick-erase', _tplRightClickErase);
+}
+
+/* ══════════════════════════════════════════════════════════
+   MENU ACTIONS
+══════════════════════════════════════════════════════════ */
+function tplMenuNew() {
+  if (_tplData.size > 0) {
+    if (!confirm('Şablonu sıfırlamak istiyor musun?')) return;
+  }
+  _tplPushUndo();
+  _tplData.clear();
+  if (_tplBitmapCtx) _tplBitmapCtx.clearRect(0, 0, _editorW, _editorH);
+  _editorRender();
+}
+
+function tplEditorClear() { tplMenuNew(); }
+
+function tplMenuImport() {
+  document.getElementById('tpl-file-input')?.click();
+}
+
+function tplHandleImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => {
+    _tplPushUndo();
+    _tplBitmapCtx.clearRect(0, 0, _editorW, _editorH);
+    _tplBitmapCtx.drawImage(img, 0, 0, _editorW, _editorH);
+    URL.revokeObjectURL(url);
+    /* Rebuild _tplData from bitmap */
+    _tplData.clear();
+    const imgData = _tplBitmapCtx.getImageData(0, 0, _editorW, _editorH);
+    for (let i = 0; i < imgData.data.length; i += 4) {
+      if (imgData.data[i+3] > 0) {
+        const r=imgData.data[i],g=imgData.data[i+1],b=imgData.data[i+2],a=imgData.data[i+3];
+        _tplData.set(i/4, `rgba(${r},${g},${b},${(a/255).toFixed(2)})`);
+      }
+    }
+    _editorRender();
+    input.value = '';
   };
-})();
-
-// ── Sürükleyerek (basılı tutup gezdirerek) de piksel basabilmek için ──
-// Shift'siz sol tık + sürükleme şablon modunda "piksel kalemi" gibi çalışır.
-// Bu, haritanın kendi pan'ını ENGELLEMEMESİ için sadece şablon AKTİFKEN ve
-// sadece tek-dokunuş/sol-tık sürüklemesinde devreye girer; iki parmaklı
-// pinch-zoom ve orta/sağ tık pan'a asla dokunulmaz (onlar zaten ayrı event'ler).
-canvas.addEventListener('pointerdown',(e)=>{
-  if(!_tplActive) return;
-  if(e.pointerType==='touch') return; // dokunmatik sürükleme = haritanın kendi pan/tap mantığı; karışma
-  if(e.button!==undefined && e.button!==0) return; // sadece sol tık
-  if(e.shiftKey) return; // shift = oyunun kendi fırça modu, şablona karışma
-  _tplDrawingNow=true;
-  _tplStrokeActive=false; // yeni stroke başlıyor → snapshot bir sonraki _tplPaintAt'te alınacak
-  const r=canvas.getBoundingClientRect();
-  const flat=_tplCanvasToFlat(e.clientX-r.left,e.clientY-r.top);
-  _tplLastFlat=flat;
-  // NOT: burada paint ETMİYORUZ — gerçek "tıklama" handleClick zincirinden
-  // gelecek (mousedown→handleClick ya da touchend→handleClick). Burada
-  // sadece SÜRÜKLEME başlangıcını işaretliyoruz.
-},{passive:true});
-canvas.addEventListener('pointermove',(e)=>{
-  if(!_tplActive) return;
-  if(e.pointerType==='touch') return;
-  if(e.shiftKey) return;
-  const leftDrag = _tplDrawingNow && (e.buttons & 1) && _tplTool!=='fill';
-  const rightDrag = _tplRightClickErase && _tplRightClickDown && (e.buttons & 2);
-  if(!leftDrag && !rightDrag) return;
-  const r=canvas.getBoundingClientRect();
-  const flat=_tplCanvasToFlat(e.clientX-r.left,e.clientY-r.top);
-  if(flat===_tplLastFlat) return;
-  // Pixel-perfect: son nokta ile şimdiki nokta arasını da doldur (boşluk bırakma)
-  _tplPaintLine(_tplLastFlat, flat, rightDrag);
-  _tplLastFlat=flat;
-},{passive:true});
-window.addEventListener('pointerup',()=>{ _tplDrawingNow=false; _tplRightClickDown=false; _tplLastFlat=-1; });
-
-// ── SAĞ TIK = SİLGİ ──────────────────────────────────────────────────────
-// Haritanın kendi mousedown dinleyicisi sağ/orta tıkta panning=true yapıyor
-// (dosyanın üst kısmındaki "panning=true;...;return;" bloğu). Bu listener
-// SONRADAN eklendiği için (DOM/script sırasına göre aynı event'te ondan
-// SONRA çalışır) ve panning'i hemen false'a geri çekerek haritanın
-// kaymasını engeller — böylece şablon aktifken sağ tık sürüklemesi pan
-// yerine silgi olarak çalışır. Sadece şablon AKTİF ve sağ-tık-silgi AÇIK
-// iken devreye girer; kapalıyken davranış aynen eskisi gibi (sağ tık = pan).
-canvas.addEventListener('mousedown',(e)=>{
-  if(!_tplActive || !_tplRightClickErase) return;
-  if(e.button!==2) return;
-  if(_recentTouch()) return;
-  panning=false; // haritanın az önce başlattığı pan'ı iptal et
-  _tplRightClickDown=true;
-  _tplStrokeActive=false; // yeni silgi stroke'u başlıyor
-  const r=canvas.getBoundingClientRect();
-  const flat=_tplCanvasToFlat(e.clientX-r.left,e.clientY-r.top);
-  _tplLastFlat=flat;
-  _tplPaintAt(flat,true); // tek tıkla da silsin (sürüklemeden bağımsız)
-  canvas.style.cursor='cell';
-});
-
-// ── draw() hook'u: harita her çizildiğinde (zoom/pan/resize/her şey)
-// şablon overlay'i de otomatik senkron yeniden çizilir. ──
-(function(){
-  const _origDraw=window.draw;
-  if(typeof _origDraw==='function'){
-    window.draw=function(){
-      _origDraw.apply(this,arguments);
-      _tplRenderOverlay();
-    };
-  }
-})();
-window.addEventListener('resize',()=>{ if(_tplActive) _tplRenderOverlay(); });
-
-function closeTemplateEditor(){
-  _tplActive=false; _tplDrawingNow=false; _tplRightClickDown=false; _tplLastFlat=-1;
-  // Mirror state'leri sıfırla
-  _tplMirrorX=false; _tplMirrorY=false;
-  const mx=document.getElementById('tpl-mirrorx-btn');
-  const my=document.getElementById('tpl-mirrory-btn');
-  if(mx) mx.classList.remove('active');
-  if(my) my.classList.remove('active');
-  const tc=document.getElementById('template-canvas');
-  tc.classList.remove('active');
-  tc.getContext('2d').clearRect(0,0,tc.width,tc.height);
-  document.getElementById('template-toolbar').classList.remove('active');
-  document.getElementById('tpl-palette-popout')?.classList.remove('open');
+  img.onerror = () => { showPopup('Resim yüklenemedi.'); URL.revokeObjectURL(url); };
+  img.src = url;
 }
 
-async function tplHandleDone(){
-  const btn=document.getElementById('tpl-done-btn');
-  btn.disabled=true; btn.textContent='⏳ Hazırlanıyor...';
-  try{
-    const blob=await _tplExportPNG();
-    _tplLastBlob=blob;
-    const url=URL.createObjectURL(blob);
-    document.getElementById('tpl-result-preview').src=url;
-    document.getElementById('tpl-dl-link').href=url;
-    document.getElementById('tpl-dl-link').download='sablon_'+Date.now()+'.png';
-    document.getElementById('tpl-upload-status').textContent='';
-    document.getElementById('tpl-upload-status').className='';
+function tplMenuExportPng() { tplHandleDone(); }
+
+/* ══════════════════════════════════════════════════════════
+   CANVAS EVENT HANDLING
+══════════════════════════════════════════════════════════ */
+function _editorAttachEvents() {
+  const dc = document.getElementById('tpl-draw-canvas');
+  if (!dc || dc._tplEventsAttached) return;
+  dc._tplEventsAttached = true;
+
+  dc.addEventListener('pointerdown', _editorPointerDown);
+  dc.addEventListener('pointermove', _editorPointerMove);
+  dc.addEventListener('pointerup',   _editorPointerUp);
+  dc.addEventListener('contextmenu', e => e.preventDefault());
+
+  /* Wheel zoom */
+  document.getElementById('tpl-canvas-area').addEventListener('wheel', e => {
+    e.preventDefault();
+    if (e.deltaY < 0) tplZoomIn(); else tplZoomOut();
+  }, { passive: false });
+}
+
+function _editorPointerDown(e) {
+  e.preventDefault();
+  _tplStrokeActive = false;
+
+  if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    /* Middle button or alt+left = pan */
+    _editorPanning = true;
+    _editorPanStartX = e.clientX;
+    _editorPanStartY = e.clientY;
+    return;
+  }
+
+  const [gx, gy] = _editorEventToGrid(e);
+  const flat = _editorXYToFlat(gx, gy);
+
+  if (e.button === 2) {
+    /* Right click = erase if enabled */
+    if (_tplRightClickErase) {
+      _tplRightClickDown = true;
+      _tplPaintAt(flat, true);
+      _editorRender();
+    }
+    return;
+  }
+
+  /* Left click */
+  _tplDrawingNow = true;
+  _tplLastFlat = flat;
+
+  if (_tplTool === 'picker') { _tplPickColor(flat); return; }
+  if (_tplTool === 'fill') { _tplPushUndo(); _tplFloodFillFrom(flat, _tplColorWithOpacity(_tplColor, _tplOpacity)); _editorRender(); return; }
+  if (_tplTool === 'line') { _editorLineStart = [gx, gy]; return; }
+  if (_tplTool === 'rect' || _tplTool === 'rectfill') { _editorRectStart = [gx, gy]; return; }
+
+  _tplPaintAt(flat);
+  _editorRender();
+}
+
+function _editorPointerMove(e) {
+  const [gx, gy] = _editorEventToGrid(e);
+
+  /* Update coords */
+  const cl = document.getElementById('tpl-coords-label');
+  const sc = document.getElementById('tpl-stat-cursor');
+  if (cl) cl.textContent = `x:${gx} y:${gy}`;
+  if (sc) sc.textContent = `${gx}, ${gy}`;
+
+  if (_editorPanning) {
+    const wrap = document.getElementById('tpl-canvas-wrap');
+    if (!wrap) return;
+    /* Pan the canvas-area scroll */
+    const area = document.getElementById('tpl-canvas-area');
+    area.scrollLeft -= (e.clientX - _editorPanStartX);
+    area.scrollTop  -= (e.clientY - _editorPanStartY);
+    _editorPanStartX = e.clientX;
+    _editorPanStartY = e.clientY;
+    return;
+  }
+
+  if (!_tplDrawingNow && !_tplRightClickDown) return;
+
+  const flat = _editorXYToFlat(gx, gy);
+  if (flat < 0) return;
+
+  /* Right drag erase */
+  if (_tplRightClickDown && _tplRightClickErase) {
+    _tplPaintLine(_tplLastFlat, flat, true);
+    _tplLastFlat = flat;
+    _editorRender();
+    return;
+  }
+
+  if (!_tplDrawingNow) return;
+
+  if (_tplTool === 'brush' || _tplTool === 'eraser') {
+    if (flat !== _tplLastFlat) {
+      _tplPaintLine(_tplLastFlat, flat);
+      _tplLastFlat = flat;
+      _editorRender();
+    }
+  }
+}
+
+function _editorPointerUp(e) {
+  const [gx, gy] = _editorEventToGrid(e);
+  const flat = _editorXYToFlat(gx, gy);
+
+  if (_editorPanning) { _editorPanning = false; return; }
+
+  if (_tplTool === 'line' && _editorLineStart) {
+    const [sx, sy] = _editorLineStart;
+    const fromFlat = _editorXYToFlat(sx, sy);
+    _tplPaintLine(fromFlat, flat);
+    _editorLineStart = null;
+    _editorRender();
+  }
+
+  if ((_tplTool === 'rect' || _tplTool === 'rectfill') && _editorRectStart) {
+    const [sx, sy] = _editorRectStart;
+    _tplPaintRect(sx, sy, gx, gy, _tplTool === 'rectfill');
+    _editorRectStart = null;
+    _editorRender();
+  }
+
+  _tplDrawingNow = false;
+  _tplRightClickDown = false;
+  _tplStrokeActive = false;
+  _tplLastFlat = -1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+══════════════════════════════════════════════════════════ */
+function _tplKeyboardHandler(e) {
+  if (!_tplActive) return;
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+  if (e.key === 'Escape') { closeTemplateEditor(); return; }
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'z') { e.preventDefault(); tplUndo(); return; }
+    if (e.key === 'y' || (e.shiftKey && e.key === 'z')) { e.preventDefault(); tplRedo(); return; }
+  }
+  switch(e.key.toLowerCase()) {
+    case 'b': tplEditorSetTool('brush'); break;
+    case 'e': tplEditorSetTool('eraser'); break;
+    case 'g': tplEditorSetTool('fill'); break;
+    case 'l': tplEditorSetTool('line'); break;
+    case 'r': tplEditorSetTool('rect'); break;
+    case 'i': tplEditorSetTool('picker'); break;
+    case '+': case '=': tplZoomIn(); break;
+    case '-': tplZoomOut(); break;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   EXPORT / SAVE
+   Harita canvası + oy pikselleri + şablon → PNG
+══════════════════════════════════════════════════════════ */
+async function tplHandleDone() {
+  const btn = document.getElementById('tpl-done-btn');
+  btn.disabled = true; btn.textContent = '⏳ Hazırlanıyor...';
+  try {
+    const blob = await _tplExportPNG();
+    _tplLastBlob = blob;
+    const url = URL.createObjectURL(blob);
+    document.getElementById('tpl-result-preview').src = url;
+    document.getElementById('tpl-dl-link').href = url;
+    document.getElementById('tpl-dl-link').download = 'sablon_' + Date.now() + '.png';
+    document.getElementById('tpl-upload-status').textContent = '';
+    document.getElementById('tpl-upload-status').className = '';
     document.getElementById('tpl-result-popup').classList.add('show');
-  }catch(err){
-    showPopup('Export hatası: '+(err.message||'bilinmiyor'));
-  }finally{
-    btn.disabled=false;
-    btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline-block;vertical-align:-.1em"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Bitti & İndir';
+  } catch(err) {
+    showPopup('Export hatası: ' + (err.message || 'bilinmiyor'));
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-.1em"><polyline points="20 6 9 17 4 12"/></svg> Bitti & İndir';
   }
 }
 
-// Export: harita (taban + oy pikselleri) + şablon bitmap'i tam çözünürlükte (IMG_W×IMG_H) birleştirilir.
-// Ekran ölçeğine değil, oyunun gerçek piksel grid'ine göre export edilir — şablon her zoom seviyesinde tutarlı kalır.
-async function _tplExportPNG(){
-  if(!baseCanvas) throw new Error('Harita canvas bulunamadı');
-  const merged=document.createElement('canvas');
-  merged.width=IMG_W; merged.height=IMG_H;
-  const ctx2=merged.getContext('2d');
-  ctx2.imageSmoothingEnabled=false;
-  ctx2.drawImage(baseCanvas,0,0);
-  ctx2.drawImage(pixelCanvas,0,0);
-  if(_tplBitmap) ctx2.drawImage(_tplBitmap,0,0);
-  return new Promise((resolve,reject)=>{
-    merged.toBlob(b=>b?resolve(b):reject(new Error('toBlob başarısız')),'image/png');
+async function _tplExportPNG() {
+  /* Try to merge with game map if available */
+  const merged = document.createElement('canvas');
+  merged.width = _editorW; merged.height = _editorH;
+  const ctx2 = merged.getContext('2d');
+  ctx2.imageSmoothingEnabled = false;
+  if (typeof baseCanvas !== 'undefined' && baseCanvas) ctx2.drawImage(baseCanvas, 0, 0);
+  if (typeof pixelCanvas !== 'undefined' && pixelCanvas) ctx2.drawImage(pixelCanvas, 0, 0);
+  if (_tplBitmap) ctx2.drawImage(_tplBitmap, 0, 0);
+  return new Promise((resolve, reject) => {
+    merged.toBlob(b => b ? resolve(b) : reject(new Error('toBlob başarısız')), 'image/png');
   });
 }
 
-async function tplUploadToSupabase(){
-  if(!_tplLastBlob){ showPopup('Önce "Bitti & İndir"e bas.'); return; }
-  if(typeof supabase==='undefined'){ showPopup('Supabase bağlantısı yok.'); return; }
-  const statusEl=document.getElementById('tpl-upload-status');
-  const uploadBtn=document.getElementById('tpl-upload-btn');
-  statusEl.className=''; statusEl.textContent='⏳ Yükleniyor...';
-  uploadBtn.disabled=true;
-  try{
-    const{data:{user},error:authErr}=await supabase.auth.getUser();
-    if(authErr||!user) throw new Error('Oturum bulunamadı, tekrar giriş yap.');
-    const uid=user.id, fileName=crypto.randomUUID()+'.png', path=uid+'/'+fileName;
-    const{error:upErr}=await supabase.storage.from('player-templates').upload(path,_tplLastBlob,{contentType:'image/png',upsert:false});
-    if(upErr) throw upErr;
-    const{data:sd,error:signErr}=await supabase.storage.from('player-templates').createSignedUrl(path,3600);
-    if(signErr) throw signErr;
-    statusEl.className='ok'; statusEl.textContent='✓ Yüklendi! Signed URL (1 saat geçerli):';
-    const a=document.createElement('a');
-    a.href=sd.signedUrl; a.target='_blank'; a.rel='noopener';
-    a.textContent='🔗 Şablonumu Aç';
-    a.style.cssText='display:block;margin-top:.35rem;color:#a78bfa;font-size:.68rem;word-break:break-all;';
+async function tplUploadToSupabase() {
+  if (!_tplLastBlob) { showPopup('Önce "Bitti & İndir"e bas.'); return; }
+  if (typeof supabase === 'undefined') { showPopup('Supabase bağlantısı yok.'); return; }
+  const statusEl  = document.getElementById('tpl-upload-status');
+  const uploadBtn = document.getElementById('tpl-upload-btn');
+  statusEl.className = ''; statusEl.textContent = '⏳ Yükleniyor...';
+  uploadBtn.disabled = true;
+  try {
+    const {data:{user}, error:authErr} = await supabase.auth.getUser();
+    if (authErr || !user) throw new Error('Oturum bulunamadı, tekrar giriş yap.');
+    const uid = user.id, fileName = crypto.randomUUID() + '.png', path = uid + '/' + fileName;
+    const {error:upErr} = await supabase.storage.from('player-templates').upload(path, _tplLastBlob, {contentType:'image/png', upsert:false});
+    if (upErr) throw upErr;
+    const {data:sd, error:signErr} = await supabase.storage.from('player-templates').createSignedUrl(path, 3600);
+    if (signErr) throw signErr;
+    statusEl.className = 'ok'; statusEl.textContent = '✓ Yüklendi! Signed URL (1 saat geçerli):';
+    const a = document.createElement('a');
+    a.href = sd.signedUrl; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = '🔗 Şablonumu Aç';
+    a.style.cssText = 'display:block;margin-top:.35rem;color:#a78bfa;font-size:.68rem;word-break:break-all;';
     statusEl.appendChild(a);
-  }catch(err){
-    statusEl.className='err'; statusEl.textContent='✗ Yükleme başarısız: '+(err.message||'bilinmiyor');
-  }finally{
-    uploadBtn.disabled=false;
+  } catch(err) {
+    statusEl.className = 'err'; statusEl.textContent = '✗ Yükleme başarısız: ' + (err.message || 'bilinmiyor');
+  } finally { uploadBtn.disabled = false; }
+}
+
+function closeTplResultPopup() {
+  document.getElementById('tpl-result-popup').classList.remove('show');
+  const prev = document.getElementById('tpl-result-preview');
+  if (prev.src) URL.revokeObjectURL(prev.src);
+}
+
+/* ══════════════════════════════════════════════════════════
+   HARITA OVERLAY SYNC
+   Editör kapatıldıktan sonra haritadaki template-canvas'ı güncelle
+══════════════════════════════════════════════════════════ */
+function _tplRenderOverlay() {
+  const tc = document.getElementById('template-canvas');
+  if (!tc || !canvas) return;
+  if (tc.width !== canvas.width || tc.height !== canvas.height) {
+    tc.width = canvas.width; tc.height = canvas.height;
+  }
+  const tctx = tc.getContext('2d');
+  tctx.clearRect(0, 0, tc.width, tc.height);
+  if (!_tplBitmap || _tplData.size === 0) return;
+  tctx.imageSmoothingEnabled = false;
+  if (typeof ox !== 'undefined' && typeof scale !== 'undefined') {
+    tctx.drawImage(_tplBitmap, ox, oy, IMG_W * scale, IMG_H * scale);
   }
 }
 
-function closeTplResultPopup(){
-  document.getElementById('tpl-result-popup').classList.remove('show');
-  const prev=document.getElementById('tpl-result-preview');
-  if(prev.src) URL.revokeObjectURL(prev.src);
-}
-
-/* Giriş yapılınca butonları göster */
-(function(){
-  const origActivate=window._activateUser;
-  if(origActivate){
-    window._activateUser=function(v){
-      origActivate.apply(this,arguments);
-      const tb=document.getElementById('template-btn'); if(tb) tb.style.display='';
-      const ts=document.getElementById('ts-templatebtn'); if(ts) ts.style.display='';
+/* draw() hook: harita her render edildiğinde overlay güncelle */
+(function() {
+  const _origDraw = window.draw;
+  if (typeof _origDraw === 'function') {
+    window.draw = function() {
+      _origDraw.apply(this, arguments);
+      if (!_tplActive && _tplData.size > 0) _tplRenderOverlay();
     };
   }
-  const origCheck=window.checkAdminStatus;
-  if(origCheck){
-    window.checkAdminStatus=async function(){
-      await origCheck.apply(this,arguments);
-      if(typeof username!=='undefined'&&username){
-        const tb=document.getElementById('template-btn'); if(tb) tb.style.display='';
-        const ts=document.getElementById('ts-templatebtn'); if(ts) ts.style.display='';
+})();
+window.addEventListener('resize', () => { if (!_tplActive && _tplData.size > 0) _tplRenderOverlay(); });
+
+/* ══════════════════════════════════════════════════════════
+   "Şablon Yap" butonunu giriş yapılınca göster
+══════════════════════════════════════════════════════════ */
+(function() {
+  const origActivate = window._activateUser;
+  if (typeof origActivate === 'function') {
+    window._activateUser = function(v) {
+      origActivate.apply(this, arguments);
+      const tb = document.getElementById('template-btn'); if (tb) tb.style.display = '';
+      const ts = document.getElementById('ts-templatebtn'); if (ts) ts.style.display = '';
+    };
+  }
+  const origCheck = window.checkAdminStatus;
+  if (typeof origCheck === 'function') {
+    window.checkAdminStatus = async function() {
+      await origCheck.apply(this, arguments);
+      if (typeof username !== 'undefined' && username) {
+        const tb = document.getElementById('template-btn'); if (tb) tb.style.display = '';
+        const ts = document.getElementById('ts-templatebtn'); if (ts) ts.style.display = '';
       }
     };
   }
+})();
+
+console.log('🎨 Pixilart-style Template Editor loaded');
+</script>
 })();
 
 /* syncTbSheet'e template ekle */
