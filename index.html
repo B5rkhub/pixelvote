@@ -13068,6 +13068,165 @@ document.addEventListener('keydown', e => {
 
 
 <!-- ═══════════════════════════════════════════════════════
+     BÖLGE SEÇİM OVERLAY CSS
+════════════════════════════════════════════════════════ -->
+<style>
+/* ── BÖLGE SEÇİM MODU ── */
+#tpl-region-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1900;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#tpl-region-overlay.active { display: block; }
+
+/* Karartma katmanı */
+#tpl-region-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  pointer-events: none;
+}
+
+/* Seçim dikdörtgeni */
+#tpl-region-rect {
+  position: absolute;
+  border: 2px dashed #fff;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.38);
+  pointer-events: none;
+  display: none;
+}
+/* Köşe tutamaçları */
+#tpl-region-rect::before,
+#tpl-region-rect::after {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  background: #fff;
+  border-radius: 50%;
+}
+#tpl-region-rect::before { top: -5px; left: -5px; }
+#tpl-region-rect::after  { bottom: -5px; right: -5px; }
+
+/* Üst bilgi paneli */
+#tpl-region-info {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(17,17,32,0.92);
+  border: 1px solid rgba(167,139,250,0.4);
+  border-radius: 14px;
+  padding: .75rem 1.25rem;
+  color: #fff;
+  font-family: 'Inter', sans-serif;
+  font-size: .875rem;
+  text-align: center;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  line-height: 1.6;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+#tpl-region-info strong {
+  color: #a78bfa;
+  font-size: 1rem;
+  display: block;
+  margin-bottom: .2rem;
+}
+#tpl-region-info .tpl-ri-dim {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .75rem;
+  color: #94e044;
+  margin-top: .25rem;
+  display: none;
+}
+
+/* Alt aksiyon barı */
+#tpl-region-actions {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  gap: .75rem;
+  align-items: center;
+  background: rgba(17,17,32,0.92);
+  border: 1px solid rgba(167,139,250,0.35);
+  border-radius: 14px;
+  padding: .65rem 1rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  white-space: nowrap;
+}
+#tpl-region-actions.visible { display: flex; }
+
+#tpl-region-confirm {
+  background: linear-gradient(135deg, #7c3aed, #c026d3);
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: .55rem 1.2rem;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: .875rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: .03em;
+  transition: opacity .15s;
+}
+#tpl-region-confirm:hover { opacity: .85; }
+
+#tpl-region-cancel {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.75);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 9px;
+  padding: .55rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: .875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+#tpl-region-cancel:hover { opacity: .7; }
+
+#tpl-region-reset {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.6);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 9px;
+  padding: .55rem 1rem;
+  font-family: 'Inter', sans-serif;
+  font-size: .8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+#tpl-region-reset:hover { opacity: .7; }
+</style>
+
+<!-- BÖLGE SEÇİM OVERLAY HTML -->
+<div id="tpl-region-overlay">
+  <div id="tpl-region-rect"></div>
+  <div id="tpl-region-info">
+    <strong>🗺️ Şablon Bölgesi Seç</strong>
+    Haritada çizmek istediğin alanı <b>sürükleyerek</b> seç
+    <div class="tpl-ri-dim" id="tpl-ri-dim-text"></div>
+  </div>
+  <div id="tpl-region-actions">
+    <button id="tpl-region-reset" onclick="_tplRegionReset()">↺ Yeniden Seç</button>
+    <button id="tpl-region-cancel" onclick="_tplRegionCancel()">İptal</button>
+    <button id="tpl-region-confirm" onclick="_tplRegionConfirm()">✓ Bu Bölgede Şablon Yap</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
      ŞABLON EDİTÖRÜ — PİXİLART TARZI FULL-SCREEN MODAL CSS
 ════════════════════════════════════════════════════════ -->
 <style>
@@ -14800,7 +14959,7 @@ window.addEventListener('resize', () => { if (!_tplActive && _tplData.size > 0) 
 console.log('🎨 Pixilart-style Template Editor loaded');
 </script>
 })();
-
+<script>
 /* syncTbSheet'e template ekle */
 (function(){
   const _orig=window.syncTbSheet;
@@ -14811,6 +14970,223 @@ console.log('🎨 Pixilart-style Template Editor loaded');
     if(tb&&ts) ts.style.display=tb.style.display==='none'?'none':'';
   };
 })();
+
+/* ══════════════════════════════════════════════════════════
+   BÖLGE SEÇİM SİSTEMİ — openTemplateEditor patch
+   Harita üzerinde sürükleme ile bölge seçtikten sonra editörü
+   sadece o bölgeye odaklanarak açar.
+══════════════════════════════════════════════════════════ */
+(function(){
+
+/* Seçilen bölge (harita piksel koordinatları) */
+let _rsx=0,_rsy=0,_rex=0,_rey=0; // start / end IMG koordinatları
+let _rDragging=false, _rHasSel=false;
+let _rStartClientX=0, _rStartClientY=0;
+
+/* Harita canvas koordinatını IMG koordinatına çevir */
+function _clientToImg(cx,cy){
+  const cvs=document.getElementById('game-canvas')||document.querySelector('canvas[id]');
+  if(!cvs||typeof ox==='undefined') return {x:0,y:0};
+  const rect=cvs.getBoundingClientRect();
+  const canvasX=(cx-rect.left)*(cvs.width/rect.width);
+  const canvasY=(cy-rect.top)*(cvs.height/rect.height);
+  const imgX=Math.floor((canvasX-ox)/scale);
+  const imgY=Math.floor((canvasY-oy)/scale);
+  return {x:Math.max(0,Math.min(IMG_W-1,imgX)), y:Math.max(0,Math.min(IMG_H-1,imgY))};
+}
+
+/* Seçim dikdörtgenini ekranda güncelle */
+function _updateRect(){
+  const cvs=document.getElementById('game-canvas')||document.querySelector('canvas[id]');
+  if(!cvs||typeof ox==='undefined') return;
+  const rect=cvs.getBoundingClientRect();
+  const scx=cvs.width/rect.width; // canvas→screen scale
+  const x0=Math.min(_rsx,_rex), y0=Math.min(_rsy,_rey);
+  const x1=Math.max(_rsx,_rex), y1=Math.max(_rsy,_rey);
+  const sw=(x1-x0)*scale/scx, sh=(y1-y0)*scale/scx;
+  const sl=rect.left+(ox+x0*scale)/scx;
+  const st=rect.top +(oy+y0*scale)/scx;
+  const el=document.getElementById('tpl-region-rect');
+  if(!el) return;
+  el.style.left=sl+'px'; el.style.top=st+'px';
+  el.style.width=sw+'px'; el.style.height=sh+'px';
+  el.style.display=(sw>2&&sh>2)?'block':'none';
+  // Boyut göster
+  const dimEl=document.getElementById('tpl-ri-dim-text');
+  if(dimEl){ dimEl.style.display='block'; dimEl.textContent=(x1-x0)+'×'+(y1-y0)+' piksel'; }
+  // Onayla barını göster
+  const actEl=document.getElementById('tpl-region-actions');
+  if(actEl&&sw>10&&sh>10) actEl.classList.add('visible');
+}
+
+function _tplRegionReset(){
+  _rHasSel=false;
+  const el=document.getElementById('tpl-region-rect'); if(el) el.style.display='none';
+  const actEl=document.getElementById('tpl-region-actions'); if(actEl) actEl.classList.remove('visible');
+  const dimEl=document.getElementById('tpl-ri-dim-text'); if(dimEl) dimEl.style.display='none';
+}
+window._tplRegionReset=_tplRegionReset;
+
+function _tplRegionCancel(){
+  const ov=document.getElementById('tpl-region-overlay'); if(ov) ov.classList.remove('active');
+  _rHasSel=false; _rDragging=false;
+}
+window._tplRegionCancel=_tplRegionCancel;
+
+function _tplRegionConfirm(){
+  const x0=Math.min(_rsx,_rex), y0=Math.min(_rsy,_rey);
+  const x1=Math.max(_rsx,_rex), y1=Math.max(_rsy,_rey);
+  const rw=Math.max(1,x1-x0), rh=Math.max(1,y1-y0);
+  // Overlay kapat
+  const ov=document.getElementById('tpl-region-overlay'); if(ov) ov.classList.remove('active');
+  // Editörü seçilen bölge boyutuyla aç
+  _openTemplateEditorWithRegion(x0,y0,rw,rh);
+}
+window._tplRegionConfirm=_tplRegionConfirm;
+
+/* Gerçek editör açma — bölge bilgisiyle */
+function _openTemplateEditorWithRegion(rx,ry,rw,rh){
+  if(!window.username){showPopup&&showPopup('Şablon aracı için giriş yapman gerekiyor.'); return;}
+  if(window._tplActive) return;
+  if(typeof IMG_W==='undefined'||!window.canvas){showPopup&&showPopup('Harita henüz yüklenmedi.'); return;}
+
+  // Bölge bilgisini state'e kaydet
+  window._tplRegion={x:rx,y:ry,w:rw,h:rh};
+
+  window._tplActive=true;
+  window._editorW=rw;
+  window._editorH=rh;
+
+  window._tplUndoStack=[];
+  window._tplRedoStack=[];
+  window._tplStrokeActive=false;
+  if(typeof window._tplUpdateUndoButtons==='function') window._tplUpdateUndoButtons();
+
+  // Bitmap: seçilen bölge boyutunda
+  window._tplBitmap=document.createElement('canvas');
+  window._tplBitmap.width=rw;
+  window._tplBitmap.height=rh;
+  window._tplBitmapCtx=window._tplBitmap.getContext('2d');
+  window._tplBitmapCtx.imageSmoothingEnabled=false;
+  window._tplData=new Map();
+
+  // Haritadaki mevcut piksel renklerini bölgeye kopyala (arka plan referansı)
+  const bc=document.getElementById('base-canvas')||document.querySelector('canvas');
+  if(bc){
+    try{
+      const bctx=bc.getContext('2d');
+      const id=bctx.getImageData(rx,ry,rw,rh);
+      window._tplBitmapCtx.putImageData(id,0,0);
+    }catch(e){}
+  }
+
+  // Modal aç
+  document.getElementById('tpl-editor-modal').classList.add('active');
+  if(typeof window._editorInitCanvas==='function') window._editorInitCanvas();
+  if(typeof window._editorBuildPalette==='function') window._editorBuildPalette();
+  if(typeof window._editorSelectColor==='function') window._editorSelectColor(window._tplColor,false);
+  if(typeof window._editorSyncFromBitmap==='function') window._editorSyncFromBitmap();
+
+  const sizeEl=document.getElementById('tpl-stat-size');
+  if(sizeEl) sizeEl.textContent=rw+'×'+rh+' (bölge)';
+
+  const mxCb=document.getElementById('tpl-mirrorx-check');
+  if(mxCb) mxCb.checked=window._tplMirrorX||false;
+  const myCb=document.getElementById('tpl-mirrory-check');
+  if(myCb) myCb.checked=window._tplMirrorY||false;
+  const rcCb=document.getElementById('tpl-rclick-check');
+  if(rcCb) rcCb.checked=window._tplRightClickErase!==false;
+
+  if(typeof window._editorRender==='function') window._editorRender();
+  if(typeof window._editorUpdateNavPreview==='function') window._editorUpdateNavPreview();
+  document.addEventListener('keydown',window._tplKeyboardHandler);
+}
+
+/* pointer event handler'ları */
+function _onPointerDown(e){
+  if(e.button!==0) return;
+  e.preventDefault();
+  _rDragging=true;
+  _rHasSel=false;
+  _rStartClientX=e.clientX; _rStartClientY=e.clientY;
+  const p=_clientToImg(e.clientX,e.clientY);
+  _rsx=_rex=p.x; _rsy=_rey=p.y;
+  _tplRegionReset();
+}
+function _onPointerMove(e){
+  if(!_rDragging) return;
+  e.preventDefault();
+  const p=_clientToImg(e.clientX,e.clientY);
+  _rex=p.x; _rey=p.y;
+  _updateRect();
+}
+function _onPointerUp(e){
+  if(!_rDragging) return;
+  _rDragging=false;
+  const p=_clientToImg(e.clientX,e.clientY);
+  _rex=p.x; _rey=p.y;
+  const rw=Math.abs(_rex-_rsx), rh=Math.abs(_rey-_rsy);
+  if(rw>2&&rh>2){ _rHasSel=true; _updateRect(); }
+  else { _tplRegionReset(); }
+}
+
+/* openTemplateEditor patch — önce bölge seç */
+const _origOpenEditor=window.openTemplateEditor;
+window.openTemplateEditor=function(){
+  if(!window.username){showPopup&&showPopup('Şablon aracı için giriş yapman gerekiyor.'); return;}
+  if(window._tplActive) return;
+  if(typeof IMG_W==='undefined'){showPopup&&showPopup('Harita henüz yüklenmedi.'); return;}
+
+  // Overlay'i aç
+  const ov=document.getElementById('tpl-region-overlay');
+  if(!ov) { if(typeof _origOpenEditor==='function') _origOpenEditor(); return; }
+  _rHasSel=false; _rDragging=false;
+  const rectEl=document.getElementById('tpl-region-rect'); if(rectEl) rectEl.style.display='none';
+  const actEl=document.getElementById('tpl-region-actions'); if(actEl) actEl.classList.remove('visible');
+  const dimEl=document.getElementById('tpl-ri-dim-text'); if(dimEl) dimEl.style.display='none';
+  ov.classList.add('active');
+
+  ov.addEventListener('pointerdown',_onPointerDown);
+  ov.addEventListener('pointermove',_onPointerMove);
+  ov.addEventListener('pointerup',_onPointerUp);
+  ov.addEventListener('pointercancel',_onPointerUp);
+
+  // Overlay kapatılınca dinleyicileri temizle
+  const _cleanupOv=()=>{
+    ov.removeEventListener('pointerdown',_onPointerDown);
+    ov.removeEventListener('pointermove',_onPointerMove);
+    ov.removeEventListener('pointerup',_onPointerUp);
+    ov.removeEventListener('pointercancel',_onPointerUp);
+  };
+  const _origCancel=window._tplRegionCancel;
+  window._tplRegionCancel=function(){ _cleanupOv(); _origCancel&&_origCancel(); };
+  const _origConfirm=window._tplRegionConfirm;
+  window._tplRegionConfirm=function(){ _cleanupOv(); _origConfirm&&_origConfirm(); };
+};
+
+/* _tplRenderOverlay patch: bölge varsa doğru konuma çiz */
+(function(){
+  const _origRO=window._tplRenderOverlay;
+  window._tplRenderOverlay=function(){
+    if(window._tplRegion && window._tplBitmap && window._tplData && window._tplData.size>0){
+      const tc=document.getElementById('template-canvas');
+      const cvs=window.canvas||tc;
+      if(!tc||!cvs) return;
+      if(tc.width!==cvs.width||tc.height!==cvs.height){tc.width=cvs.width;tc.height=cvs.height;}
+      const tctx=tc.getContext('2d');
+      tctx.clearRect(0,0,tc.width,tc.height);
+      if(typeof ox!=='undefined'&&typeof scale!=='undefined'){
+        const r=window._tplRegion;
+        tctx.imageSmoothingEnabled=false;
+        tctx.drawImage(window._tplBitmap, ox+r.x*scale, oy+r.y*scale, r.w*scale, r.h*scale);
+      }
+    } else if(typeof _origRO==='function'){
+      _origRO.apply(this,arguments);
+    }
+  };
+})();
+
+})(); /* end bölge seçim sistemi */
 </script>
 <!--
   ════════════════════════════════════════════════════════════════════
