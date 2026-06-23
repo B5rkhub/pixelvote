@@ -2241,7 +2241,7 @@ body {
      sadece bu TEK satırı değiştirerek tüm bağımlı elementleri (palet konumu,
      toggle butonu vb.) otomatik ve doğru şekilde yeniden hizalar.
      JS tarafı da bu değeri runtime'da getComputedStyle ile okur (bkz. SIDEBAR_W). */
-  --sidebar-w: 290px;
+  --sidebar-w: 0px; /* sidebar kaldırıldı — harita tam genişlik kullanıyor */
   --topbar-h: 40px; /* #topbar'ın gerçek height değeriyle senkron tutulur (bkz. #topbar height) */
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -2590,7 +2590,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
    genişliğinde ayırarak haritanın gerçek görünür/tıklanabilir alanı
    sidebar'ı asla içermeyecek şekilde küçülüyor; sidebar gizliyken de
    ikinci kolon 0'a inip haritaya tam genişlik geri veriliyor. */
-#main{flex:1;display:none;grid-template-columns:1fr var(--sidebar-w);overflow:hidden;transition:grid-template-columns .35s cubic-bezier(.4,0,.2,1);}
+#main{flex:1;display:none;grid-template-columns:1fr;overflow:hidden;}
 #cwrap{position:relative;overflow:hidden;background:#06060f;touch-action:none;grid-column:1;}
 #c{display:block;cursor:crosshair;image-rendering:pixelated;image-rendering:crisp-edges;}
 #label-overlay{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
@@ -4147,7 +4147,7 @@ button, [onclick], .pc-frame, .psw, .zb {
      Tek değişken değiştiği için #ptoolbar (right:calc(var(--sidebar-w)+12px)),
      #sidebar-toggle (JS getSidebarW()) ve grid kolon genişliği (#main)
      hepsi otomatik doğru hizalanır; ayrı ayrı override gerekmez. */
-  :root { --sidebar-w: 240px; }
+  :root { --sidebar-w: 0px; } /* sidebar kaldırıldı */
 
   .scard h3      { font-size: .56rem; }
   .prtop, .pi    { font-size: .72rem; }
@@ -4443,9 +4443,6 @@ button, [onclick], .pc-frame, .psw, .zb {
   </div>
 </div>
 
-<!-- Sidebar toggle -->
-<button id="sidebar-toggle" title="Paneli aç/kapat" onclick="toggleSidebar()" data-i18n-title="sidebar.toggle_title"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M9 18l6-6-6-6"/></svg></button>
-
 <!-- Chat button -->
 <button id="chat-btn" onclick="toggleChat()" title="AI Asistan"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg></button>
 
@@ -4610,23 +4607,6 @@ button, [onclick], .pc-frame, .psw, .zb {
       <div class="psw" style="background:#cf6ee4" id="sw28" onclick="selP(28)" title="Lila"></div>
       <div class="psw" style="background:#820080" id="sw29" onclick="selP(29)" title="Mor"></div>
     </div>
-  </div>
-  <div id="sidebar">
-    <div class="scard" id="sb-stats-card">
-      <h3 data-i18n="stats.my_stats"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg> İstatistiklerim</h3>
-      <div class="pcs-grid" id="sb-pcs-grid"></div>
-      <div class="pc-section">
-        <div class="pc-label" data-i18n="stats.party_breakdown">Parti Dağılımı (Toplam Piksel)</div>
-        <div class="pcs-bar-wrap" id="sb-pcs-party-bars"></div>
-      </div>
-      <div class="pc-section">
-        <div class="pc-label" data-i18n="stats.weekly_activity">Son 7 Günlük Aktivite</div>
-        <div class="pcs-activity" id="sb-pcs-activity"></div>
-      </div>
-    </div>
-    <div class="scard"><h3 data-i18n="sidebar.leaderboard"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg> En Yüksek Seviyeler</h3><div id="level-leaderboard"><div style="font-size:.68rem;color:var(--muted);text-align:center;padding:.5rem 0" data-i18n="sidebar.loading">Yükleniyor...</div></div></div>
-    <div class="scard"><h3 data-i18n="sidebar.region_results">Bölge / İl Sonuçları</h3><div id="rlist"></div></div>
-    <div class="scard"><h3 data-i18n="sidebar.recent_moves">Son Hamleler</h3><div id="afeed"></div></div>
   </div>
 </div>
 <div id="popup"></div>
@@ -6724,8 +6704,11 @@ function globalCounts(){
 }
 function tsince(t){const s=Math.floor((Date.now()-t)/1000);return s<60?s+'sn':s<3600?Math.floor(s/60)+'dk':Math.floor(s/3600)+'sa';}
 function updateSidebar(){
+  const rlistEl=document.getElementById('rlist');
+  const afeedEl=document.getElementById('afeed');
+  if(!rlistEl && !afeedEl) return; // sidebar kaldırıldıysa hesaplama yapmaya gerek yok
   const seen=new Set();
-  document.getElementById('rlist').innerHTML=REGION_ORDER.map(rid=>{
+  const rlistHTML=REGION_ORDER.map(rid=>{
     const reg=REGIONS[rid];
     const provs=PROV_IDS.filter(pid=>PROV_REGIONS[pid]===rid&&!seen.has(pid));
     provs.forEach(p=>seen.add(p));
@@ -6737,7 +6720,8 @@ function updateSidebar(){
     }).join('');
     return `<div class="rblock"><div class="rhdr" style="background:${reg.color}22;color:${reg.color}"><span>${reg.label}</span><span style="opacity:.6;font-size:.58rem">${provs.length} il</span></div>${items}</div>`;
   }).join('');
-  document.getElementById('afeed').innerHTML=actLog.length
+  if(rlistEl) rlistEl.innerHTML=rlistHTML;
+  if(afeedEl) afeedEl.innerHTML=actLog.length
     ?actLog.slice(0,12).map(a=>`<div class="af"><span>${a.user}</span> → <span style="color:${PARTIES[a.party].color}">${PARTIES[a.party].name}</span> / ${a.prov} <span style="opacity:.4">${tsince(a.t)}</span></div>`).join('')
     :`<div class="af" style="color:var(--muted)">Henüz hamle yok...</div>`;
 }
@@ -6999,7 +6983,8 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
         document.getElementById('history-btn').style.display='';
         document.getElementById('mailbox-btn').style.display='';
         document.getElementById('chat-btn').style.display='flex';
-        document.getElementById('sidebar-toggle').style.display='flex';
+        const _stBtn1=document.getElementById('sidebar-toggle');
+        if(_stBtn1) _stBtn1.style.display='flex';
         if(typeof initSidebarToggle==='function') initSidebarToggle();
         if(typeof updateProfileBtn==='function') updateProfileBtn();
         if(typeof loadFactions==='function') loadFactions();
@@ -9178,6 +9163,7 @@ function toggleSidebar(){
   const sidebar=document.getElementById('sidebar');
   const btn=document.getElementById('sidebar-toggle');
   const pt=document.getElementById('ptoolbar');
+  if(!sidebar||!btn) return; // sidebar kaldırıldı — bu özellik artık yok
   if(isMobile()){
     const open=sidebar.classList.toggle('mobile-open');
     btn.textContent=open?'▼':'▲';
@@ -9203,6 +9189,7 @@ function toggleSidebar(){
 }
 function initSidebarToggle(){
   const btn=document.getElementById('sidebar-toggle');
+  if(!btn) return; // sidebar kaldırıldı — bu özellik artık yok
   if(isMobile()){
     btn.textContent='▲';
     btn.style.right='';
@@ -9217,6 +9204,7 @@ function initSidebarToggle(){
 window.addEventListener('resize',()=>{
   const sidebar=document.getElementById('sidebar');
   const btn=document.getElementById('sidebar-toggle');
+  if(!sidebar||!btn) return; // sidebar kaldırıldı — bu özellik artık yok
   const ov=document.getElementById('mob-sidebar-overlay');
   if(!isMobile()){
     sidebar.classList.remove('mobile-open');
@@ -9528,8 +9516,7 @@ window.startGame=async function(){
   await _origStartGame2.apply(this,arguments);
   document.getElementById('chat-btn').style.display='flex';
   const btn=document.getElementById('sidebar-toggle');
-  btn.style.display='flex';
-  initSidebarToggle();
+  if(btn){ btn.style.display='flex'; initSidebarToggle(); }
   loadProfile();
   // Register this session's profile under username key
   try{
