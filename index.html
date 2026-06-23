@@ -2286,7 +2286,7 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
   position:relative;
   z-index:100;
 }
-/* Logo — sadece mobilde görünür */
+/* Logo — sadece mobilde görünür (masaüstünde #tb-desktop-menu-btn devreye girer) */
 #topbar h1{
   font-size:.88rem;
   font-weight:900;
@@ -2300,6 +2300,63 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
   display:none;
 }
 .sep{flex:1;min-width:0;}
+
+/* Masaüstü: Menü butonu (logonun yerine) */
+#tb-desktop-menu-btn{
+  display:flex;
+  align-items:center;
+  gap:.4rem;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  color:var(--txt);
+  border-radius:8px;
+  padding:.35rem .65rem;
+  font-family:'Outfit',sans-serif;
+  font-size:.78rem;
+  font-weight:700;
+  cursor:pointer;
+  flex-shrink:0;
+  transition:background .15s,border-color .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+#tb-desktop-menu-btn:hover{ background:rgba(255,255,255,.1); border-color:rgba(123,97,255,.4); }
+#tb-desktop-menu-btn.open{ background:rgba(123,97,255,.16); border-color:rgba(123,97,255,.5); color:var(--accent2); }
+#tb-desktop-menu-btn svg{ flex-shrink:0; }
+
+/* Masaüstü dropdown: Menü butonuna basınca aşağı açılır */
+#tb-desktop-dropdown{
+  position:absolute;
+  top:calc(100% + 8px);
+  left:.75rem;
+  z-index:200;
+  background:rgba(5,6,14,.98);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  padding:.6rem;
+  box-shadow:0 16px 40px rgba(0,0,0,.55);
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(-8px) scale(.97);
+  transform-origin:top left;
+  transition:opacity .16s ease, transform .16s cubic-bezier(.4,0,.2,1), visibility .16s;
+}
+#tb-desktop-dropdown.open{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0) scale(1);
+}
+#tb-desktop-dropdown .tb-btn-group{
+  flex-direction:column;
+  align-items:stretch;
+  gap:.3rem;
+}
+#tb-desktop-dropdown .tb-btn{
+  justify-content:flex-start;
+  width:100%;
+  white-space:nowrap;
+}
 
 /* Kullanıcı badge — sade */
 #ubadge{
@@ -2634,63 +2691,18 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
 .pb-faction-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
 .pb-faction-name{font-size:.58rem;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px;}
 
-/* ── MENÜ BUTONU (profile altında, eski faction-sub-btn'in yerinde) ── */
+/* ── FACTION BUTTON (profile altında) ── */
 #faction-btn{
   position:absolute;top:12px;left:12px;z-index:10;
   margin-top:0;
 }
-#pb-menu-btn{
-  width:100%;
+#faction-sub-btn{
   background:var(--surf2);border:1px solid var(--bdr);border-radius:8px;
-  padding:.32rem .6rem;display:flex;align-items:center;justify-content:center;gap:.4rem;
-  cursor:pointer;transition:background .15s,border-color .2s,color .15s;
-  font-family:'Outfit',sans-serif;font-size:.65rem;font-weight:700;color:var(--muted);
-  -webkit-tap-highlight-color:transparent;
+  padding:.28rem .6rem;display:flex;align-items:center;gap:.4rem;
+  cursor:pointer;transition:background .15s,border-color .2s;
+  font-family:'Space Mono',monospace;font-size:.58rem;color:var(--muted);
 }
-#pb-menu-btn:hover{background:var(--surf);border-color:var(--accent);color:var(--txt);}
-#pb-menu-btn.open{background:rgba(123,97,255,.16);border-color:rgba(123,97,255,.5);color:var(--accent2);}
-#pb-menu-btn svg{flex-shrink:0;}
-
-/* Dropdown: pb-menu-btn'e basınca aşağı açılır (profile widget'ı altında) */
-#tb-desktop-dropdown{
-  position:absolute;
-  top:calc(100% + 8px);
-  left:0;
-  width:max-content;
-  min-width:100%;
-  z-index:200;
-  background:rgba(5,6,14,.98);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:14px;
-  padding:.6rem;
-  box-shadow:0 16px 40px rgba(0,0,0,.55);
-  opacity:0;
-  visibility:hidden;
-  transform:translateY(-8px) scale(.97);
-  transform-origin:top left;
-  transition:opacity .16s ease, transform .16s cubic-bezier(.4,0,.2,1), visibility .16s;
-}
-#tb-desktop-dropdown.open{
-  opacity:1;
-  visibility:visible;
-  transform:translateY(0) scale(1);
-}
-#tb-desktop-dropdown .tb-btn-group{
-  flex-direction:column;
-  align-items:stretch;
-  gap:.3rem;
-}
-#tb-desktop-dropdown .tb-btn{
-  justify-content:flex-start;
-  width:100%;
-  white-space:nowrap;
-}
-#tb-desktop-dropdown #faction-sub-btn{
-  background:var(--surf2);color:var(--txt);
-}
-#tb-desktop-dropdown #faction-sub-btn:hover{background:var(--surf);border-color:var(--accent);}
+#faction-sub-btn:hover{background:var(--surf);border-color:var(--accent);color:var(--txt);}
 .fsb-dot{width:7px;height:7px;border-radius:2px;flex-shrink:0;}
 
 /* ── FACTION MODAL ── */
@@ -3238,11 +3250,59 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
 .cm{max-width:88%;font-size:.72rem;line-height:1.55;font-family:'Space Mono',monospace;display:flex;gap:.5rem;align-items:flex-end;}
 .cm.user{flex-direction:row-reverse;align-self:flex-end;}
 .cm.other{flex-direction:row;align-self:flex-start;}
-.cm-av{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#fff;overflow:hidden;border:2px solid transparent;}
+.cm-av{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:800;color:#fff;overflow:hidden;border:2px solid transparent;cursor:pointer;}
 .cm-av img{width:100%;height:100%;object-fit:cover;}
 .cm-bubble{display:flex;flex-direction:column;gap:.15rem;max-width:100%;}
-.cm-name{font-size:.58rem;color:var(--muted);font-weight:700;padding:0 .3rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cm-name{font-size:.58rem;color:var(--muted);font-weight:700;padding:0 .3rem;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;display:inline-flex;align-items:center;gap:.3rem;}
+.cm-name:hover{color:var(--txt);text-decoration:underline;}
+.cm-name .cm-tag{font-family:'Space Mono',monospace;font-weight:800;letter-spacing:.02em;}
 .cm.user .cm-name{text-align:right;}
+
+/* ── DİĞER KULLANICI MİNİ PROFİL KARTI ── */
+#mini-profile-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(3px);z-index:480;display:none;align-items:center;justify-content:center;}
+#mini-profile-overlay.open{display:flex;}
+#mini-profile-card{
+  width:min(300px,86vw);background:var(--surf);border:1px solid var(--bdr);border-radius:16px;
+  padding:1.25rem 1.1rem 1.1rem;display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  box-shadow:0 16px 48px rgba(0,0,0,.55);position:relative;
+}
+#mp-close{position:absolute;top:.6rem;right:.6rem;background:none;border:none;color:var(--muted);cursor:pointer;padding:.2rem;line-height:1;}
+#mp-close:hover{color:var(--txt);}
+#mp-avatar{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:800;color:#fff;overflow:hidden;border:3px solid transparent;margin-top:.2rem;}
+#mp-avatar img{width:100%;height:100%;object-fit:cover;}
+#mp-name{font-family:'Space Grotesk','Inter',sans-serif;font-weight:700;font-size:1.05rem;color:var(--txt);letter-spacing:-.01em;text-align:center;}
+#mp-tag{font-family:'JetBrains Mono','Space Mono',monospace;font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:6px;}
+#mp-level{font-family:'JetBrains Mono','Space Mono',monospace;font-size:.7rem;color:var(--muted);}
+#mp-dm-btn{
+  margin-top:.6rem;width:100%;background:var(--accent);border:none;border-radius:9px;
+  color:#fff;padding:.6rem .8rem;font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:.8rem;letter-spacing:.03em;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;
+  transition:opacity .15s;
+}
+#mp-dm-btn:hover{opacity:.88;}
+#mp-dm-btn:disabled{opacity:.45;cursor:default;}
+
+/* ── DM (ÖZEL MESAJ) PANELİ ── */
+#dm-panel{
+  position:fixed;bottom:74px;left:16px;width:320px;height:420px;
+  background:var(--surf);border:1px solid var(--bdr);border-radius:14px;
+  display:none;flex-direction:column;z-index:490;overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,.5);
+}
+#dm-panel.open{display:flex;}
+#dm-header{flex-shrink:0;padding:.65rem 1rem;background:var(--surf2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:.55rem;}
+#dm-header span{font-size:.78rem;font-weight:700;color:var(--txt);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#dm-back,#dm-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:0;line-height:1;}
+#dm-back:hover,#dm-close:hover{color:var(--txt);}
+#dm-messages{flex:1;overflow-y:auto;padding:.75rem;display:flex;flex-direction:column;gap:.5rem;}
+#dm-messages::-webkit-scrollbar{width:3px;}
+#dm-messages::-webkit-scrollbar-thumb{background:var(--bdr);border-radius:2px;}
+#dm-footer{flex-shrink:0;padding:.6rem;border-top:1px solid var(--bdr);display:flex;gap:.5rem;background:var(--surf2);}
+#dm-input{flex:1;background:var(--surf);border:1px solid var(--bdr);border-radius:8px;padding:.45rem .7rem;color:var(--txt);font-family:'Space Mono',monospace;font-size:.72rem;outline:none;transition:border-color .2s;}
+#dm-input:focus{border-color:var(--accent);}
+#dm-send{background:var(--accent);border:none;border-radius:8px;color:#fff;padding:.4rem .75rem;cursor:pointer;font-size:.8rem;transition:opacity .2s;}
+#dm-send:hover{opacity:.85;}
+#dm-empty{text-align:center;padding:2rem 1rem;color:var(--muted);font-size:.75rem;}
 .cm-text{word-break:break-word;padding:.4rem .7rem;border-radius:10px;}
 .cm.user .cm-text{background:var(--accent);color:#fff;border-radius:10px 10px 2px 10px;}
 .cm.other .cm-text{background:var(--surf2);border:1px solid var(--bdr);color:var(--txt);border-radius:10px 10px 10px 2px;}
@@ -3536,19 +3596,8 @@ button, [onclick], .pc-frame, .psw, .zb {
     white-space: nowrap;
     max-width: 90px;
   }
-  #pb-menu-btn { display: none !important; }
-  #tb-desktop-dropdown {
-    position: static !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: none !important;
-    background: none !important;
-    backdrop-filter: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-  }
-  #tb-desktop-dropdown .tb-btn-group > button:not(#faction-sub-btn) { display: none !important; }
+  #tb-desktop-menu-btn { display: none !important; }
+  #tb-desktop-dropdown { display: none !important; }
   #ubadge {
     font-size: .58rem;
     padding: .18rem .4rem;
@@ -4332,6 +4381,12 @@ button, [onclick], .pc-frame, .psw, .zb {
 </div>
 
 <div id="topbar">
+  <!-- Masaüstü: Menü butonu (logo yerine) -->
+  <button id="tb-desktop-menu-btn" onclick="toggleTbDesktopMenu()" aria-label="Menü">
+    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
+    <span data-i18n="topbar.menu">Menü</span>
+  </button>
+
   <!-- Mobil: Logo (sadece mobilde görünür) -->
   <h1 data-i18n="topbar.title" id="tb-mobile-logo"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg> PixelFront</h1>
 
@@ -4340,12 +4395,37 @@ button, [onclick], .pc-frame, .psw, .zb {
 
   <div class="sep"></div>
 
+  <!-- Masaüstü dropdown panel (Menü butonuna basınca aşağı açılır) -->
+  <div id="tb-desktop-dropdown">
+    <div class="tb-btn-group" id="tb-desktop-btns">
+      <button id="quest-btn" class="tb-btn" style="background:linear-gradient(135deg,#014d38,#00b888);display:none;position:relative" onclick="closeTbDesktopMenu();openQuestPanel()" title="Görevler">
+        <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/></svg></span><span class="tb-label">Görevler</span>
+        <span id="quest-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#f5a623;color:#000;font-size:.5rem;font-weight:800;border-radius:50%;width:14px;height:14px;align-items:center;justify-content:center;line-height:1;font-family:'Space Mono',monospace;">!</span>
+      </button>
+      <button id="timelapse-btn" class="tb-btn" style="background:linear-gradient(135deg,#1a2e8a,#5b21c9);display:none" onclick="closeTbDesktopMenu();openTimelapseModal()" title="Timelapse Oluştur" data-i18n-title="tl.title">
+        <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M2 6h20v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/><path d="M7 2h10"/><path d="M12 6v16"/><path d="M2 12h20"/></svg></span><span class="tb-label" data-i18n="topbar.timelapse">Timelapse</span>
+      </button>
+      <button id="history-btn" class="tb-btn" style="background:linear-gradient(135deg,#0a6660,#0257a0);display:none" onclick="closeTbDesktopMenu();openHistoryModal()" title="Geçmişe Bak" data-i18n-title="hm.title">
+        <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span><span class="tb-label" data-i18n="topbar.history">Geçmiş</span>
+      </button>
+      <button id="mailbox-btn" class="tb-btn" style="display:none;" onclick="closeTbDesktopMenu();openMailbox()" title="Posta Kutusu">
+        <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg></span><span class="tb-label">Posta</span>
+        <span id="mailbox-badge"></span>
+      </button>
+      <button id="adminbtn" class="tb-btn" style="background:#dc2626;display:none" onclick="closeTbDesktopMenu();toggleAdmin()" data-i18n="topbar.admin">
+        <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="tb-label" data-i18n="topbar.admin">Admin</span>
+      </button>
+      <button id="ownerbtn" class="tb-btn" style="background:linear-gradient(135deg,#92400e,#d97706);display:none" onclick="closeTbDesktopMenu();openOwnerPanel()" title="Admin Yönetimi" data-i18n-title="owner.title">
+        <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21 5l-2 13H5L3 5l4.094 4.164a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg></span><span class="tb-label" data-i18n="topbar.owner">Owner</span>
+      </button>
+    </div>
+  </div>
+
   <!-- Mobil: Hamburger -->
   <button id="tb-hamburger" onclick="toggleTbMenu()" aria-label="Menü">
     <span></span><span></span><span></span>
   </button>
 </div>
-
 
 <!-- Mobil Bottom Sheet Menü -->
 <div id="tb-menu-sheet" onclick="if(event.target===this||event.target===document.getElementById('tb-menu-overlay'))closeTbMenu()">
@@ -4458,6 +4538,32 @@ button, [onclick], .pc-frame, .psw, .zb {
   </div>
 </div>
 
+<!-- DİĞER KULLANICININ MİNİ PROFİL KARTI -->
+<div id="mini-profile-overlay" onclick="if(event.target===this)closeMiniProfile()">
+  <div id="mini-profile-card">
+    <button id="mp-close" onclick="closeMiniProfile()"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></button>
+    <div id="mp-avatar"></div>
+    <div id="mp-name"></div>
+    <div id="mp-tag" style="display:none"></div>
+    <div id="mp-level"></div>
+    <button id="mp-dm-btn" onclick="openDMFromMiniProfile()"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> DM Gönder</button>
+  </div>
+</div>
+
+<!-- ÖZEL MESAJ (DM) PANELİ -->
+<div id="dm-panel">
+  <div id="dm-header">
+    <button id="dm-back" onclick="closeDMPanel()" title="Geri"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg></button>
+    <span id="dm-peer-name">DM</span>
+    <button id="dm-close" onclick="closeDMPanel()"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></button>
+  </div>
+  <div id="dm-messages"></div>
+  <div id="dm-footer">
+    <input id="dm-input" placeholder="Özel mesaj yaz..." maxlength="300" enterkeyhint="send" onkeydown="if(event.key==='Enter')sendDM()"/>
+    <button id="dm-send" onclick="sendDM()">→</button>
+  </div>
+</div>
+
 <div id="main">
   <div id="cwrap">
     <canvas id="c"></canvas>
@@ -4526,39 +4632,10 @@ button, [onclick], .pc-frame, .psw, .zb {
         </div>
       </div>
     </button>
-    <button id="pb-menu-btn" onclick="toggleTbDesktopMenu()" aria-label="Menü">
-      <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>
-      <span data-i18n="topbar.menu">Menü</span>
+    <button id="faction-sub-btn" onclick="openFactionModal()" title="Faction" data-i18n-title="faction.btn_title">
+      <div class="fsb-dot" id="fsb-dot" style="background:#5a5a80"></div>
+      <span id="fsb-label" data-i18n="faction.label"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg> Faction</span>
     </button>
-
-    <!-- Dropdown panel (pb-menu-btn'e basınca aşağı açılır) -->
-    <div id="tb-desktop-dropdown">
-      <div class="tb-btn-group" id="tb-desktop-btns">
-        <button id="faction-sub-btn" class="tb-btn" onclick="closeTbDesktopMenu();openFactionModal()" title="Faction" data-i18n-title="faction.btn_title">
-          <span class="tb-icon fsb-dot" id="fsb-dot" style="background:#5a5a80;width:12px;height:12px;border-radius:3px;display:inline-block;"></span><span class="tb-label" id="fsb-label" data-i18n="faction.label">Faction</span>
-        </button>
-        <button id="quest-btn" class="tb-btn" style="background:linear-gradient(135deg,#014d38,#00b888);display:none;position:relative" onclick="closeTbDesktopMenu();openQuestPanel()" title="Görevler">
-          <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z"/></svg></span><span class="tb-label">Görevler</span>
-          <span id="quest-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#f5a623;color:#000;font-size:.5rem;font-weight:800;border-radius:50%;width:14px;height:14px;align-items:center;justify-content:center;line-height:1;font-family:'Space Mono',monospace;">!</span>
-        </button>
-        <button id="timelapse-btn" class="tb-btn" style="background:linear-gradient(135deg,#1a2e8a,#5b21c9);display:none" onclick="closeTbDesktopMenu();openTimelapseModal()" title="Timelapse Oluştur" data-i18n-title="tl.title">
-          <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M2 6h20v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/><path d="M7 2h10"/><path d="M12 6v16"/><path d="M2 12h20"/></svg></span><span class="tb-label" data-i18n="topbar.timelapse">Timelapse</span>
-        </button>
-        <button id="history-btn" class="tb-btn" style="background:linear-gradient(135deg,#0a6660,#0257a0);display:none" onclick="closeTbDesktopMenu();openHistoryModal()" title="Geçmişe Bak" data-i18n-title="hm.title">
-          <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span><span class="tb-label" data-i18n="topbar.history">Geçmiş</span>
-        </button>
-        <button id="mailbox-btn" class="tb-btn" style="display:none;" onclick="closeTbDesktopMenu();openMailbox()" title="Posta Kutusu">
-          <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="M22 6l-10 7L2 6"/></svg></span><span class="tb-label">Posta</span>
-          <span id="mailbox-badge"></span>
-        </button>
-        <button id="adminbtn" class="tb-btn" style="background:#dc2626;display:none" onclick="closeTbDesktopMenu();toggleAdmin()" data-i18n="topbar.admin">
-          <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span><span class="tb-label" data-i18n="topbar.admin">Admin</span>
-        </button>
-        <button id="ownerbtn" class="tb-btn" style="background:linear-gradient(135deg,#92400e,#d97706);display:none" onclick="closeTbDesktopMenu();openOwnerPanel()" title="Admin Yönetimi" data-i18n-title="owner.title">
-          <span class="tb-icon"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21 5l-2 13H5L3 5l4.094 4.164a1 1 0 0 0 1.516-.294z"/><path d="M5 21h14"/></svg></span><span class="tb-label" data-i18n="topbar.owner">Owner</span>
-        </button>
-      </div>
-    </div>
     </div>
     <div id="zbtn">
       <button class="zb" onclick="doZoom(1.3)">+</button>
@@ -6683,7 +6760,7 @@ function startRealtimeSync(){
         const uname=typeof username!=='undefined'?username:'';
         // Kendi mesajımızı optimistic olarak zaten ekledik, tekrar ekleme
         if(row.username===uname && Date.now()-new Date(row.created_at).getTime()<5000) return;
-        const entry={user:row.username,text:row.message,t:new Date(row.created_at).getTime(),photo:'',frame:'none'};
+        const entry={user:row.username,text:row.message,t:new Date(row.created_at).getTime(),photo:'',frame:'none',factionTag:row.faction_tag||'',factionColor:row.faction_color||''};
         const isMe=entry.user===uname;
         const box=document.getElementById('chat-messages');
         const el=document.createElement('div');
@@ -6993,6 +7070,7 @@ document.addEventListener('keyup',e=>{if(e.key==='Shift'&&!_brushActive)canvas.s
         if(typeof loadFactions==='function') loadFactions();
         if(typeof updateChatFactionTab==='function') updateChatFactionTab();
         if(typeof loadChat==='function') loadChat();
+        if(typeof subscribeDMChannel==='function') subscribeDMChannel();
         try{
           if(username){
             localStorage.setItem('pv_profile_'+username,JSON.stringify(profileData));
@@ -9294,6 +9372,7 @@ function toggleChat(){
   const panel=document.getElementById('chat-panel');
   panel.classList.toggle('open');
   if(panel.classList.contains('open')){
+    document.getElementById('dm-panel').classList.remove('open');
     renderChatMessages();
     document.getElementById('chat-input').focus();
   }
@@ -9318,6 +9397,7 @@ function buildChatAvatar(entry, borderOverride){
   } else {
     av.textContent=(entry.user||'?').slice(0,2).toUpperCase();
   }
+  av.onclick=(e)=>{ e.stopPropagation(); openMiniProfile(entry); };
   return av;
 }
 
@@ -9327,7 +9407,17 @@ function buildChatBubble(entry, isMe){
   if(!isMe){
     const nm=document.createElement('div');
     nm.className='cm-name';
-    nm.textContent=entry.user||'';
+    const nameSpan=document.createElement('span');
+    nameSpan.textContent=entry.user||'';
+    nm.appendChild(nameSpan);
+    if(entry.factionTag){
+      const tagSpan=document.createElement('span');
+      tagSpan.className='cm-tag';
+      tagSpan.textContent='['+entry.factionTag+']';
+      tagSpan.style.color=entry.factionColor||'var(--accent)';
+      nm.appendChild(tagSpan);
+    }
+    nm.onclick=(e)=>{ e.stopPropagation(); openMiniProfile(entry); };
     wrap.appendChild(nm);
   }
   const txt=document.createElement('div');
@@ -9353,7 +9443,7 @@ async function renderChatMessages(){
       console.log('[chat] DB select sonucu:', data?data.length+' satır':'null', error?('HATA: '+JSON.stringify(error)):'hata yok');
       if(data) data.reverse(); // en yeni 50'yi çektik, ekranda eskiden-yeniye göstermek için ters çeviriyoruz
       if(data&&!error){
-        log=data.map(r=>({user:r.username,text:r.message,t:new Date(r.created_at).getTime(),photo:'',frame:'none'}));
+        log=data.map(r=>({user:r.username,text:r.message,t:new Date(r.created_at).getTime(),photo:'',frame:'none',factionTag:r.faction_tag||'',factionColor:r.faction_color||''}));
         // DB'ye yazılamayıp localStorage'a düşmüş mesajlar varsa onları da ekle (kaybolmasınlar)
         try{
           const r=localStorage.getItem('pv_chat');
@@ -9404,7 +9494,7 @@ async function renderChatMessages(){
       const isMe=entry.user===uname;
       let memberProf={};
       try{ memberProf=JSON.parse(localStorage.getItem('pv_profile_'+entry.user)||'{}'); }catch(e){}
-      const fEntry={...entry, photo:memberProf.photo||entry.photo||'', frame:entry.frame||'none'};
+      const fEntry={...entry, photo:memberProf.photo||entry.photo||'', frame:entry.frame||'none', factionTag:factionData.tag, factionColor:factionData.color};
       const borderCol=factionData.color;
       const el=document.createElement('div');
       el.className='cm '+(isMe?'user':'other');
@@ -9420,7 +9510,7 @@ function addChatMsg(text, role){
   // Only used for global immediate render
   const uname=typeof username!=='undefined'?username:'Sen';
   const isMe=role==='user';
-  const entry={user:uname, text, photo:profileData.photo||'', frame:profileData.frame||'none'};
+  const entry={user:uname, text, photo:profileData.photo||'', frame:profileData.frame||'none', factionTag:factionData?factionData.tag:'', factionColor:factionData?factionData.color:''};
   const box=document.getElementById('chat-messages');
   const el=document.createElement('div');
   el.className='cm '+(isMe?'user':'other');
@@ -9439,7 +9529,7 @@ async function sendChatMsg(){
 
   if(currentChatTab==='faction'){
     if(!factionData){ showPopup(t('msg.join_faction_short')); return; }
-    const entry={user:uname, text:msg, t:Date.now(), photo:profileData.photo||'', frame:profileData.frame||'none'};
+    const entry={user:uname, text:msg, t:Date.now(), photo:profileData.photo||'', frame:profileData.frame||'none', factionTag:factionData.tag, factionColor:factionData.color};
     try{
       const key='pv_fc_chat_'+factionData.tag;
       const raw=localStorage.getItem(key);
@@ -9450,11 +9540,20 @@ async function sendChatMsg(){
     }catch(e){}
   } else {
     // Global chat → Önce UI'a hemen ekle (optimistic update)
-    const entry={user:uname, text:msg, t:Date.now(), photo:profileData&&profileData.photo||'', frame:profileData&&profileData.frame||'none'};
+    const entry={user:uname, text:msg, t:Date.now(), photo:profileData&&profileData.photo||'', frame:profileData&&profileData.frame||'none', factionTag:factionData?factionData.tag:'', factionColor:factionData?factionData.color:''};
     addChatMsg(msg,'user');
-    // Supabase'e kaydet (arka planda)
-    supabase.from('chat_messages').insert({username:uname,message:msg,channel:'global'}).select()
+    // Supabase'e kaydet (arka planda) — faction_tag/faction_color kolonu varsa onu da yaz
+    const insertRow={username:uname,message:msg,channel:'global',faction_tag:factionData?factionData.tag:null,faction_color:factionData?factionData.color:null};
+    supabase.from('chat_messages').insert(insertRow).select()
       .then(({data,error})=>{
+        if(error && /faction_tag|faction_color|column/i.test(error.message||'')){
+          // Kolonlar tabloda yoksa, eski şemayla tekrar dene
+          return supabase.from('chat_messages').insert({username:uname,message:msg,channel:'global'}).select();
+        }
+        return {data,error};
+      })
+      .then((res)=>{
+        const {data,error}=res||{};
         if(error || !data || data.length===0){
           // Hata olursa veya satır gerçekten eklenmediyse (RLS sessiz red) konsola yaz ve localStorage'a yedekle
           console.error('[chat] Supabase insert başarısız (satır DB\'ye yazılmadı):', error||'data boş döndü, muhtemelen RLS engelledi');
@@ -9506,6 +9605,217 @@ function updateChatFactionTab(){
     fBtn.style.opacity='.4';
     fBtn.style.cursor='default';
   }
+}
+
+// ══════════════════════════════════════════════════════════
+// ── DİĞER KULLANICI MİNİ PROFİL KARTI ──
+// Chat'te bir avatara/isme tıklanınca açılır: avatar, isim,
+// faction tag'i ve seviyesini gösterir, DM göndermeye yönlendirir.
+// ══════════════════════════════════════════════════════════
+let _mpTargetUser=null;
+
+async function openMiniProfile(entry){
+  const uname=typeof username!=='undefined'?username:'';
+  if(!entry || !entry.user || entry.user===uname) return; // kendi profiline tıklarsa hiçbir şey yapma
+  _mpTargetUser=entry.user;
+
+  const overlay=document.getElementById('mini-profile-overlay');
+  const avEl=document.getElementById('mp-avatar');
+  const nameEl=document.getElementById('mp-name');
+  const tagEl=document.getElementById('mp-tag');
+  const lvlEl=document.getElementById('mp-level');
+  const dmBtn=document.getElementById('mp-dm-btn');
+
+  // Avatar
+  avEl.innerHTML='';
+  const borderCol=FRAME_BORDERS[entry.frame||'none']||'#7B61FF';
+  const frame=FRAMES.find(f=>f.id===(entry.frame||'none'))||FRAMES[0];
+  avEl.style.borderColor=borderCol;
+  avEl.style.background=frame.style.replace('background:','');
+  let photo=entry.photo||'';
+  if(!photo){
+    try{ const mp=JSON.parse(localStorage.getItem('pv_profile_'+entry.user)||'{}'); photo=mp.photo||''; }catch(e){}
+  }
+  if(photo){
+    const img=document.createElement('img');
+    img.src=photo;
+    avEl.appendChild(img);
+  } else {
+    avEl.textContent=entry.user.slice(0,2).toUpperCase();
+  }
+
+  nameEl.textContent=entry.user;
+
+  // Faction tag
+  if(entry.factionTag){
+    tagEl.style.display='inline-block';
+    tagEl.textContent='['+entry.factionTag+']';
+    tagEl.style.color=entry.factionColor||'#7B61FF';
+    tagEl.style.background=(entry.factionColor||'#7B61FF')+'22';
+  } else {
+    tagEl.style.display='none';
+  }
+
+  lvlEl.textContent='Yükleniyor...';
+  dmBtn.disabled=false;
+
+  overlay.classList.add('open');
+
+  // Seviye bilgisini DB'den çek
+  try{
+    const {data,error}=await supabase.from('user_levels').select('level,xp').eq('username',entry.user).maybeSingle();
+    if(data && !error){
+      lvlEl.textContent='Seviye '+(data.level||1)+' · '+(data.xp||0).toLocaleString('tr-TR')+' XP';
+    } else {
+      lvlEl.textContent='';
+    }
+  }catch(e){
+    lvlEl.textContent='';
+  }
+}
+
+function closeMiniProfile(){
+  document.getElementById('mini-profile-overlay').classList.remove('open');
+}
+
+function openDMFromMiniProfile(){
+  if(!_mpTargetUser) return;
+  closeMiniProfile();
+  openDMPanel(_mpTargetUser);
+}
+
+// ══════════════════════════════════════════════════════════
+// ── ÖZEL MESAJ (DM) SİSTEMİ ──
+// Supabase üzerinde 'direct_messages' tablosu kullanır:
+//   id, sender, receiver, message, created_at
+// Bu tablo Supabase tarafında önceden oluşturulmuş olmalı,
+// aksi halde DM gönderimi/alımı çalışmaz.
+// ══════════════════════════════════════════════════════════
+let dmPeer=null;
+let _dmChannel=null;
+let _dmCache='';
+
+function dmRoomKey(a,b){ return [a,b].sort().join('::'); }
+
+async function openDMPanel(peerUsername){
+  if(!peerUsername) return;
+  const uname=typeof username!=='undefined'?username:'';
+  if(peerUsername===uname) return;
+  dmPeer=peerUsername;
+  document.getElementById('dm-peer-name').textContent='✉️ '+peerUsername;
+  document.getElementById('dm-panel').classList.add('open');
+  document.getElementById('chat-panel').classList.remove('open');
+  await renderDMMessages();
+  document.getElementById('dm-input').focus();
+  subscribeDMChannel();
+}
+
+function closeDMPanel(){
+  document.getElementById('dm-panel').classList.remove('open');
+  dmPeer=null;
+  const chatPanel=document.getElementById('chat-panel');
+  if(!chatPanel.classList.contains('open')){
+    chatPanel.classList.add('open');
+    renderChatMessages();
+  }
+}
+
+async function renderDMMessages(){
+  if(!dmPeer) return;
+  const uname=typeof username!=='undefined'?username:'';
+  const box=document.getElementById('dm-messages');
+  let log=[];
+  try{
+    const {data,error}=await supabase.from('direct_messages').select('*')
+      .or(`and(sender.eq.${uname},receiver.eq.${dmPeer}),and(sender.eq.${dmPeer},receiver.eq.${uname})`)
+      .order('created_at',{ascending:true}).limit(100);
+    if(error){
+      console.error('[dm] Supabase select hatası (direct_messages tablosu mevcut mu?):', error);
+      box.innerHTML='<div id="dm-empty">Özel mesajlar şu anda yüklenemedi.<br><span style="font-size:.65rem;opacity:.7">(direct_messages tablosu eksik olabilir)</span></div>';
+      return;
+    }
+    log=data||[];
+  }catch(e){
+    console.error('[dm] Supabase select exception:', e);
+    box.innerHTML='<div id="dm-empty">Özel mesajlar şu anda yüklenemedi.</div>';
+    return;
+  }
+  const newKey=log.map(r=>r.id).join(',');
+  if(newKey===_dmCache) return;
+  _dmCache=newKey;
+  if(!log.length){
+    box.innerHTML=`<div id="dm-empty">💬 Henüz mesaj yok.<br><span style="font-size:.65rem;opacity:.7">${_esc(dmPeer)} ile sohbete başla</span></div>`;
+    return;
+  }
+  box.innerHTML='';
+  log.forEach(row=>{
+    const isMe=row.sender===uname;
+    const entry={user:row.sender, text:row.message};
+    const el=document.createElement('div');
+    el.className='cm '+(isMe?'user':'other');
+    const av=document.createElement('div');
+    av.className='cm-av';
+    av.style.background='linear-gradient(135deg,#7B61FF,#c4aaff)';
+    av.textContent=row.sender.slice(0,2).toUpperCase();
+    const wrap=document.createElement('div');
+    wrap.className='cm-bubble';
+    const txt=document.createElement('div');
+    txt.className='cm-text';
+    txt.textContent=row.message;
+    wrap.appendChild(txt);
+    el.appendChild(av);
+    el.appendChild(wrap);
+    box.appendChild(el);
+  });
+  box.scrollTop=box.scrollHeight;
+}
+
+async function sendDM(){
+  const inp=document.getElementById('dm-input');
+  const msg=inp.value.trim();
+  if(!msg || !dmPeer) return;
+  const uname=typeof username!=='undefined'?username:'Anonim';
+  inp.value='';
+  try{
+    const {error}=await supabase.from('direct_messages').insert({sender:uname,receiver:dmPeer,message:msg});
+    if(error){
+      console.error('[dm] Supabase insert başarısız (direct_messages tablosu eksik olabilir):', error);
+      showPopup('Mesaj gönderilemedi. (DM tablosu eksik olabilir)');
+      inp.value=msg;
+      return;
+    }
+    _dmCache=''; // cache temizle, render yeniden çeksin
+    await renderDMMessages();
+  }catch(e){
+    console.error('[dm] Supabase insert exception:', e);
+    showPopup('Mesaj gönderilemedi.');
+    inp.value=msg;
+  }
+  inp.focus();
+}
+
+function subscribeDMChannel(){
+  if(_dmChannel) return;
+  const uname=typeof username!=='undefined'?username:'';
+  if(!uname) return;
+  try{
+    _dmChannel=supabase.channel('dm-changes-'+uname).on(
+      'postgres_changes',
+      {event:'INSERT',schema:'public',table:'direct_messages'},
+      (payload)=>{
+        const row=payload && payload.new;
+        if(!row) return;
+        if(row.receiver===uname || row.sender===uname){
+          if(dmPeer && (row.sender===dmPeer || row.receiver===dmPeer) && document.getElementById('dm-panel').classList.contains('open')){
+            _dmCache='';
+            renderDMMessages();
+          } else if(row.receiver===uname && row.sender!==uname){
+            showPopup('✉️ '+row.sender+' sana mesaj gönderdi');
+          }
+        }
+      }
+    ).subscribe();
+  }catch(e){ console.error('[dm] Realtime kanal hatası:', e); }
 }
 
 // Realtime subscription mesajları anlık getiriyor, polling kaldırıldı
@@ -12379,7 +12689,7 @@ function toggleTbDesktopMenu(){
 }
 function openTbDesktopMenu(){
   const dd = document.getElementById('tb-desktop-dropdown');
-  const btn = document.getElementById('pb-menu-btn');
+  const btn = document.getElementById('tb-desktop-menu-btn');
   dd.classList.add('open');
   if(btn) btn.classList.add('open');
   document.addEventListener('click', _tbDesktopMenuOutsideClick, true);
@@ -12387,7 +12697,7 @@ function openTbDesktopMenu(){
 }
 function closeTbDesktopMenu(){
   const dd = document.getElementById('tb-desktop-dropdown');
-  const btn = document.getElementById('pb-menu-btn');
+  const btn = document.getElementById('tb-desktop-menu-btn');
   dd.classList.remove('open');
   if(btn) btn.classList.remove('open');
   document.removeEventListener('click', _tbDesktopMenuOutsideClick, true);
@@ -12395,7 +12705,7 @@ function closeTbDesktopMenu(){
 }
 function _tbDesktopMenuOutsideClick(e){
   const dd = document.getElementById('tb-desktop-dropdown');
-  const btn = document.getElementById('pb-menu-btn');
+  const btn = document.getElementById('tb-desktop-menu-btn');
   if(!dd || !btn) return;
   if(dd.contains(e.target) || btn.contains(e.target)) return;
   closeTbDesktopMenu();
