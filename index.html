@@ -13420,13 +13420,22 @@ document.addEventListener('keydown', e => {
     linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
   background-size: 32px 32px;
-  overflow: hidden;
+  /* DÜZELTME: overflow:hidden zoom yapınca büyüyen tuvali kaydırmayı (pan)
+     tamamen engelliyordu — zoom çalışıyordu ama büyüyen kısmı görmenin/
+     ulaşmanın hiçbir yolu yoktu. Artık kaydırılabilir. */
+  overflow: auto;
   position: relative;
   min-width: 0;
 }
 #tpl-canvas-wrap {
   position: relative;
   image-rendering: pixelated;
+  /* DÜZELTME: flex'in align/justify-center'ı, overflow:auto ile birlikte
+     tuval küçükken ortalar ama büyüyünce kaydırmayı engelliyordu
+     (taşan kısmın bir tarafına asla ulaşılamıyordu). margin:auto bu
+     sorunu olmadan hem ortalamayı hem serbest kaydırmayı sağlıyor. */
+  margin: auto;
+  flex-shrink: 0;
 }
 #tpl-checkerboard {
   position: absolute; inset: 0;
@@ -14249,17 +14258,37 @@ function _editorUpdateStats() {
    ZOOM
 ══════════════════════════════════════════════════════════ */
 function tplZoomIn() {
-  const max = Math.max(1, Math.floor(800 / Math.min(_editorW, _editorH)));
-  _editorZoom = Math.min(max, _editorZoom + (_editorZoom < 4 ? 1 : _editorZoom < 8 ? 2 : 4));
-  _editorResizeCanvas();
+  /* DÜZELTME: eski formül "Math.floor(800 / min(W,H))" büyük bölge/harita
+     boyutlarında (örn. 1036×917) 0'a yuvarlanıp zoom'u 1×'te tamamen
+     kilitliyordu. Boyuttan bağımsız sabit, makul bir üst sınır kullanıyoruz. */
+  const MAX_ZOOM = 32;
+  _editorZoom = Math.min(MAX_ZOOM, _editorZoom + (_editorZoom < 4 ? 1 : _editorZoom < 8 ? 2 : 4));
+  _editorResizeCanvasKeepCenter();
   _editorUpdateZoomLabel();
   _editorRender();
 }
 function tplZoomOut() {
   _editorZoom = Math.max(1, _editorZoom - (_editorZoom <= 4 ? 1 : _editorZoom <= 8 ? 2 : 4));
-  _editorResizeCanvas();
+  _editorResizeCanvasKeepCenter();
   _editorUpdateZoomLabel();
   _editorRender();
+}
+/* Zoom değişiminde, bakılan noktayı (alan ortasını) sabit tutarak
+   kaydırma konumunu yeniden hesaplar — aksi halde her zoom'da görünüm
+   sol-üst köşeye sıçrar. */
+function _editorResizeCanvasKeepCenter() {
+  const area = document.getElementById('tpl-canvas-area');
+  const wrap = document.getElementById('tpl-canvas-wrap');
+  let cx = 0.5, cy = 0.5;
+  if (area && wrap && wrap.offsetWidth > 0 && wrap.offsetHeight > 0) {
+    cx = (area.scrollLeft + area.clientWidth / 2) / wrap.offsetWidth;
+    cy = (area.scrollTop + area.clientHeight / 2) / wrap.offsetHeight;
+  }
+  _editorResizeCanvas();
+  if (area && wrap) {
+    area.scrollLeft = cx * wrap.offsetWidth - area.clientWidth / 2;
+    area.scrollTop  = cy * wrap.offsetHeight - area.clientHeight / 2;
+  }
 }
 function _editorResizeCanvas() {
   const dc = document.getElementById('tpl-draw-canvas');
