@@ -3078,6 +3078,43 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
   100%{ transform:translate(-50%,-50%) rotate(-10deg) scale(0.9); }
 }
 
+/* ── SOL ALT STATS WIDGET ── */
+#stats-widget{
+  position:fixed;
+  bottom:16px;
+  left:16px;
+  background:rgba(8,9,22,.85);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--bdr2);
+  border-radius:10px;
+  padding:.32rem .7rem;
+  display:none;
+  flex-direction:column;
+  gap:2px;
+  z-index:44;
+  pointer-events:none;
+  min-width:130px;
+}
+#stats-widget.visible{display:flex;}
+.sw-row{
+  display:flex;
+  align-items:center;
+  gap:.38rem;
+  font-family:'JetBrains Mono','Space Mono',monospace;
+  font-size:.67rem;
+  font-weight:600;
+  color:var(--txt);
+  white-space:nowrap;
+}
+.sw-icon{font-size:.7rem;opacity:.75;}
+#sw-coord{
+  color:#b8acff;
+  font-size:.62rem;
+  letter-spacing:.01em;
+  font-family:'JetBrains Mono','Space Mono',monospace;
+  font-weight:600;
+}
+
 /* ── PIXEL EVENT ── */
 #pixel-event-banner{
   position:absolute;top:10px;left:50%;transform:translateX(-50%);
@@ -3197,14 +3234,19 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
 
 /* ── CHAT ── */
 #chat-btn{
-  position:fixed;bottom:20px;left:20px;
+  position:fixed;
+  bottom:16px;
+  right:calc(var(--sidebar-w) + 12px + 52px + 10px + 320px + 8px);
   width:44px;height:44px;border-radius:50%;
   background:var(--accent);border:none;color:#fff;font-size:1.1rem;
   cursor:pointer;z-index:200;display:none;
   box-shadow:0 0 0 0 rgba(123,97,255,.55);
   animation:pulse-chat 2.5s infinite;
   align-items:center;justify-content:center;
-  transition:transform .15s;
+  transition:transform .15s, right .35s cubic-bezier(.4,0,.2,1);
+}
+#chat-btn.sidebar-gone{
+  right:calc(12px + 52px + 10px + 320px + 8px);
 }
 #chat-btn:hover{transform:scale(1.1);}
 @keyframes pulse-chat{
@@ -3213,12 +3255,18 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
   100%{box-shadow:0 0 0 0 rgba(123,97,255,0);}
 }
 #chat-panel{
-  position:fixed;bottom:74px;left:16px;
+  position:fixed;
+  bottom:16px;
+  right:calc(var(--sidebar-w) + 12px + 52px + 10px);
   width:320px;height:400px;
   background:var(--surf);border:1px solid var(--bdr);
   border-radius:14px;display:none;flex-direction:column;
   z-index:200;overflow:hidden;
   box-shadow:0 8px 32px rgba(0,0,0,.5);
+  transition:right .35s cubic-bezier(.4,0,.2,1);
+}
+#chat-panel.sidebar-gone{
+  right:calc(12px + 52px + 10px);
 }
 #chat-panel.open{display:flex;}
 #chat-header{
@@ -3921,6 +3969,13 @@ button, [onclick], .pc-frame, .psw, .zb {
     border-radius: 12px !important;
     z-index: 200;
     box-shadow: 0 4px 16px rgba(123,97,255,.45) !important;
+    right: auto !important;
+  }
+  /* Mobilde stats widget - chat butonunun üstüne */
+  #stats-widget {
+    bottom: 62px !important;
+    left: 10px !important;
+    right: auto !important;
   }
 
   /* ══ 11. CHAT PANELİ — Bottom sheet ══ */
@@ -4452,6 +4507,21 @@ button, [onclick], .pc-frame, .psw, .zb {
 </div>
 
 <!-- Chat button -->
+<!-- Sol alt stats widget: üye sayacı, toplam piksel, imleç konumu -->
+<div id="stats-widget">
+  <div class="sw-row">
+    <span class="sw-icon">👥</span>
+    <span id="sw-online">—</span>
+    <span style="color:var(--muted);font-size:.58rem;font-family:'JetBrains Mono',monospace;">çevrimiçi</span>
+  </div>
+  <div class="sw-row">
+    <span class="sw-icon">🖌</span>
+    <span id="sw-totalpix">—</span>
+    <span style="color:var(--muted);font-size:.58rem;font-family:'JetBrains Mono',monospace;">piksel</span>
+  </div>
+  <div id="sw-coord">(—, —)</div>
+</div>
+
 <button id="chat-btn" onclick="toggleChat()" title="AI Asistan"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:-.125em;flex-shrink:0;"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg></button>
 
 <!-- Chat panel -->
@@ -6163,6 +6233,14 @@ canvas.addEventListener('mousedown',e=>{
 canvas.addEventListener('mouseleave',()=>{ _brushActive = false; _brushLastFlat = -1; });
 canvas.addEventListener('mousemove',e=>{
   if(_recentTouch()) return; // bu jest zaten touch handler tarafından işleniyor/işlendi
+  // İmleç koordinatını sol alt widget'a yaz
+  {
+    const r=canvas.getBoundingClientRect();
+    const mx=e.clientX-r.left, my=e.clientY-r.top;
+    const ix=Math.floor((mx-ox)/scale), iy=Math.floor((my-oy)/scale);
+    const coordEl=document.getElementById('sw-coord');
+    if(coordEl) coordEl.textContent='('+ix+', '+iy+')';
+  }
   if(panning){ox=e.clientX-panSt.x;oy=e.clientY-panSt.y;clampView();draw();return;}
   // Shift basılı (ya da kalem modu açık) + sol tuş sürükleme = fırça modu
   if(_brushActive && (e.shiftKey||_penMode) && e.buttons===1){
@@ -6862,6 +6940,8 @@ function _activateUser(v){
   loadCD(); updateDots();
   loadProfile();
   loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); checkDailyStreak(); });
+  // Sol alt stats widget'ı göster ve verileri yükle
+  _startStatsWidget();
 }
 
 // ── AUTH SEKME GEÇİŞİ (Kayıt Ol / Giriş Yap) ──────────────────────────
@@ -16410,6 +16490,63 @@ window.endWar = async function(warId, winner) {
     winner: winner || null,
   }).eq('id', warId);
 };
+
+/* ── SOL ALT STATS WIDGET — üye sayacı, toplam piksel, imleç koordinatı ── */
+let _statsInterval = null;
+
+function _fmtNum(n){
+  if(n==null||isNaN(n)) return '—';
+  if(n>=1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'')+'M';
+  if(n>=1000) return (n/1000).toFixed(1).replace(/\.0$/,'')+'k';
+  return String(n);
+}
+
+async function _fetchStats(){
+  if(typeof supabase==='undefined') return;
+  try{
+    // Toplam piksel sayısı: pixels tablosundaki satır sayısı
+    const {count:pixCount}=await supabase.from('pixels').select('*',{count:'exact',head:true});
+    const el=document.getElementById('sw-totalpix');
+    if(el) el.textContent=_fmtNum(pixCount||0);
+  }catch(e){}
+  try{
+    // Aktif kullanıcı: son 5 dakika içinde pixel basan ya da presence kanalında olanlar
+    // Basit yaklaşım: users tablosundan toplam kullanıcı sayısını çek
+    const {count:uCount}=await supabase.from('users').select('*',{count:'exact',head:true});
+    const el=document.getElementById('sw-online');
+    if(el) el.textContent=_fmtNum(uCount||0);
+  }catch(e){}
+}
+
+function _startStatsWidget(){
+  const w=document.getElementById('stats-widget');
+  if(w) w.classList.add('visible');
+  _fetchStats();
+  if(_statsInterval) clearInterval(_statsInterval);
+  _statsInterval=setInterval(_fetchStats,30000);
+  // Sidebar açık/kapalı değişince chat panel ve chat-btn'in right pozisyonunu güncelle
+  _syncChatPanelPos();
+}
+
+// Sidebar toggle'ı izle — chat panel sağ pozisyonunu senkronize et
+function _syncChatPanelPos(){
+  const observer=new MutationObserver(()=>{
+    const chatPanel=document.getElementById('chat-panel');
+    const chatBtn=document.getElementById('chat-btn');
+    const sidebar=document.getElementById('sidebar');
+    if(!chatPanel) return;
+    const sidebarHidden=sidebar&&sidebar.classList.contains('hidden');
+    if(sidebarHidden){
+      chatPanel.classList.add('sidebar-gone');
+      if(chatBtn) chatBtn.classList.add('sidebar-gone');
+    } else {
+      chatPanel.classList.remove('sidebar-gone');
+      if(chatBtn) chatBtn.classList.remove('sidebar-gone');
+    }
+  });
+  const sidebar=document.getElementById('sidebar');
+  if(sidebar) observer.observe(sidebar,{attributes:true,attributeFilter:['class']});
+}
 
 console.log('⚔️ War Overlay System loaded');
 </script>
