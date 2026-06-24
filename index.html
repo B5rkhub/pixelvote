@@ -3081,38 +3081,39 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
 /* ── SOL ALT STATS WIDGET ── */
 #stats-widget{
   position:fixed;
-  bottom:16px;
-  left:16px;
-  background:rgba(8,9,22,.85);
-  backdrop-filter:blur(10px);
-  border:1px solid var(--bdr2);
-  border-radius:10px;
-  padding:.32rem .7rem;
+  bottom:72px; /* ptoolbar'ın üstünde: ptoolbar ~48px yüksek + 8px gap */
+  right:calc(var(--sidebar-w) + 12px);
+  background:rgba(5,6,14,.82);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:8px;
+  padding:.28rem .65rem .2rem;
   display:none;
   flex-direction:column;
-  gap:2px;
+  gap:1px;
   z-index:44;
   pointer-events:none;
-  min-width:120px;
+  white-space:nowrap;
 }
 #stats-widget.visible{display:flex !important;}
 .sw-row{
   display:flex;
   align-items:center;
-  gap:.38rem;
+  gap:.5rem;
   font-family:'JetBrains Mono','Space Mono',monospace;
-  font-size:.67rem;
-  font-weight:600;
-  color:var(--txt);
-  white-space:nowrap;
+  font-size:.68rem;
+  font-weight:700;
+  color:rgba(255,255,255,.9);
 }
-.sw-icon{font-size:.7rem;opacity:.75;}
+.sw-item{display:flex;align-items:center;gap:.22rem;}
+.sw-icon{font-size:.65rem;opacity:.8;}
 #sw-coord{
-  color:#b8acff;
-  font-size:.62rem;
-  letter-spacing:.01em;
   font-family:'JetBrains Mono','Space Mono',monospace;
+  font-size:.6rem;
   font-weight:600;
+  color:rgba(184,172,255,.85);
+  letter-spacing:.01em;
+  text-align:right;
 }
 
 /* ── PIXEL EVENT ── */
@@ -3952,9 +3953,9 @@ button, [onclick], .pc-frame, .psw, .zb {
 
   /* ══ 10. CHAT BUTONU — gizli, ptoolbar içindeki buton kullanılıyor ══ */
   #chat-btn { display: none !important; }
-  /* Mobilde stats widget - sol alt köşe */
+  /* Mobilde stats widget - ptoolbar üstünde */
   #stats-widget {
-    bottom: 16px !important;
+    bottom: 80px !important;
     left: 10px !important;
     right: auto !important;
   }
@@ -4488,17 +4489,11 @@ button, [onclick], .pc-frame, .psw, .zb {
 </div>
 
 <!-- Chat button -->
-<!-- Sol alt stats widget: üye sayacı, toplam piksel, imleç konumu -->
+<!-- Sağ alt stats widget: üye sayacı, toplam piksel, imleç konumu -->
 <div id="stats-widget">
   <div class="sw-row">
-    <span class="sw-icon">👥</span>
-    <span id="sw-online">—</span>
-    <span style="color:var(--muted);font-size:.58rem;font-family:'JetBrains Mono',monospace;">çevrimiçi</span>
-  </div>
-  <div class="sw-row">
-    <span class="sw-icon">🖌</span>
-    <span id="sw-totalpix">—</span>
-    <span style="color:var(--muted);font-size:.58rem;font-family:'JetBrains Mono',monospace;">piksel</span>
+    <span class="sw-item"><span id="sw-online">—</span><span class="sw-icon">👥</span></span>
+    <span class="sw-item"><span id="sw-totalpix">—</span><span class="sw-icon">🖌</span></span>
   </div>
   <div id="sw-coord">(—, —)</div>
 </div>
@@ -16519,21 +16514,30 @@ function _startStatsWidget(){
   }
 }
 
-// Chat panelini ptoolbar'ın hemen soluna sabitle
+// Chat panelini ve stats widget'ı ptoolbar'a göre konumla
 function _positionChatPanel(){
   const pt=document.getElementById('ptoolbar');
   const chatPanel=document.getElementById('chat-panel');
-  if(!pt||!chatPanel) return;
-  // Sadece desktop'ta (768px üstü) uygula
+  const sw=document.getElementById('stats-widget');
+  if(!pt) return;
   if(window.innerWidth<=768) return;
   const ptRect=pt.getBoundingClientRect();
   const gap=8;
-  const panelW=320;
-  // ptoolbar'ın sol kenarından gap kadar sola
-  const rightFromEdge=window.innerWidth - ptRect.left + gap;
-  chatPanel.style.right=rightFromEdge+'px';
-  chatPanel.style.left='auto';
-  chatPanel.style.bottom='16px';
+  // stats widget: ptoolbar sağ hizası, ptoolbar'ın hemen üstünde
+  if(sw){
+    const swRight=window.innerWidth - ptRect.right;
+    sw.style.right=swRight+'px';
+    sw.style.left='auto';
+    const ptBottom=window.innerHeight - ptRect.top + gap;
+    sw.style.bottom=ptBottom+'px';
+  }
+  // chat panel: ptoolbar'ın sol kenarından gap kadar sola
+  if(chatPanel){
+    const rightFromEdge=window.innerWidth - ptRect.left + gap;
+    chatPanel.style.right=rightFromEdge+'px';
+    chatPanel.style.left='auto';
+    chatPanel.style.bottom='16px';
+  }
 }
 
 // Sidebar toggle'ı izle
