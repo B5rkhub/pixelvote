@@ -15129,9 +15129,16 @@ window.openTemplateEditor=function(){
     const rw=reg.w, rh=reg.h;
     _editorW=rw; _editorH=rh;
     window._tplRegion=reg;
-    /* Bitmap'i yeniden oluştur — bölge boyutunda, harita piksellerini arka plan yap */
+    /* Bitmap'i yeniden oluştur — bölge boyutunda, harita piksellerini arka plan yap.
+       DÜZELTME: sadece pixelCanvas (oyuncuların bastığı seyrek pikseller) kopyalanıyordu,
+       haritanın asıl renkli zemini (baseCanvas) hiç kopyalanmıyordu — bu yüzden editör
+       neredeyse tamamen boş/şeffaf görünüyordu. İkisini de _tplExportPNG ile aynı
+       sırada çiziyoruz. */
     const nb=document.createElement('canvas'); nb.width=rw; nb.height=rh;
     const nctx=nb.getContext('2d'); nctx.imageSmoothingEnabled=false;
+    if(typeof baseCanvas!=='undefined'&&baseCanvas){
+      try{ nctx.drawImage(baseCanvas,reg.x,reg.y,rw,rh,0,0,rw,rh); }catch(e){}
+    }
     if(typeof pixelCanvas!=='undefined'&&pixelCanvas){
       try{ nctx.drawImage(pixelCanvas,reg.x,reg.y,rw,rh,0,0,rw,rh); }catch(e){}
     }
