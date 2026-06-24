@@ -3093,9 +3093,9 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
   gap:2px;
   z-index:44;
   pointer-events:none;
-  min-width:130px;
+  min-width:120px;
 }
-#stats-widget.visible{display:flex;}
+#stats-widget.visible{display:flex !important;}
 .sw-row{
   display:flex;
   align-items:center;
@@ -3234,19 +3234,12 @@ body{background:var(--bg);color:var(--txt);font-family:'Plus Jakarta Sans',syste
 
 /* ── CHAT ── */
 #chat-btn{
-  position:fixed;
-  bottom:16px;
-  right:404px;
-  width:44px;height:44px;border-radius:50%;
-  background:var(--accent);border:none;color:#fff;font-size:1.1rem;
-  cursor:pointer;z-index:200;display:none;
-  box-shadow:0 0 0 0 rgba(123,97,255,.55);
-  animation:pulse-chat 2.5s infinite;
-  align-items:center;justify-content:center;
-  transition:transform .15s;
+  display:none !important;
+  pointer-events:none !important;
+  visibility:hidden !important;
 }
 #chat-btn.sidebar-gone{
-  right:404px;
+  display:none !important;
 }
 #chat-btn:hover{transform:scale(1.1);}
 @keyframes pulse-chat{
@@ -3957,22 +3950,11 @@ button, [onclick], .pc-frame, .psw, .zb {
     box-shadow: 0 1px 3px rgba(0,0,0,.5);
   }
 
-  /* ══ 10. CHAT BUTONU ══ */
-  #chat-btn {
-    position: fixed !important;
-    bottom: 14px !important;
-    left: 10px !important;
-    width: 40px !important;
-    height: 40px !important;
-    font-size: 1rem !important;
-    border-radius: 12px !important;
-    z-index: 200;
-    box-shadow: 0 4px 16px rgba(123,97,255,.45) !important;
-    right: auto !important;
-  }
-  /* Mobilde stats widget - chat butonunun üstüne */
+  /* ══ 10. CHAT BUTONU — gizli, ptoolbar içindeki buton kullanılıyor ══ */
+  #chat-btn { display: none !important; }
+  /* Mobilde stats widget - sol alt köşe */
   #stats-widget {
-    bottom: 62px !important;
+    bottom: 16px !important;
     left: 10px !important;
     right: auto !important;
   }
@@ -6942,8 +6924,8 @@ function _activateUser(v){
   loadCD(); updateDots();
   loadProfile();
   loadXPFromSupabase().then(()=>{ updateXPUI(); renderLevelLeaderboard(); checkDailyStreak(); });
-  // Sol alt stats widget'ı göster ve verileri yükle
-  _startStatsWidget();
+  // Sol alt stats widget — fonksiyon sonraki script bloğunda tanımlı, geciktir
+  setTimeout(function(){ if(typeof _startStatsWidget==='function'){ _startStatsWidget(); _syncChatPanelPos(); } },800);
 }
 
 // ── AUTH SEKME GEÇİŞİ (Kayıt Ol / Giriş Yap) ──────────────────────────
@@ -16566,30 +16548,51 @@ function _syncChatPanelPos(){
 
 // Stats widget + chat konumu: _activateUser zincirinden bağımsız olarak da başlat
 (function _initStatsOnLoad(){
-  function _tryInit(){
-    // Kullanıcı giriş yaptıysa (ubadge doluysa) widget'ı göster
-    const badge=document.getElementById('ubadge');
+  let _inited=false;
+  function _tryShow(){
+    if(_inited) return;
+    _inited=true;
+    _startStatsWidget();
+    _syncChatPanelPos();
+  }
+
+  // Yöntem 1: son script bloğunda _activateUser override — burada tüm zincir hazır
+  (function(){
+    const _chain=window._activateUser;
+    if(typeof _chain==='function'){
+      window._activateUser=function(v){
+        _chain.apply(this,arguments);
+        setTimeout(_tryShow,600);
+      };
+    }
+  })();
+
+  // Yöntem 2: login div gizlenince
+  function _watchLogin(){
     const login=document.getElementById('login');
-    if(login && login.style.display==='none'){
-      _startStatsWidget();
-      _syncChatPanelPos();
+    if(!login) return;
+    // Zaten gizliyse hemen göster
+    if(login.style.display==='none' || getComputedStyle(login).display==='none'){
+      setTimeout(_tryShow,200);
       return;
     }
-    // Henüz giriş yapılmamış — login kapanınca izle
-    if(login){
-      new MutationObserver((mutations,obs)=>{
-        if(login.style.display==='none'){
-          obs.disconnect();
-          _startStatsWidget();
-          _syncChatPanelPos();
-        }
-      }).observe(login,{attributes:true,attributeFilter:['style']});
-    }
+    const obs=new MutationObserver(()=>{
+      if(login.style.display==='none'){ obs.disconnect(); setTimeout(_tryShow,300); }
+    });
+    obs.observe(login,{attributes:true,attributeFilter:['style']});
   }
+
+  // Yöntem 3: 5 saniye sonra zorla göster (fallback)
+  setTimeout(()=>{
+    const login=document.getElementById('login');
+    const hidden=!login||login.style.display==='none'||getComputedStyle(login).display==='none';
+    if(hidden) _tryShow();
+  },5000);
+
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',_tryInit);
+    document.addEventListener('DOMContentLoaded',()=>{ setTimeout(_watchLogin,200); });
   } else {
-    setTimeout(_tryInit,500);
+    setTimeout(_watchLogin,200);
   }
 })();
 
