@@ -14867,8 +14867,21 @@ async function _tplExportPNG() {
   merged.width = _editorW; merged.height = _editorH;
   const ctx2 = merged.getContext('2d');
   ctx2.imageSmoothingEnabled = false;
-  if (typeof baseCanvas !== 'undefined' && baseCanvas) ctx2.drawImage(baseCanvas, 0, 0);
-  if (typeof pixelCanvas !== 'undefined' && pixelCanvas) ctx2.drawImage(pixelCanvas, 0, 0);
+  /* DÜZELTME: bir bölge (region) seçiliyse, harita canvas'larından SADECE
+     o bölgeyi kırpıp çizmemiz gerekiyor; aksi halde tam haritanın sol-üst
+     köşesi yanlışlıkla küçük şablon canvas'ına gerilerek çiziliyordu. */
+  const reg = window._tplRegion;
+  if (reg) {
+    if (typeof baseCanvas !== 'undefined' && baseCanvas) {
+      ctx2.drawImage(baseCanvas, reg.x, reg.y, reg.w, reg.h, 0, 0, _editorW, _editorH);
+    }
+    if (typeof pixelCanvas !== 'undefined' && pixelCanvas) {
+      ctx2.drawImage(pixelCanvas, reg.x, reg.y, reg.w, reg.h, 0, 0, _editorW, _editorH);
+    }
+  } else {
+    if (typeof baseCanvas !== 'undefined' && baseCanvas) ctx2.drawImage(baseCanvas, 0, 0);
+    if (typeof pixelCanvas !== 'undefined' && pixelCanvas) ctx2.drawImage(pixelCanvas, 0, 0);
+  }
   if (_tplBitmap) ctx2.drawImage(_tplBitmap, 0, 0);
   return new Promise((resolve, reject) => {
     merged.toBlob(b => b ? resolve(b) : reject(new Error('toBlob başarısız')), 'image/png');
@@ -14964,7 +14977,6 @@ window.addEventListener('resize', () => { if (!_tplActive && _tplData.size > 0) 
 
 console.log('🎨 Pixilart-style Template Editor loaded');
 </script>
-})();
 <script>
 /* syncTbSheet'e template ekle */
 (function(){
@@ -15035,8 +15047,10 @@ window._tplRegionConfirm=function(){
   const rw=Math.max(4,x1-x0), rh=Math.max(4,y1-y0);
   _pendingRegion={x:x0,y:y0,w:rw,h:rh};
   _regionClose();
-  /* Orijinal openTemplateEditor'ı çağır — artık _pendingRegion var */
-  _origOpen();
+  /* DÜZELTME: _origOpen() bölge mantığını bilmiyordu, _pendingRegion hiç
+     okunmuyordu. window.openTemplateEditor (aşağıdaki override) bölgeyi
+     işleyen fonksiyon — doğrusu onu çağırmak. */
+  window.openTemplateEditor();
 };
 
 /* ── Overlay kapat + event temizle ── */
